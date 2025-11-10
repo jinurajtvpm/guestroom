@@ -944,88 +944,107 @@
         }
 
         // Show booking details in modal
-        function showBookingDetails(day, roomNum) {
-            // Find bookings for this room on this day
-            const roomBookings = bookings.filter(booking => {
-                const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
-                if (bookingRoomNum !== roomNum) return false;
-                
-                const checkinDate = new Date(booking.checkin);
-                const checkoutDate = new Date(booking.checkout);
-                
-                let checkinDay = checkinDate.getDate();
-                let checkoutDay = checkoutDate.getDate();
-                
-                // Adjust for current month boundaries
-                if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
-                    checkinDay = 1;
-                }
-                
-                if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
-                    checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-                }
-                
-                return day >= checkinDay && day <= checkoutDay;
-            });
-            
-            if (roomBookings.length === 0) {
-                // No booking on this day
-                bookingDetailsContent.innerHTML = `
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Room</div>
-                        <div class="booking-details-value">GR - ${roomNum}</div>
-                    </div>
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Date</div>
-                        <div class="booking-details-value">${day} ${getMonthName(currentMonth)} ${currentYear}</div>
-                    </div>
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Status</div>
-                        <div class="booking-details-value">Available</div>
-                    </div>
-                `;
-            } else {
-                // Show booking details
-                let bookingDetailsHTML = '';
-                
-                roomBookings.forEach(booking => {
-                    bookingDetailsHTML += `
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Room</div>
-                            <div class="booking-details-value">${booking.room}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Guest Name</div>
-                            <div class="booking-details-value">${booking.guest}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Check-in</div>
-                            <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Check-out</div>
-                            <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Booked By</div>
-                            <div class="booking-details-value">${booking.bookedBy}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Status</div>
-                            <div class="booking-details-value">${booking.status}</div>
-                        </div>
-                        <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-                    `;
-                });
-                
-                // Remove the last separator
-                bookingDetailsHTML = bookingDetailsHTML.replace(/<hr[^>]*>$/, '');
-                bookingDetailsContent.innerHTML = bookingDetailsHTML;
-            }
-            
-            // Show the modal
-            bookingModal.classList.add('active');
+    function showBookingDetails(day, roomNum) {
+    // Find bookings for this room on this day IN CURRENT MONTH ONLY
+    const roomBookings = bookings.filter(booking => {
+        const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
+        if (bookingRoomNum !== roomNum) return false;
+        
+        const checkinDate = new Date(booking.checkin);
+        const checkoutDate = new Date(booking.checkout);
+        
+        // Check if booking overlaps with current month at all
+        const bookingStartMonth = checkinDate.getMonth();
+        const bookingStartYear = checkinDate.getFullYear();
+        const bookingEndMonth = checkoutDate.getMonth();
+        const bookingEndYear = checkoutDate.getFullYear();
+        
+        const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
+        const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0);
+        const currentMonthStart = new Date(currentYear, currentMonth, 1);
+        const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
+        
+        if (!(bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart)) {
+            return false; // Booking doesn't overlap with current month at all
         }
+        
+        let checkinDay = checkinDate.getDate();
+        let checkoutDay = checkoutDate.getDate();
+        
+        // Adjust for current month boundaries - ONLY if booking is in current month
+        if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+            checkinDay = 1;
+        }
+        
+        if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+            checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+        }
+        
+        // Ensure boundaries are within current month
+        checkinDay = Math.max(1, checkinDay);
+        checkoutDay = Math.min(new Date(currentYear, currentMonth + 1, 0).getDate(), checkoutDay);
+        
+        return day >= checkinDay && day <= checkoutDay;
+    });
+    
+    if (roomBookings.length === 0) {
+        // No booking on this day
+        bookingDetailsContent.innerHTML = `
+            <div class="booking-details-group">
+                <div class="booking-details-label">Room</div>
+                <div class="booking-details-value">GR - ${roomNum}</div>
+            </div>
+            <div class="booking-details-group">
+                <div class="booking-details-label">Date</div>
+                <div class="booking-details-value">${day} ${getMonthName(currentMonth)} ${currentYear}</div>
+            </div>
+            <div class="booking-details-group">
+                <div class="booking-details-label">Status</div>
+                <div class="booking-details-value">Available</div>
+            </div>
+        `;
+    } else {
+        // Show booking details - ONLY FOR CURRENT MONTH
+        let bookingDetailsHTML = '';
+        
+        roomBookings.forEach(booking => {
+            bookingDetailsHTML += `
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Room</div>
+                    <div class="booking-details-value">${booking.room}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Guest Name</div>
+                    <div class="booking-details-value">${booking.guest}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Check-in</div>
+                    <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Check-out</div>
+                    <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Booked By</div>
+                    <div class="booking-details-value">${booking.bookedBy}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Status</div>
+                    <div class="booking-details-value">${booking.status}</div>
+                </div>
+                <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
+            `;
+        });
+        
+        // Remove the last separator
+        bookingDetailsHTML = bookingDetailsHTML.replace(/<hr[^>]*>$/, '');
+        bookingDetailsContent.innerHTML = bookingDetailsHTML;
+    }
+    
+    // Show the modal
+    bookingModal.classList.add('active');
+}
 
         // Update page title with current month and year
         function updatePageTitle() {
