@@ -610,6 +610,85 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* NEW STYLES FOR FILTERING AND PRINTING */
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .filter-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .filter-btn:hover {
+            background: #2980b9;
+        }
+        
+        .print-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .print-btn:hover {
+            background: #219653;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            
+            .entries-container, .entries-container * {
+                visibility: visible;
+            }
+            
+            .entries-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            
+            .filter-section, .action-buttons {
+                display: none !important;
+            }
+            
+            .entries-table th:last-child,
+            .entries-table td:last-child {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -708,6 +787,38 @@
         
         <div class="entries-container hidden" id="admin-entries-section">
             <h2 class="entries-title">All Booking Entries</h2>
+            
+            <!-- NEW FILTER SECTION -->
+            <div class="filter-section">
+                <div class="filter-controls">
+                    <select id="filter-month" class="filter-select">
+                        <option value="all">All Months</option>
+                        <option value="0">January</option>
+                        <option value="1">February</option>
+                        <option value="2">March</option>
+                        <option value="3">April</option>
+                        <option value="4">May</option>
+                        <option value="5">June</option>
+                        <option value="6">July</option>
+                        <option value="7">August</option>
+                        <option value="8">September</option>
+                        <option value="9">October</option>
+                        <option value="10">November</option>
+                        <option value="11">December</option>
+                    </select>
+                    
+                    <select id="filter-year" class="filter-select">
+                        <option value="all">All Years</option>
+                        <!-- Years will be populated by JavaScript -->
+                    </select>
+                    
+                    <button id="apply-filter" class="filter-btn">Apply Filter</button>
+                    <button id="reset-filter" class="filter-btn">View All</button>
+                </div>
+                
+                <button id="print-btn" class="print-btn">Print Table</button>
+            </div>
+            
             <table class="entries-table">
                 <thead>
                     <tr>
@@ -775,6 +886,7 @@
         let currentYear = 2025;
         let isAdmin = false;
         let unsubscribeBookings = null;
+        let filteredBookings = []; // NEW: Store filtered bookings
 
         // DOM elements
         const bookingForm = document.getElementById('booking-form');
@@ -798,6 +910,13 @@
         const bookingModalClose = document.getElementById('booking-modal-close');
         const loadingIndicator = document.getElementById('loading-indicator');
 
+        // NEW: Filter elements
+        const filterMonth = document.getElementById('filter-month');
+        const filterYear = document.getElementById('filter-year');
+        const applyFilter = document.getElementById('apply-filter');
+        const resetFilter = document.getElementById('reset-filter');
+        const printBtn = document.getElementById('print-btn');
+
         // Login credentials
         const ADMIN_USERNAME = 'admin';
         const ADMIN_PASSWORD = 'Admin@11';
@@ -811,8 +930,10 @@
                     id: doc.id,
                     ...doc.data()
                 }));
+                filteredBookings = [...bookings]; // NEW: Initialize filteredBookings
                 renderBookings();
                 updateEntriesTable();
+                populateYearFilter(); // NEW: Populate year filter options
                 hideLoading();
             } catch (error) {
                 console.error('Error loading bookings:', error);
@@ -833,8 +954,10 @@
                         id: doc.id,
                         ...doc.data()
                     }));
+                    filteredBookings = [...bookings]; // NEW: Update filteredBookings
                     renderBookings();
                     updateEntriesTable();
+                    populateYearFilter(); // NEW: Update year filter options
                 }, error => {
                     console.error('Error in realtime listener:', error);
                 });
@@ -896,6 +1019,106 @@
 
         function hideLoading() {
             loadingIndicator.classList.add('hidden');
+        }
+
+        // NEW: Populate year filter with available years from bookings
+        function populateYearFilter() {
+            const yearSelect = document.getElementById('filter-year');
+            
+            // Clear existing options except "All Years"
+            while (yearSelect.options.length > 1) {
+                yearSelect.remove(1);
+            }
+            
+            // Get unique years from bookings
+            const years = new Set();
+            bookings.forEach(booking => {
+                const checkinYear = new Date(booking.checkin).getFullYear();
+                const checkoutYear = new Date(booking.checkout).getFullYear();
+                years.add(checkinYear);
+                years.add(checkoutYear);
+            });
+            
+            // Add years to filter
+            const sortedYears = Array.from(years).sort((a, b) => b - a);
+            sortedYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        }
+
+        // NEW: Filter bookings by month and year
+        function filterBookingsByMonthYear(month, year) {
+            if (month === 'all' && year === 'all') {
+                return [...bookings];
+            }
+            
+            return bookings.filter(booking => {
+                const checkinDate = new Date(booking.checkin);
+                const checkoutDate = new Date(booking.checkout);
+                
+                const checkinMonth = checkinDate.getMonth();
+                const checkinYear = checkinDate.getFullYear();
+                const checkoutMonth = checkoutDate.getMonth();
+                const checkoutYear = checkoutDate.getFullYear();
+                
+                // Check if booking overlaps with the selected month and year
+                if (month !== 'all' && year !== 'all') {
+                    // Both month and year are specified
+                    const selectedMonth = parseInt(month);
+                    const selectedYear = parseInt(year);
+                    
+                    // Check if booking starts in selected month/year
+                    if (checkinMonth === selectedMonth && checkinYear === selectedYear) return true;
+                    
+                    // Check if booking ends in selected month/year
+                    if (checkoutMonth === selectedMonth && checkoutYear === selectedYear) return true;
+                    
+                    // Check if booking spans across selected month/year
+                    const selectedDateStart = new Date(selectedYear, selectedMonth, 1);
+                    const selectedDateEnd = new Date(selectedYear, selectedMonth + 1, 0);
+                    
+                    return (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart);
+                } else if (month !== 'all') {
+                    // Only month is specified (all years)
+                    const selectedMonth = parseInt(month);
+                    
+                    // Check if booking starts in selected month (any year)
+                    if (checkinMonth === selectedMonth) return true;
+                    
+                    // Check if booking ends in selected month (any year)
+                    if (checkoutMonth === selectedMonth) return true;
+                    
+                    // Check if booking spans across selected month (any year)
+                    // We need to check for each year in the booking range
+                    for (let y = checkinYear; y <= checkoutYear; y++) {
+                        const selectedDateStart = new Date(y, selectedMonth, 1);
+                        const selectedDateEnd = new Date(y, selectedMonth + 1, 0);
+                        
+                        if (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart) {
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                } else if (year !== 'all') {
+                    // Only year is specified (all months)
+                    const selectedYear = parseInt(year);
+                    
+                    // Check if booking starts in selected year
+                    if (checkinYear === selectedYear) return true;
+                    
+                    // Check if booking ends in selected year
+                    if (checkoutYear === selectedYear) return true;
+                    
+                    // Check if booking spans across selected year
+                    return (checkinDate.getFullYear() <= selectedYear && checkoutDate.getFullYear() >= selectedYear);
+                }
+                
+                return false;
+            });
         }
 
         // Initialize the table
@@ -1323,11 +1546,11 @@
             }
         }
 
-        // Update entries table
+        // NEW: Update entries table with filtered data
         function updateEntriesTable() {
             entriesBody.innerHTML = '';
             
-            bookings.sort((a, b) => new Date(a.checkin) - new Date(b.checkin))
+            filteredBookings.sort((a, b) => new Date(a.checkin) - new Date(b.checkin))
                    .forEach((booking, index) => {
                 const row = document.createElement('tr');
                 
@@ -1495,6 +1718,27 @@
                 currentYear++;
             }
             initializeTable();
+        });
+
+        // NEW: Filter functionality
+        applyFilter.addEventListener('click', function() {
+            const selectedMonth = filterMonth.value;
+            const selectedYear = filterYear.value;
+            
+            filteredBookings = filterBookingsByMonthYear(selectedMonth, selectedYear);
+            updateEntriesTable();
+        });
+
+        resetFilter.addEventListener('click', function() {
+            filterMonth.value = 'all';
+            filterYear.value = 'all';
+            filteredBookings = [...bookings];
+            updateEntriesTable();
+        });
+
+        // NEW: Print functionality
+        printBtn.addEventListener('click', function() {
+            window.print();
         });
 
         // Login functionality
