@@ -10,6 +10,7 @@
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* All existing CSS remains the same */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -438,6 +439,14 @@
             background: rgba(231, 76, 60, 0.1);
         }
         
+        .confirm-btn {
+            color: #27ae60;
+        }
+        
+        .confirm-btn:hover {
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
         .hidden {
             display: none !important;
         }
@@ -725,6 +734,35 @@
                 display: none !important;
             }
         }
+
+        /* NEW STYLES FOR CONFIRMATION MESSAGE MODAL */
+        .confirmation-message {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            white-space: pre-line;
+            margin-bottom: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .copy-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .copy-btn:hover {
+            background: #2980b9;
+        }
     </style>
 </head>
 <body>
@@ -900,6 +938,9 @@
             <div class="modal-header">
                 <h2 class="modal-title">Booking Details</h2>
                 <div class="modal-actions hidden" id="booking-modal-actions">
+                    <button class="icon-btn confirm-btn" id="booking-confirm-btn" title="Generate Confirmation Message">
+                        <i class="fas fa-envelope"></i>
+                    </button>
                     <button class="icon-btn edit-btn" id="booking-edit-btn" title="Edit Booking">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -991,6 +1032,20 @@
         </div>
     </div>
 
+    <!-- NEW: Confirmation Message Modal -->
+    <div id="confirmation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirmation Message</h2>
+            </div>
+            <div class="confirmation-message" id="confirmation-message-content">
+                <!-- Confirmation message will be populated by JavaScript -->
+            </div>
+            <button id="copy-confirmation-btn" class="copy-btn">Copy to Clipboard</button>
+            <button id="confirmation-modal-close" class="modal-close">Close</button>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1014,6 +1069,7 @@
         let unsubscribeBookings = null;
         let filteredBookings = [];
         let currentBookingId = null; // Track current booking for edit/delete
+        let currentSplitCellBookings = []; // Track bookings in split cell
 
         // DOM elements
         const bookingForm = document.getElementById('booking-form');
@@ -1038,6 +1094,7 @@
         const bookingDetailsContent = document.getElementById('booking-details-content');
         const bookingModalClose = document.getElementById('booking-modal-close');
         const bookingModalActions = document.getElementById('booking-modal-actions');
+        const bookingConfirmBtn = document.getElementById('booking-confirm-btn');
         const bookingEditBtn = document.getElementById('booking-edit-btn');
         const bookingDeleteBtn = document.getElementById('booking-delete-btn');
         const editModal = document.getElementById('edit-modal');
@@ -1055,6 +1112,12 @@
         const applyFilter = document.getElementById('apply-filter');
         const resetFilter = document.getElementById('reset-filter');
         const printBtn = document.getElementById('print-btn');
+
+        // NEW: Confirmation modal elements
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmationMessageContent = document.getElementById('confirmation-message-content');
+        const copyConfirmationBtn = document.getElementById('copy-confirmation-btn');
+        const confirmationModalClose = document.getElementById('confirmation-modal-close');
 
         // Password management
         function getStoredPassword() {
@@ -1362,6 +1425,9 @@
                 return day >= checkinDay && day <= checkoutDay;
             });
             
+            // Store split cell bookings for confirmation message
+            currentSplitCellBookings = roomBookings;
+            
             if (roomBookings.length === 0) {
                 // No booking on this day
                 bookingDetailsContent.innerHTML = `
@@ -1381,9 +1447,8 @@
                 // Hide action buttons for available rooms
                 bookingModalActions.classList.add('hidden');
                 currentBookingId = null;
-            } else {
-                // Show booking details - ONLY FOR CURRENT MONTH
-                // For simplicity, show the first booking that matches
+            } else if (roomBookings.length === 1) {
+                // Single booking on this day
                 const booking = roomBookings[0];
                 currentBookingId = booking.id;
                 
@@ -1431,10 +1496,112 @@
                 } else {
                     bookingModalActions.classList.add('hidden');
                 }
+            } else {
+                // Multiple bookings on this day (split cell)
+                let bookingDetailsHTML = `
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Room</div>
+                        <div class="booking-details-value">GR - ${roomNum}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Date</div>
+                        <div class="booking-details-value">${day} ${getMonthName(currentMonth)} ${currentYear}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Multiple Bookings</div>
+                        <div class="booking-details-value">This day has multiple bookings:</div>
+                    </div>
+                `;
+                
+                roomBookings.forEach((booking, index) => {
+                    bookingDetailsHTML += `
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Booking ${index + 1}</div>
+                            <div class="booking-details-value">
+                                <strong>Guest:</strong> ${booking.guest}<br>
+                                <strong>Check-in:</strong> ${formatDateFull(booking.checkin)}<br>
+                                <strong>Check-out:</strong> ${formatDateFull(booking.checkout)}<br>
+                                <strong>Status:</strong> ${booking.status}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                bookingDetailsContent.innerHTML = bookingDetailsHTML;
+                
+                // Hide action buttons for split cells since we can't determine which booking to edit/delete
+                bookingModalActions.classList.add('hidden');
+                currentBookingId = null;
             }
             
             // Show the modal
             bookingModal.classList.add('active');
+        }
+
+        // NEW: Generate confirmation message
+        function generateConfirmationMessage(booking) {
+            const checkinDate = formatDateFull(booking.checkin);
+            const checkoutDate = formatDateFull(booking.checkout);
+            
+            return `*Welcome to ✨ 𝑶𝑵𝑬 𝑨𝑵𝑫 𝑶𝑵𝑳𝒀 𝑶𝑵𝑬 Offrs' Mess* ✨
+
+We are so happy you chose us for your stay. We can't wait to make your stay comfortable and relaxing! Your booking is *confirmed*👍
+Please find the details below👇
+
+*1. Guestroom Name* : ${booking.room}
+*2. Guest* : ${booking.guest}
+*3. GR NCO Number* : 9149513860
+*4. Check-in Date* : ${checkinDate}
+*5. Check-out Date* : ${checkoutDate}
+*6. Property directions* : https://maps.app.goo.gl/wY3zbaTjBDWsRrgi9?g_st=aw
+*7. Menu* : https://tinyurl.com/messmenu11
+*8. Mess Hav Number* : 7736991184
+*9. Cancellation* : If any changes in plans, pl update us on priority.
+*10. Pets* : NOT Allowed
+
+Wish you a comfortable stay!
+Mess Secy`;
+        }
+
+        // NEW: Show confirmation message modal
+        function showConfirmationModal() {
+            if (currentSplitCellBookings.length === 1) {
+                // Single booking
+                const booking = currentSplitCellBookings[0];
+                const message = generateConfirmationMessage(booking);
+                confirmationMessageContent.textContent = message;
+                confirmationModal.classList.add('active');
+            } else if (currentSplitCellBookings.length > 1) {
+                // Multiple bookings - let user choose which one
+                let message = "Multiple bookings found on this day. Please select which booking to generate confirmation for:\n\n";
+                
+                currentSplitCellBookings.forEach((booking, index) => {
+                    message += `${index + 1}. ${booking.guest} (${formatDateFull(booking.checkin)} to ${formatDateFull(booking.checkout)})\n`;
+                });
+                
+                message += "\nEnter the number of the booking:";
+                
+                const bookingNumber = prompt(message);
+                if (bookingNumber && !isNaN(bookingNumber) && bookingNumber >= 1 && bookingNumber <= currentSplitCellBookings.length) {
+                    const selectedBooking = currentSplitCellBookings[parseInt(bookingNumber) - 1];
+                    const confirmationMessage = generateConfirmationMessage(selectedBooking);
+                    confirmationMessageContent.textContent = confirmationMessage;
+                    confirmationModal.classList.add('active');
+                }
+            } else {
+                alert("No booking found to generate confirmation for.");
+            }
+        }
+
+        // NEW: Copy confirmation message to clipboard
+        function copyConfirmationMessage() {
+            const message = confirmationMessageContent.textContent;
+            navigator.clipboard.writeText(message).then(() => {
+                alert("Confirmation message copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert("Failed to copy message. Please select and copy manually.");
+            });
         }
 
         // Update page title with current month and year
@@ -2008,6 +2175,11 @@
             }
         });
 
+        // NEW: Confirmation message button handler
+        bookingConfirmBtn.addEventListener('click', function() {
+            showConfirmationModal();
+        });
+
         // Edit and Delete button handlers for booking modal
         bookingEditBtn.addEventListener('click', function() {
             if (currentBookingId) {
@@ -2025,6 +2197,9 @@
             }
         });
 
+        // NEW: Copy confirmation message button handler
+        copyConfirmationBtn.addEventListener('click', copyConfirmationMessage);
+
         // Event listeners for modals
         modalCloseBtn.addEventListener('click', hideLoginModal);
         bookingModalClose.addEventListener('click', function() {
@@ -2037,6 +2212,11 @@
         
         changePasswordClose.addEventListener('click', function() {
             changePasswordModal.classList.remove('active');
+        });
+        
+        // NEW: Confirmation modal close button
+        confirmationModalClose.addEventListener('click', function() {
+            confirmationModal.classList.remove('active');
         });
         
         // Close modal when clicking outside
