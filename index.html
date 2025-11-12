@@ -1158,16 +1158,17 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Initialize empty bookings array
+        // Global variables
         let bookings = [];
-        let currentMonth = 10; // November (0-indexed)
-        let currentYear = 2025;
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
         let isAdmin = false;
         let unsubscribeBookings = null;
         let unsubscribeSettings = null;
         let filteredBookings = [];
-        let currentBookingId = null; // Track current booking for edit/delete
-        let currentSplitCellBookings = []; // Track bookings in split cell
+        let currentBookingId = null;
+        let currentSplitCellBookings = [];
+        let appSettings = null;
 
         // Room name mappings
         const roomNames = {
@@ -1178,6 +1179,10 @@
             "GR - 5": "Shella",
             "GR - 6": "Arwah"
         };
+
+        // Login credentials
+        const ADMIN_USERNAME = 'admin';
+        const DEFAULT_PASSWORD = 'Admin@11';
 
         // DOM elements
         const bookingForm = document.getElementById('booking-form');
@@ -1214,21 +1219,15 @@
         const savePasswordBtn = document.getElementById('save-password-btn');
         const changePasswordClose = document.getElementById('change-password-close');
         const loadingIndicator = document.getElementById('loading-indicator');
-
-        // Filter elements
         const filterMonth = document.getElementById('filter-month');
         const filterYear = document.getElementById('filter-year');
         const applyFilter = document.getElementById('apply-filter');
         const resetFilter = document.getElementById('reset-filter');
         const printBtn = document.getElementById('print-btn');
-
-        // Confirmation modal elements
         const confirmationModal = document.getElementById('confirmation-modal');
         const confirmationMessageContent = document.getElementById('confirmation-message-content');
         const copyConfirmationBtn = document.getElementById('copy-confirmation-btn');
         const confirmationModalClose = document.getElementById('confirmation-modal-close');
-
-        // NEW: Admin settings modal elements
         const adminSettingsModal = document.getElementById('admin-settings-modal');
         const grNcoNumberInput = document.getElementById('gr-nco-number');
         const grNcoNameInput = document.getElementById('gr-nco-name');
@@ -1237,11 +1236,95 @@
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const adminSettingsClose = document.getElementById('admin-settings-close');
 
-        // Login credentials
-        const ADMIN_USERNAME = 'admin';
-        const DEFAULT_PASSWORD = 'Admin@11';
+        // ========== SETTINGS MANAGEMENT ==========
+        
+        // Load settings from Firebase
+        async function loadSettings() {
+            try {
+                const doc = await db.collection('settings').doc('admin').get();
+                if (doc.exists) {
+                    appSettings = doc.data();
+                    console.log('Settings loaded:', appSettings);
+                    return appSettings;
+                } else {
+                    // Create default settings if they don't exist
+                    appSettings = {
+                        password: DEFAULT_PASSWORD,
+                        grNcoNumber: '9149513860',
+                        grNcoName: '',
+                        messHavNumber: '7736991184',
+                        messHavName: ''
+                    };
+                    await db.collection('settings').doc('admin').set(appSettings);
+                    console.log('Default settings created:', appSettings);
+                    return appSettings;
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                // Return default settings if there's an error
+                appSettings = {
+                    password: DEFAULT_PASSWORD,
+                    grNcoNumber: '9149513860',
+                    grNcoName: '',
+                    messHavNumber: '7736991184',
+                    messHavName: ''
+                };
+                return appSettings;
+            }
+        }
 
-        // Firebase Functions for Bookings
+        // Update settings in Firebase
+        async function updateSettings(updatedSettings) {
+            try {
+                await db.collection('settings').doc('admin').set(updatedSettings);
+                appSettings = updatedSettings;
+                console.log('Settings updated successfully:', appSettings);
+                return true;
+            } catch (error) {
+                console.error('Error updating settings:', error);
+                return false;
+            }
+        }
+
+        // Setup real-time settings listener
+        function setupSettingsListener() {
+            if (unsubscribeSettings) {
+                unsubscribeSettings();
+            }
+
+            unsubscribeSettings = db.collection('settings').doc('admin')
+                .onSnapshot(doc => {
+                    if (doc.exists) {
+                        appSettings = doc.data();
+                        console.log('Settings updated in real-time:', appSettings);
+                        updateAdminSettingsDisplay();
+                        updatePasswordDisplay();
+                    }
+                }, error => {
+                    console.error('Error in settings listener:', error);
+                });
+        }
+
+        // Update password display
+        function updatePasswordDisplay() {
+            if (appSettings && appSettings.password) {
+                currentPasswordDisplay.value = appSettings.password;
+            }
+        }
+
+        // Update admin settings display
+        function updateAdminSettingsDisplay() {
+            if (appSettings) {
+                grNcoNumberInput.value = appSettings.grNcoNumber || '';
+                grNcoNameInput.value = appSettings.grNcoName || '';
+                messHavNumberInput.value = appSettings.messHavNumber || '';
+                messHavNameInput.value = appSettings.messHavName || '';
+            }
+        }
+
+        // ========== BOOKINGS MANAGEMENT ==========
+
+        // Load bookings from Firebase
         async function loadBookings() {
             try {
                 showLoading();
@@ -1262,6 +1345,7 @@
             }
         }
 
+        // Setup real-time bookings listener
         function setupRealtimeListener() {
             if (unsubscribeBookings) {
                 unsubscribeBookings();
@@ -1283,6 +1367,7 @@
                 });
         }
 
+        // Add booking to Firebase
         async function addBooking(booking) {
             try {
                 showLoading();
@@ -1306,6 +1391,7 @@
             }
         }
 
+        // Update booking in Firebase
         async function updateBooking(id, booking) {
             try {
                 showLoading();
@@ -1320,6 +1406,7 @@
             }
         }
 
+        // Delete booking from Firebase
         async function deleteBooking(id) {
             try {
                 showLoading();
@@ -1334,64 +1421,9 @@
             }
         }
 
-        // Firebase Functions for Settings
-        async function loadSettings() {
-            try {
-                const doc = await db.collection('settings').doc('admin').get();
-                if (doc.exists) {
-                    return doc.data();
-                } else {
-                    // Create default settings if they don't exist
-                    const defaultSettings = {
-                        password: DEFAULT_PASSWORD,
-                        grNcoNumber: '9149513860',
-                        grNcoName: '',
-                        messHavNumber: '7736991184',
-                        messHavName: ''
-                    };
-                    await db.collection('settings').doc('admin').set(defaultSettings);
-                    return defaultSettings;
-                }
-            } catch (error) {
-                console.error('Error loading settings:', error);
-                // Return default settings if there's an error
-                return {
-                    password: DEFAULT_PASSWORD,
-                    grNcoNumber: '9149513860',
-                    grNcoName: '',
-                    messHavNumber: '7736991184',
-                    messHavName: ''
-                };
-            }
-        }
+        // ========== UI FUNCTIONS ==========
 
-        async function updateSettings(settings) {
-            try {
-                await db.collection('settings').doc('admin').set(settings, { merge: true });
-                return true;
-            } catch (error) {
-                console.error('Error updating settings:', error);
-                return false;
-            }
-        }
-
-        function setupSettingsListener() {
-            if (unsubscribeSettings) {
-                unsubscribeSettings();
-            }
-
-            unsubscribeSettings = db.collection('settings').doc('admin')
-                .onSnapshot(doc => {
-                    if (doc.exists) {
-                        const settings = doc.data();
-                        updateAdminSettingsDisplay(settings);
-                        updatePasswordDisplay(settings.password);
-                    }
-                }, error => {
-                    console.error('Error in settings listener:', error);
-                });
-        }
-
+        // Show/hide loading indicator
         function showLoading() {
             loadingIndicator.classList.remove('hidden');
         }
@@ -1400,115 +1432,12 @@
             loadingIndicator.classList.add('hidden');
         }
 
-        // Populate year filter with available years from bookings
-        function populateYearFilter() {
-            const yearSelect = document.getElementById('filter-year');
-            
-            // Clear existing options except "All Years"
-            while (yearSelect.options.length > 1) {
-                yearSelect.remove(1);
-            }
-            
-            // Get unique years from bookings
-            const years = new Set();
-            bookings.forEach(booking => {
-                const checkinYear = new Date(booking.checkin).getFullYear();
-                const checkoutYear = new Date(booking.checkout).getFullYear();
-                years.add(checkinYear);
-                years.add(checkoutYear);
-            });
-            
-            // Add years to filter
-            const sortedYears = Array.from(years).sort((a, b) => b - a);
-            sortedYears.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                yearSelect.appendChild(option);
-            });
-        }
-
-        // Filter bookings by month and year
-        function filterBookingsByMonthYear(month, year) {
-            if (month === 'all' && year === 'all') {
-                return [...bookings];
-            }
-            
-            return bookings.filter(booking => {
-                const checkinDate = new Date(booking.checkin);
-                const checkoutDate = new Date(booking.checkout);
-                
-                const checkinMonth = checkinDate.getMonth();
-                const checkinYear = checkinDate.getFullYear();
-                const checkoutMonth = checkoutDate.getMonth();
-                const checkoutYear = checkoutDate.getFullYear();
-                
-                // Check if booking overlaps with the selected month and year
-                if (month !== 'all' && year !== 'all') {
-                    // Both month and year are specified
-                    const selectedMonth = parseInt(month);
-                    const selectedYear = parseInt(year);
-                    
-                    // Check if booking starts in selected month/year
-                    if (checkinMonth === selectedMonth && checkinYear === selectedYear) return true;
-                    
-                    // Check if booking ends in selected month/year
-                    if (checkoutMonth === selectedMonth && checkoutYear === selectedYear) return true;
-                    
-                    // Check if booking spans across selected month/year
-                    const selectedDateStart = new Date(selectedYear, selectedMonth, 1);
-                    const selectedDateEnd = new Date(selectedYear, selectedMonth + 1, 0);
-                    
-                    return (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart);
-                } else if (month !== 'all') {
-                    // Only month is specified (all years)
-                    const selectedMonth = parseInt(month);
-                    
-                    // Check if booking starts in selected month (any year)
-                    if (checkinMonth === selectedMonth) return true;
-                    
-                    // Check if booking ends in selected month (any year)
-                    if (checkoutMonth === selectedMonth) return true;
-                    
-                    // Check if booking spans across selected month (any year)
-                    // We need to check for each year in the booking range
-                    for (let y = checkinYear; y <= checkoutYear; y++) {
-                        const selectedDateStart = new Date(y, selectedMonth, 1);
-                        const selectedDateEnd = new Date(y, selectedMonth + 1, 0);
-                        
-                        if (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart) {
-                            return true;
-                        }
-                    }
-                    
-                    return false;
-                } else if (year !== 'all') {
-                    // Only year is specified (all months)
-                    const selectedYear = parseInt(year);
-                    
-                    // Check if booking starts in selected year
-                    if (checkinYear === selectedYear) return true;
-                    
-                    // Check if booking ends in selected year
-                    if (checkoutYear === selectedYear) return true;
-                    
-                    // Check if booking spans across selected year
-                    return (checkinDate.getFullYear() <= selectedYear && checkoutDate.getFullYear() >= selectedYear);
-                }
-                
-                return false;
-            });
-        }
-
-        // Initialize the table
+        // Initialize the calendar table
         function initializeTable() {
-            // Clear existing table
             tableBody.innerHTML = '';
             
-            // Get number of days in current month
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             
-            // Create rows for each day of the month
             for (let day = 1; day <= daysInMonth; day++) {
                 const row = document.createElement('tr');
                 
@@ -1526,7 +1455,6 @@
                     roomCell.dataset.day = day;
                     roomCell.dataset.room = roomNum;
                     
-                    // Add click event listener to show booking details
                     roomCell.addEventListener('click', function() {
                         showBookingDetails(day, roomNum);
                     });
@@ -1537,16 +1465,244 @@
                 tableBody.appendChild(row);
             }
             
-            // Update page title
             updatePageTitle();
-            
-            // Populate with existing bookings
             renderBookings();
+        }
+
+        // Update page title with current month and year
+        function updatePageTitle() {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            pageTitle.textContent = `Guestroom Booking Status - ${monthNames[currentMonth]} ${currentYear}`;
+            monthDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+        }
+
+        // Render bookings on the calendar
+        function renderBookings() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // Clear all cells
+            for (let day = 1; day <= daysInMonth; day++) {
+                for (let roomNum = 1; roomNum <= 6; roomNum++) {
+                    const cell = document.getElementById(`day-${day}-room-${roomNum}`);
+                    cell.innerHTML = '';
+                    cell.className = 'empty-cell';
+                    cell.rowSpan = 1;
+                    cell.style.display = '';
+                    cell.style.backgroundColor = '';
+                }
+            }
+
+            // Process each room separately
+            for (let roomNum = 1; roomNum <= 6; roomNum++) {
+                const roomBookings = bookings.filter(b => {
+                    const bRoom = parseInt(b.room.split(' - ')[1]);
+                    if (bRoom !== roomNum || (b.status !== 'confirm' && b.status !== 'yet-to-confirm')) return false;
+                    
+                    const checkinDate = new Date(b.checkin);
+                    const checkoutDate = new Date(b.checkout);
+                    
+                    const bookingStartMonth = checkinDate.getMonth();
+                    const bookingStartYear = checkinDate.getFullYear();
+                    const bookingEndMonth = checkoutDate.getMonth();
+                    const bookingEndYear = checkoutDate.getFullYear();
+                    
+                    const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
+                    const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0);
+                    const currentMonthStart = new Date(currentYear, currentMonth, 1);
+                    const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
+                    
+                    return bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart;
+                });
+
+                if (roomBookings.length === 0) continue;
+
+                roomBookings.forEach(booking => {
+                    const checkinDate = new Date(booking.checkin);
+                    const checkoutDate = new Date(booking.checkout);
+                    
+                    let checkinDay = checkinDate.getDate();
+                    let checkoutDay = checkoutDate.getDate();
+                    
+                    if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+                        checkinDay = 1;
+                    }
+                    
+                    if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                        checkoutDay = daysInMonth;
+                    }
+                    
+                    if (checkinDay > daysInMonth || checkoutDay < 1) return;
+                    
+                    checkinDay = Math.max(1, checkinDay);
+                    checkoutDay = Math.min(daysInMonth, checkoutDay);
+                    
+                    const sharedDays = [];
+                    for (let day = checkinDay; day <= checkoutDay; day++) {
+                        const otherBookingsOnDay = roomBookings.filter(other => {
+                            if (other === booking) return false;
+                            
+                            const otherCheckin = new Date(other.checkin);
+                            const otherCheckout = new Date(other.checkout);
+                            
+                            let otherCheckinDay = otherCheckin.getDate();
+                            let otherCheckoutDay = otherCheckout.getDate();
+                            
+                            if (otherCheckin.getMonth() < currentMonth || otherCheckin.getFullYear() < currentYear) {
+                                otherCheckinDay = 1;
+                            }
+                            
+                            if (otherCheckout.getMonth() > currentMonth || otherCheckout.getFullYear() > currentYear) {
+                                otherCheckoutDay = daysInMonth;
+                            }
+                            
+                            otherCheckinDay = Math.max(1, otherCheckinDay);
+                            otherCheckoutDay = Math.min(daysInMonth, otherCheckoutDay);
+                            
+                            return day >= otherCheckinDay && day <= otherCheckoutDay;
+                        });
+                        
+                        if (otherBookingsOnDay.length > 0) {
+                            sharedDays.push(day);
+                        }
+                    }
+
+                    if (sharedDays.length === 0) {
+                        renderMergedBooking(roomNum, booking, checkinDay, checkoutDay);
+                    } else {
+                        renderBookingWithSharedDays(roomNum, booking, checkinDay, checkoutDay, sharedDays);
+                    }
+                });
+            }
+        }
+
+        // Render a normal merged booking
+        function renderMergedBooking(roomNum, booking, checkin, checkout) {
+            const duration = checkout - checkin + 1;
+            const startCell = document.getElementById(`day-${checkin}-room-${roomNum}`);
+            
+            startCell.rowSpan = duration;
+            
+            const bookingDiv = document.createElement('div');
+            bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-yet-to-confirm' : 'booking';
+            
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'booking-details';
+            nameDiv.textContent = booking.guest.length > 15 ? booking.guest.substring(0, 13) + '...' : booking.guest;
+            
+            const datesDiv = document.createElement('div');
+            datesDiv.className = 'booking-dates';
+            datesDiv.textContent = `${formatDate(booking.checkin)} - ${formatDate(booking.checkout)}`;
+            
+            bookingDiv.appendChild(nameDiv);
+            bookingDiv.appendChild(datesDiv);
+            startCell.appendChild(bookingDiv);
+            
+            for (let day = checkin; day <= checkout; day++) {
+                const cell = document.getElementById(`day-${day}-room-${roomNum}`);
+                if (day === checkin) {
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+                } else {
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+                    cell.style.display = 'none';
+                }
+            }
+        }
+
+        // Render booking that shares days with other bookings
+        function renderBookingWithSharedDays(roomNum, booking, checkin, checkout, sharedDays) {
+            let currentStart = checkin;
+            
+            for (let day = checkin; day <= checkout; day++) {
+                if (sharedDays.includes(day) || day === checkout) {
+                    const isShared = sharedDays.includes(day);
+                    const isLastDay = day === checkout;
+                    
+                    if (isShared) {
+                        if (currentStart <= day - 1) {
+                            renderMergedBooking(roomNum, booking, currentStart, day - 1);
+                        }
+                        
+                        renderSharedDay(roomNum, booking, day);
+                        currentStart = day + 1;
+                    } else if (isLastDay && currentStart <= day) {
+                        renderMergedBooking(roomNum, booking, currentStart, day);
+                    }
+                }
+            }
+        }
+
+        // Render a day that is shared between multiple bookings
+        function renderSharedDay(roomNum, booking, day) {
+            const cell = document.getElementById(`day-${day}-room-${roomNum}`);
+            
+            const roomBookings = bookings.filter(b => {
+                const bRoom = parseInt(b.room.split(' - ')[1]);
+                return bRoom === roomNum && (b.status === 'confirm' || b.status === 'yet-to-confirm');
+            });
+            
+            const bookingsOnDay = roomBookings.filter(b => {
+                const checkinDate = new Date(b.checkin);
+                const checkoutDate = new Date(b.checkout);
+                
+                let checkinDay = checkinDate.getDate();
+                let checkoutDay = checkoutDate.getDate();
+                
+                if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+                    checkinDay = 1;
+                }
+                
+                if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                    checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+                }
+                
+                return day >= checkinDay && day <= checkoutDay;
+            });
+            
+            const checkoutDate = new Date(booking.checkout);
+            const checkinDate = new Date(booking.checkin);
+            
+            let checkoutDay = checkoutDate.getDate();
+            let checkinDay = checkinDate.getDate();
+            
+            if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+            }
+            
+            if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+                checkinDay = 1;
+            }
+            
+            const isEnding = checkoutDay === day;
+            const isStarting = checkinDay === day;
+            
+            if (bookingsOnDay.length === 1) {
+                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+            } else {
+                if (isEnding) {
+                    const topDiv = document.createElement('div');
+                    topDiv.className = booking.status === 'yet-to-confirm' ? 'booking-top booking-yet-to-confirm' : 'booking-top';
+                    cell.appendChild(topDiv);
+                }
+                
+                if (isStarting) {
+                    const bottomDiv = document.createElement('div');
+                    bottomDiv.className = booking.status === 'yet-to-confirm' ? 'booking-bottom booking-yet-to-confirm' : 'booking-bottom';
+                    cell.appendChild(bottomDiv);
+                }
+                
+                const hasTop = cell.querySelector('.booking-top');
+                const hasBottom = cell.querySelector('.booking-bottom');
+                if (hasTop && hasBottom) {
+                    const divider = document.createElement('div');
+                    divider.className = 'split-divider';
+                    cell.appendChild(divider);
+                }
+            }
         }
 
         // Show booking details in modal
         function showBookingDetails(day, roomNum) {
-            // Find bookings for this room on this day IN CURRENT MONTH ONLY
             const roomBookings = bookings.filter(booking => {
                 const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
                 if (bookingRoomNum !== roomNum) return false;
@@ -1554,7 +1710,6 @@
                 const checkinDate = new Date(booking.checkin);
                 const checkoutDate = new Date(booking.checkout);
                 
-                // Check if booking overlaps with current month at all
                 const bookingStartMonth = checkinDate.getMonth();
                 const bookingStartYear = checkinDate.getFullYear();
                 const bookingEndMonth = checkoutDate.getMonth();
@@ -1566,13 +1721,12 @@
                 const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
                 
                 if (!(bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart)) {
-                    return false; // Booking doesn't overlap with current month at all
+                    return false;
                 }
                 
                 let checkinDay = checkinDate.getDate();
                 let checkoutDay = checkoutDate.getDate();
                 
-                // Adjust for current month boundaries - ONLY if booking is in current month
                 if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
                     checkinDay = 1;
                 }
@@ -1581,18 +1735,15 @@
                     checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
                 }
                 
-                // Ensure boundaries are within current month
                 checkinDay = Math.max(1, checkinDay);
                 checkoutDay = Math.min(new Date(currentYear, currentMonth + 1, 0).getDate(), checkoutDay);
                 
                 return day >= checkinDay && day <= checkoutDay;
             });
             
-            // Store split cell bookings for confirmation message
             currentSplitCellBookings = roomBookings;
             
             if (roomBookings.length === 0) {
-                // No booking on this day
                 bookingDetailsContent.innerHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
@@ -1607,11 +1758,9 @@
                         <div class="booking-details-value">Available</div>
                     </div>
                 `;
-                // Hide action buttons for available rooms
                 bookingModalActions.classList.add('hidden');
                 currentBookingId = null;
             } else if (roomBookings.length === 1) {
-                // Single booking on this day
                 const booking = roomBookings[0];
                 currentBookingId = booking.id;
                 
@@ -1653,14 +1802,12 @@
                 
                 bookingDetailsContent.innerHTML = bookingDetailsHTML;
                 
-                // Show action buttons only in admin mode
                 if (isAdmin) {
                     bookingModalActions.classList.remove('hidden');
                 } else {
                     bookingModalActions.classList.add('hidden');
                 }
             } else {
-                // Multiple bookings on this day (split cell)
                 let bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
@@ -1691,31 +1838,209 @@
                 });
                 
                 bookingDetailsContent.innerHTML = bookingDetailsHTML;
-                
-                // Hide action buttons for split cells since we can't determine which booking to edit/delete
                 bookingModalActions.classList.add('hidden');
                 currentBookingId = null;
             }
             
-            // Show the modal
             bookingModal.classList.add('active');
+        }
+
+        // Update entries table with filtered data
+        function updateEntriesTable() {
+            entriesBody.innerHTML = '';
+            
+            filteredBookings.sort((a, b) => new Date(b.checkin) - new Date(a.checkin))
+                   .forEach((booking, index) => {
+                const row = document.createElement('tr');
+                
+                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status', 'remarks'].forEach(field => {
+                    const cell = document.createElement('td');
+                    if (field === 'checkin' || field === 'checkout') {
+                        cell.textContent = formatDateFull(booking[field]);
+                    } else if (field === 'remarks') {
+                        cell.textContent = booking[field] || 'None';
+                    } else {
+                        cell.textContent = booking[field];
+                    }
+                    row.appendChild(cell);
+                });
+                
+                entriesBody.appendChild(row);
+            });
+        }
+
+        // Populate year filter with available years from bookings
+        function populateYearFilter() {
+            const yearSelect = document.getElementById('filter-year');
+            
+            while (yearSelect.options.length > 1) {
+                yearSelect.remove(1);
+            }
+            
+            const years = new Set();
+            bookings.forEach(booking => {
+                const checkinYear = new Date(booking.checkin).getFullYear();
+                const checkoutYear = new Date(booking.checkout).getFullYear();
+                years.add(checkinYear);
+                years.add(checkoutYear);
+            });
+            
+            const sortedYears = Array.from(years).sort((a, b) => b - a);
+            sortedYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        }
+
+        // Filter bookings by month and year
+        function filterBookingsByMonthYear(month, year) {
+            if (month === 'all' && year === 'all') {
+                return [...bookings];
+            }
+            
+            return bookings.filter(booking => {
+                const checkinDate = new Date(booking.checkin);
+                const checkoutDate = new Date(booking.checkout);
+                
+                const checkinMonth = checkinDate.getMonth();
+                const checkinYear = checkinDate.getFullYear();
+                const checkoutMonth = checkoutDate.getMonth();
+                const checkoutYear = checkoutDate.getFullYear();
+                
+                if (month !== 'all' && year !== 'all') {
+                    const selectedMonth = parseInt(month);
+                    const selectedYear = parseInt(year);
+                    
+                    if (checkinMonth === selectedMonth && checkinYear === selectedYear) return true;
+                    if (checkoutMonth === selectedMonth && checkoutYear === selectedYear) return true;
+                    
+                    const selectedDateStart = new Date(selectedYear, selectedMonth, 1);
+                    const selectedDateEnd = new Date(selectedYear, selectedMonth + 1, 0);
+                    
+                    return (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart);
+                } else if (month !== 'all') {
+                    const selectedMonth = parseInt(month);
+                    
+                    if (checkinMonth === selectedMonth) return true;
+                    if (checkoutMonth === selectedMonth) return true;
+                    
+                    for (let y = checkinYear; y <= checkoutYear; y++) {
+                        const selectedDateStart = new Date(y, selectedMonth, 1);
+                        const selectedDateEnd = new Date(y, selectedMonth + 1, 0);
+                        
+                        if (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart) {
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                } else if (year !== 'all') {
+                    const selectedYear = parseInt(year);
+                    
+                    if (checkinYear === selectedYear) return true;
+                    if (checkoutYear === selectedYear) return true;
+                    
+                    return (checkinDate.getFullYear() <= selectedYear && checkoutDate.getFullYear() >= selectedYear);
+                }
+                
+                return false;
+            });
+        }
+
+        // ========== UTILITY FUNCTIONS ==========
+
+        // Format date helpers
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        }
+
+        function formatDateFull(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // Get month name
+        function getMonthName(monthIndex) {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return monthNames[monthIndex];
+        }
+
+        // Set default dates
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            
+            document.getElementById('checkin-date').value = today;
+            document.getElementById('checkout-date').value = tomorrow;
+            document.getElementById('status').value = 'confirm';
+        }
+
+        // Check for conflicts
+        function hasConflict(roomNum, checkin, checkout, excludeId = null) {
+            return bookings.some(booking => {
+                if (excludeId && booking.id === excludeId) return false;
+                
+                const bRoom = parseInt(booking.room.split(' - ')[1]);
+                const bIn = new Date(booking.checkin);
+                const bOut = new Date(booking.checkout);
+                
+                if (bRoom !== roomNum) return false;
+                if (booking.status === 'cancelled') return false;
+                
+                if (checkin.getTime() === checkout.getTime()) {
+                    return (checkin >= bIn && checkin < bOut) ||
+                           (checkout > bIn && checkout <= bOut) ||
+                           (checkin <= bIn && checkout >= bOut);
+                } else {
+                    return (checkin >= bIn && checkin < bOut) ||
+                           (checkout > bIn && checkout <= bOut) ||
+                           (checkin <= bIn && checkout >= bOut);
+                }
+            });
+        }
+
+        // Edit booking in popup modal
+        function editBooking(id, booking) {
+            document.getElementById('edit-guest-room').value = booking.room;
+            document.getElementById('edit-checkin-date').value = booking.checkin;
+            document.getElementById('edit-checkout-date').value = booking.checkout;
+            document.getElementById('edit-guest-name').value = booking.guest;
+            document.getElementById('edit-booked-by').value = booking.bookedBy;
+            document.getElementById('edit-status').value = booking.status;
+            document.getElementById('edit-remarks').value = booking.remarks || '';
+            
+            editForm.dataset.editingId = id;
+            editModal.classList.add('active');
+        }
+
+        // Delete booking from Firebase
+        async function deleteBookingFromFirebase(id) {
+            if (confirm('Are you sure you want to delete this booking?')) {
+                const success = await deleteBooking(id);
+                if (success) {
+                    alert('Booking deleted successfully!');
+                    bookingModal.classList.remove('active');
+                }
+            }
         }
 
         // Generate confirmation message
         async function generateConfirmationMessage(booking) {
             const checkinDate = formatDateFull(booking.checkin);
             const checkoutDate = formatDateFull(booking.checkout);
-            const settings = await loadSettings();
             
-            const grNcoInfo = settings.grNcoName ? 
-                `${settings.grNcoNumber} (${settings.grNcoName})` : 
-                settings.grNcoNumber;
+            const grNcoInfo = appSettings.grNcoName ? 
+                `${appSettings.grNcoNumber} (${appSettings.grNcoName})` : 
+                appSettings.grNcoNumber;
                 
-            const messHavInfo = settings.messHavName ? 
-                `${settings.messHavNumber} (${settings.messHavName})` : 
-                settings.messHavNumber;
+            const messHavInfo = appSettings.messHavName ? 
+                `${appSettings.messHavNumber} (${appSettings.messHavName})` : 
+                appSettings.messHavNumber;
             
-            // Use only the room name, not the GR number
             const roomName = roomNames[booking.room];
             
             return `*Welcome to ✨ 𝑶𝑵𝑬 𝑨𝑵𝑫 𝑶𝑵𝑳𝒀 𝑶𝑵𝑬 Offrs' Mess* ✨
@@ -1750,13 +2075,11 @@ Mess Secy`;
         // Show confirmation message modal
         async function showConfirmationModal() {
             if (currentSplitCellBookings.length === 1) {
-                // Single booking
                 const booking = currentSplitCellBookings[0];
                 const message = await generateConfirmationMessage(booking);
                 confirmationMessageContent.value = message;
                 confirmationModal.classList.add('active');
             } else if (currentSplitCellBookings.length > 1) {
-                // Multiple bookings - let user choose which one
                 let message = "Multiple bookings found on this day. Please select which booking to generate confirmation for:\n\n";
                 
                 currentSplitCellBookings.forEach((booking, index) => {
@@ -1788,520 +2111,7 @@ Mess Secy`;
             });
         }
 
-        // Update page title with current month and year
-        function updatePageTitle() {
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            pageTitle.textContent = `Guestroom Booking Status - ${monthNames[currentMonth]} ${currentYear}`;
-            monthDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
-        }
-
-        // Get month name
-        function getMonthName(monthIndex) {
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            return monthNames[monthIndex];
-        }
-
-        // SIMPLE APPROACH: Render each booking individually
-        function renderBookings() {
-            // First, clear all cells
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            
-            for (let day = 1; day <= daysInMonth; day++) {
-                for (let roomNum = 1; roomNum <= 6; roomNum++) {
-                    const cell = document.getElementById(`day-${day}-room-${roomNum}`);
-                    cell.innerHTML = '';
-                    cell.className = 'empty-cell';
-                    cell.rowSpan = 1;
-                    cell.style.display = '';
-                    cell.style.backgroundColor = '';
-                }
-            }
-
-            // Process each room separately
-            for (let roomNum = 1; roomNum <= 6; roomNum++) {
-                // Filter bookings for this room, only confirmed and yet-to-confirm ones, AND only those that fall in current month
-                const roomBookings = bookings.filter(b => {
-                    const bRoom = parseInt(b.room.split(' - ')[1]);
-                    if (bRoom !== roomNum || (b.status !== 'confirm' && b.status !== 'yet-to-confirm')) return false;
-                    
-                    // Check if booking falls within current month
-                    const checkinDate = new Date(b.checkin);
-                    const checkoutDate = new Date(b.checkout);
-                    
-                    const bookingStartMonth = checkinDate.getMonth();
-                    const bookingStartYear = checkinDate.getFullYear();
-                    const bookingEndMonth = checkoutDate.getMonth();
-                    const bookingEndYear = checkoutDate.getFullYear();
-                    
-                    // Check if booking overlaps with current month
-                    const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
-                    const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0);
-                    const currentMonthStart = new Date(currentYear, currentMonth, 1);
-                    const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
-                    
-                    return bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart;
-                });
-
-                if (roomBookings.length === 0) continue;
-
-                // For each booking in this room
-                roomBookings.forEach(booking => {
-                    const checkinDate = new Date(booking.checkin);
-                    const checkoutDate = new Date(booking.checkout);
-                    
-                    // Adjust checkin and checkout to current month boundaries
-                    let checkinDay = checkinDate.getDate();
-                    let checkoutDay = checkoutDate.getDate();
-                    
-                    // If booking starts before current month, set checkin to 1st day of current month
-                    if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
-                        checkinDay = 1;
-                    }
-                    
-                    // If booking ends after current month, set checkout to last day of current month
-                    if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
-                        checkoutDay = daysInMonth;
-                    }
-                    
-                    // Only proceed if booking actually falls within current month after adjustments
-                    if (checkinDay > daysInMonth || checkoutDay < 1) return;
-                    
-                    // Ensure checkinDay is at least 1 and checkoutDay is at most daysInMonth
-                    checkinDay = Math.max(1, checkinDay);
-                    checkoutDay = Math.min(daysInMonth, checkoutDay);
-                    
-                    // Check if this booking shares any day with other bookings IN CURRENT MONTH
-                    const sharedDays = [];
-                    for (let day = checkinDay; day <= checkoutDay; day++) {
-                        const otherBookingsOnDay = roomBookings.filter(other => {
-                            if (other === booking) return false;
-                            
-                            const otherCheckin = new Date(other.checkin);
-                            const otherCheckout = new Date(other.checkout);
-                            
-                            let otherCheckinDay = otherCheckin.getDate();
-                            let otherCheckoutDay = otherCheckout.getDate();
-                            
-                            if (otherCheckin.getMonth() < currentMonth || otherCheckin.getFullYear() < currentYear) {
-                                otherCheckinDay = 1;
-                            }
-                            
-                            if (otherCheckout.getMonth() > currentMonth || otherCheckout.getFullYear() > currentYear) {
-                                otherCheckoutDay = daysInMonth;
-                            }
-                            
-                            // Ensure boundaries are within current month
-                            otherCheckinDay = Math.max(1, otherCheckinDay);
-                            otherCheckoutDay = Math.min(daysInMonth, otherCheckoutDay);
-                            
-                            return day >= otherCheckinDay && day <= otherCheckoutDay;
-                        });
-                        
-                        if (otherBookingsOnDay.length > 0) {
-                            sharedDays.push(day);
-                        }
-                    }
-
-                    // If no shared days, render as normal merged booking
-                    if (sharedDays.length === 0) {
-                        renderMergedBooking(roomNum, booking, checkinDay, checkoutDay);
-                    } else {
-                        // Handle bookings with shared days
-                        renderBookingWithSharedDays(roomNum, booking, checkinDay, checkoutDay, sharedDays);
-                    }
-                });
-            }
-        }
-
-        // Render a normal merged booking
-        function renderMergedBooking(roomNum, booking, checkin, checkout) {
-            const duration = checkout - checkin + 1;
-            const startCell = document.getElementById(`day-${checkin}-room-${roomNum}`);
-            
-            // Set rowspan to merge cells
-            startCell.rowSpan = duration;
-            
-            // Create booking display
-            const bookingDiv = document.createElement('div');
-            bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-yet-to-confirm' : 'booking';
-            
-            const nameDiv = document.createElement('div');
-            nameDiv.className = 'booking-details';
-            nameDiv.textContent = booking.guest.length > 15 ? booking.guest.substring(0, 13) + '...' : booking.guest;
-            
-            const datesDiv = document.createElement('div');
-            datesDiv.className = 'booking-dates';
-            datesDiv.textContent = `${formatDate(booking.checkin)} - ${formatDate(booking.checkout)}`;
-            
-            bookingDiv.appendChild(nameDiv);
-            bookingDiv.appendChild(datesDiv);
-            startCell.appendChild(bookingDiv);
-            
-            // Apply background color to all spanned cells
-            for (let day = checkin; day <= checkout; day++) {
-                const cell = document.getElementById(`day-${day}-room-${roomNum}`);
-                if (day === checkin) {
-                    // Main cell gets the booking div
-                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
-                } else {
-                    // Hidden cells get the same background color
-                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
-                    cell.style.display = 'none';
-                }
-            }
-        }
-
-        // Render booking that shares days with other bookings
-        function renderBookingWithSharedDays(roomNum, booking, checkin, checkout, sharedDays) {
-            let currentStart = checkin;
-            
-            for (let day = checkin; day <= checkout; day++) {
-                // If this is a shared day or the last day
-                if (sharedDays.includes(day) || day === checkout) {
-                    const isShared = sharedDays.includes(day);
-                    const isLastDay = day === checkout;
-                    
-                    if (isShared) {
-                        // Render the continuous part before the shared day
-                        if (currentStart <= day - 1) {
-                            renderMergedBooking(roomNum, booking, currentStart, day - 1);
-                        }
-                        
-                        // Render the shared day - WITHOUT TEXT
-                        renderSharedDay(roomNum, booking, day);
-                        
-                        currentStart = day + 1;
-                    } else if (isLastDay && currentStart <= day) {
-                        // Render the remaining continuous part
-                        renderMergedBooking(roomNum, booking, currentStart, day);
-                    }
-                }
-            }
-        }
-
-        // Render a day that is shared between multiple bookings - WITHOUT TEXT
-        function renderSharedDay(roomNum, booking, day) {
-            const cell = document.getElementById(`day-${day}-room-${roomNum}`);
-            
-            // Get all bookings on this day
-            const roomBookings = bookings.filter(b => {
-                const bRoom = parseInt(b.room.split(' - ')[1]);
-                return bRoom === roomNum && (b.status === 'confirm' || b.status === 'yet-to-confirm');
-            });
-            
-            const bookingsOnDay = roomBookings.filter(b => {
-                const checkinDate = new Date(b.checkin);
-                const checkoutDate = new Date(b.checkout);
-                
-                let checkinDay = checkinDate.getDate();
-                let checkoutDay = checkoutDate.getDate();
-                
-                if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
-                    checkinDay = 1;
-                }
-                
-                if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
-                    checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-                }
-                
-                return day >= checkinDay && day <= checkoutDay;
-            });
-            
-            // Determine if this booking is ending or starting on this day
-            const checkoutDate = new Date(booking.checkout);
-            const checkinDate = new Date(booking.checkin);
-            
-            let checkoutDay = checkoutDate.getDate();
-            let checkinDay = checkinDate.getDate();
-            
-            if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
-                checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-            }
-            
-            if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
-                checkinDay = 1;
-            }
-            
-            const isEnding = checkoutDay === day;
-            const isStarting = checkinDay === day;
-            
-            if (bookingsOnDay.length === 1) {
-                // Single booking on this day
-                const bookingDiv = document.createElement('div');
-                bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-yet-to-confirm' : 'booking';
-                
-                // Don't add text content for split cells
-                // Just set the background color
-                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
-            } else {
-                // Multiple bookings - split the cell
-                if (isEnding) {
-                    const topDiv = document.createElement('div');
-                    topDiv.className = booking.status === 'yet-to-confirm' ? 'booking-top booking-yet-to-confirm' : 'booking-top';
-                    
-                    // Don't add text content for split cells
-                    // Just set the background color
-                    cell.appendChild(topDiv);
-                }
-                
-                if (isStarting) {
-                    const bottomDiv = document.createElement('div');
-                    bottomDiv.className = booking.status === 'yet-to-confirm' ? 'booking-bottom booking-yet-to-confirm' : 'booking-bottom';
-                    
-                    // Don't add text content for split cells
-                    // Just set the background color
-                    cell.appendChild(bottomDiv);
-                }
-                
-                // Add divider if we have both top and bottom
-                const hasTop = cell.querySelector('.booking-top');
-                const hasBottom = cell.querySelector('.booking-bottom');
-                if (hasTop && hasBottom) {
-                    const divider = document.createElement('div');
-                    divider.className = 'split-divider';
-                    cell.appendChild(divider);
-                }
-            }
-        }
-
-        // Update entries table with filtered data
-        function updateEntriesTable() {
-            entriesBody.innerHTML = '';
-            
-            // Sort by latest date first (descending order)
-            filteredBookings.sort((a, b) => new Date(b.checkin) - new Date(a.checkin))
-                   .forEach((booking, index) => {
-                const row = document.createElement('tr');
-                
-                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status', 'remarks'].forEach(field => {
-                    const cell = document.createElement('td');
-                    if (field === 'checkin' || field === 'checkout') {
-                        cell.textContent = formatDateFull(booking[field]);
-                    } else if (field === 'remarks') {
-                        cell.textContent = booking[field] || 'None';
-                    } else {
-                        cell.textContent = booking[field];
-                    }
-                    row.appendChild(cell);
-                });
-                
-                entriesBody.appendChild(row);
-            });
-        }
-
-        // Edit booking in popup modal
-        function editBooking(id, booking) {
-            // Fill form with booking data
-            document.getElementById('edit-guest-room').value = booking.room;
-            document.getElementById('edit-checkin-date').value = booking.checkin;
-            document.getElementById('edit-checkout-date').value = booking.checkout;
-            document.getElementById('edit-guest-name').value = booking.guest;
-            document.getElementById('edit-booked-by').value = booking.bookedBy;
-            document.getElementById('edit-status').value = booking.status;
-            document.getElementById('edit-remarks').value = booking.remarks || '';
-            
-            // Store the booking ID for update
-            editForm.dataset.editingId = id;
-            
-            // Show the edit modal
-            editModal.classList.add('active');
-        }
-
-        // Delete booking from Firebase
-        async function deleteBookingFromFirebase(id) {
-            if (confirm('Are you sure you want to delete this booking?')) {
-                const success = await deleteBooking(id);
-                if (success) {
-                    alert('Booking deleted successfully!');
-                    bookingModal.classList.remove('active');
-                }
-            }
-        }
-
-        // Format date helpers
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-        }
-
-        function formatDateFull(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-        }
-
-        // Check for conflicts - MODIFIED TO ALLOW SAME-DAY BOOKINGS
-        function hasConflict(roomNum, checkin, checkout, excludeId = null) {
-            return bookings.some(booking => {
-                if (excludeId && booking.id === excludeId) return false;
-                
-                const bRoom = parseInt(booking.room.split(' - ')[1]);
-                const bIn = new Date(booking.checkin);
-                const bOut = new Date(booking.checkout);
-                
-                if (bRoom !== roomNum) return false;
-                if (booking.status === 'cancelled') return false; // Ignore cancelled bookings
-                
-                // Allow same-day transitions - only check for actual overlaps
-                // If checkin is exactly checkout, it's a same-day booking which should be allowed
-                if (checkin.getTime() === checkout.getTime()) {
-                    // Same-day booking - check if it conflicts with any existing booking
-                    return (checkin >= bIn && checkin < bOut) ||
-                           (checkout > bIn && checkout <= bOut) ||
-                           (checkin <= bIn && checkout >= bOut);
-                } else {
-                    // Multi-day booking - use the original logic
-                    return (checkin >= bIn && checkin < bOut) ||
-                           (checkout > bIn && checkout <= bOut) ||
-                           (checkin <= bIn && checkout >= bOut);
-                }
-            });
-        }
-
-        // Form submission
-        bookingForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const room = document.getElementById('guest-room').value;
-            const checkin = document.getElementById('checkin-date').value;
-            const checkout = document.getElementById('checkout-date').value;
-            const guest = document.getElementById('guest-name').value;
-            const bookedBy = document.getElementById('booked-by').value;
-            const status = document.getElementById('status').value;
-            const remarks = document.getElementById('remarks').value;
-            
-            // Validation - MODIFIED TO ALLOW SAME-DAY BOOKINGS
-            if (new Date(checkin) > new Date(checkout)) {
-                alert('Check-out must be on or after check-in');
-                return;
-            }
-            
-            const roomNum = parseInt(room.split(' - ')[1]);
-            const checkinDate = new Date(checkin);
-            const checkoutDate = new Date(checkout);
-            
-            // Check if we're editing an existing booking
-            const editingId = bookingForm.dataset.editingId;
-            
-            if (status === 'confirm' && hasConflict(roomNum, checkinDate, checkoutDate, editingId)) {
-                alert('Room already booked for these dates');
-                return;
-            }
-            
-            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
-            
-            let success = false;
-            if (editingId) {
-                // Update existing booking
-                success = await updateBooking(editingId, bookingData);
-                if (success) {
-                    alert('Booking updated successfully!');
-                    delete bookingForm.dataset.editingId;
-                }
-            } else {
-                // Add new booking
-                success = await addBooking(bookingData);
-                if (success) {
-                    alert('Booking added successfully!');
-                }
-            }
-            
-            if (success) {
-                // Reset form
-                bookingForm.reset();
-                setDefaultDates();
-            }
-        });
-
-        // Edit form submission
-        editForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const room = document.getElementById('edit-guest-room').value;
-            const checkin = document.getElementById('edit-checkin-date').value;
-            const checkout = document.getElementById('edit-checkout-date').value;
-            const guest = document.getElementById('edit-guest-name').value;
-            const bookedBy = document.getElementById('edit-booked-by').value;
-            const status = document.getElementById('edit-status').value;
-            const remarks = document.getElementById('edit-remarks').value;
-            
-            // Validation - MODIFIED TO ALLOW SAME-DAY BOOKINGS
-            if (new Date(checkin) > new Date(checkout)) {
-                alert('Check-out must be on or after check-in');
-                return;
-            }
-            
-            const roomNum = parseInt(room.split(' - ')[1]);
-            const checkinDate = new Date(checkin);
-            const checkoutDate = new Date(checkout);
-            
-            const editingId = editForm.dataset.editingId;
-            
-            if (status === 'confirm' && hasConflict(roomNum, checkinDate, checkoutDate, editingId)) {
-                alert('Room already booked for these dates');
-                return;
-            }
-            
-            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
-            
-            const success = await updateBooking(editingId, bookingData);
-            if (success) {
-                alert('Booking updated successfully!');
-                editModal.classList.remove('active');
-                bookingModal.classList.remove('active');
-            }
-        });
-
-        // Set default dates
-        function setDefaultDates() {
-            const today = new Date().toISOString().split('T')[0];
-            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-            
-            document.getElementById('checkin-date').value = today;
-            document.getElementById('checkout-date').value = tomorrow;
-            document.getElementById('status').value = 'confirm';
-        }
-
-        // Month navigation
-        prevMonthBtn.addEventListener('click', function() {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            initializeTable();
-        });
-
-        nextMonthBtn.addEventListener('click', function() {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            initializeTable();
-        });
-
-        // Filter functionality
-        applyFilter.addEventListener('click', function() {
-            const selectedMonth = filterMonth.value;
-            const selectedYear = filterYear.value;
-            
-            filteredBookings = filterBookingsByMonthYear(selectedMonth, selectedYear);
-            updateEntriesTable();
-        });
-
-        resetFilter.addEventListener('click', function() {
-            filterMonth.value = 'all';
-            filterYear.value = 'all';
-            filteredBookings = [...bookings];
-            updateEntriesTable();
-        });
-
-        // Print functionality
-        printBtn.addEventListener('click', function() {
-            window.print();
-        });
+        // ========== EVENT LISTENERS ==========
 
         // Login functionality
         function showLoginModal() {
@@ -2353,7 +2163,6 @@ Mess Secy`;
             changePasswordBtn.classList.add('hidden');
             adminSettingsBtn.classList.add('hidden');
             
-            // Clear editing state
             if (bookingForm.dataset.editingId) {
                 delete bookingForm.dataset.editingId;
                 bookingForm.reset();
@@ -2364,8 +2173,8 @@ Mess Secy`;
         // Change password functionality
         changePasswordBtn.addEventListener('click', async function() {
             try {
-                const settings = await loadSettings();
-                updatePasswordDisplay(settings.password);
+                await loadSettings();
+                updatePasswordDisplay();
                 changePasswordModal.classList.add('active');
             } catch (error) {
                 console.error('Error loading settings:', error);
@@ -2377,12 +2186,14 @@ Mess Secy`;
             const newPassword = newPasswordInput.value;
             if (newPassword) {
                 try {
-                    const currentSettings = await loadSettings();
+                    showLoading();
                     const updatedSettings = {
-                        ...currentSettings,
+                        ...appSettings,
                         password: newPassword
                     };
                     const success = await updateSettings(updatedSettings);
+                    hideLoading();
+                    
                     if (success) {
                         alert('Password changed successfully!');
                         changePasswordModal.classList.remove('active');
@@ -2391,6 +2202,7 @@ Mess Secy`;
                         alert('Error changing password. Please try again.');
                     }
                 } catch (error) {
+                    hideLoading();
                     console.error('Error changing password:', error);
                     alert('Error changing password. Please try again.');
                 }
@@ -2399,11 +2211,11 @@ Mess Secy`;
             }
         });
 
-        // NEW: Admin settings functionality
+        // Admin settings functionality
         adminSettingsBtn.addEventListener('click', async function() {
             try {
-                const settings = await loadSettings();
-                updateAdminSettingsDisplay(settings);
+                await loadSettings();
+                updateAdminSettingsDisplay();
                 adminSettingsModal.classList.add('active');
             } catch (error) {
                 console.error('Error loading settings:', error);
@@ -2413,9 +2225,9 @@ Mess Secy`;
 
         saveSettingsBtn.addEventListener('click', async function() {
             try {
-                const currentSettings = await loadSettings();
+                showLoading();
                 const updatedSettings = {
-                    ...currentSettings,
+                    ...appSettings,
                     grNcoNumber: grNcoNumberInput.value,
                     grNcoName: grNcoNameInput.value,
                     messHavNumber: messHavNumberInput.value,
@@ -2423,6 +2235,8 @@ Mess Secy`;
                 };
                 
                 const success = await updateSettings(updatedSettings);
+                hideLoading();
+                
                 if (success) {
                     alert('Settings saved successfully!');
                     adminSettingsModal.classList.remove('active');
@@ -2430,6 +2244,7 @@ Mess Secy`;
                     alert('Error saving settings. Please try again.');
                 }
             } catch (error) {
+                hideLoading();
                 console.error('Error saving settings:', error);
                 alert('Error saving settings. Please try again.');
             }
@@ -2460,43 +2275,152 @@ Mess Secy`;
         // Copy confirmation message button handler
         copyConfirmationBtn.addEventListener('click', copyConfirmationMessage);
 
-        // Update password display
-        function updatePasswordDisplay(password) {
-            currentPasswordDisplay.value = password;
-        }
+        // Form submission
+        bookingForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const room = document.getElementById('guest-room').value;
+            const checkin = document.getElementById('checkin-date').value;
+            const checkout = document.getElementById('checkout-date').value;
+            const guest = document.getElementById('guest-name').value;
+            const bookedBy = document.getElementById('booked-by').value;
+            const status = document.getElementById('status').value;
+            const remarks = document.getElementById('remarks').value;
+            
+            if (new Date(checkin) > new Date(checkout)) {
+                alert('Check-out must be on or after check-in');
+                return;
+            }
+            
+            const roomNum = parseInt(room.split(' - ')[1]);
+            const checkinDate = new Date(checkin);
+            const checkoutDate = new Date(checkout);
+            
+            const editingId = bookingForm.dataset.editingId;
+            
+            if (status === 'confirm' && hasConflict(roomNum, checkinDate, checkoutDate, editingId)) {
+                alert('Room already booked for these dates');
+                return;
+            }
+            
+            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
+            
+            let success = false;
+            if (editingId) {
+                success = await updateBooking(editingId, bookingData);
+                if (success) {
+                    alert('Booking updated successfully!');
+                    delete bookingForm.dataset.editingId;
+                }
+            } else {
+                success = await addBooking(bookingData);
+                if (success) {
+                    alert('Booking added successfully!');
+                }
+            }
+            
+            if (success) {
+                bookingForm.reset();
+                setDefaultDates();
+            }
+        });
 
-        // Update admin settings display
-        function updateAdminSettingsDisplay(settings) {
-            grNcoNumberInput.value = settings.grNcoNumber || '';
-            grNcoNameInput.value = settings.grNcoName || '';
-            messHavNumberInput.value = settings.messHavNumber || '';
-            messHavNameInput.value = settings.messHavName || '';
-        }
+        // Edit form submission
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const room = document.getElementById('edit-guest-room').value;
+            const checkin = document.getElementById('edit-checkin-date').value;
+            const checkout = document.getElementById('edit-checkout-date').value;
+            const guest = document.getElementById('edit-guest-name').value;
+            const bookedBy = document.getElementById('edit-booked-by').value;
+            const status = document.getElementById('edit-status').value;
+            const remarks = document.getElementById('edit-remarks').value;
+            
+            if (new Date(checkin) > new Date(checkout)) {
+                alert('Check-out must be on or after check-in');
+                return;
+            }
+            
+            const roomNum = parseInt(room.split(' - ')[1]);
+            const checkinDate = new Date(checkin);
+            const checkoutDate = new Date(checkout);
+            
+            const editingId = editForm.dataset.editingId;
+            
+            if (status === 'confirm' && hasConflict(roomNum, checkinDate, checkoutDate, editingId)) {
+                alert('Room already booked for these dates');
+                return;
+            }
+            
+            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
+            
+            const success = await updateBooking(editingId, bookingData);
+            if (success) {
+                alert('Booking updated successfully!');
+                editModal.classList.remove('active');
+                bookingModal.classList.remove('active');
+            }
+        });
 
-        // Event listeners for modals
+        // Month navigation
+        prevMonthBtn.addEventListener('click', function() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            initializeTable();
+        });
+
+        nextMonthBtn.addEventListener('click', function() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            initializeTable();
+        });
+
+        // Filter functionality
+        applyFilter.addEventListener('click', function() {
+            const selectedMonth = filterMonth.value;
+            const selectedYear = filterYear.value;
+            
+            filteredBookings = filterBookingsByMonthYear(selectedMonth, selectedYear);
+            updateEntriesTable();
+        });
+
+        resetFilter.addEventListener('click', function() {
+            filterMonth.value = 'all';
+            filterYear.value = 'all';
+            filteredBookings = [...bookings];
+            updateEntriesTable();
+        });
+
+        // Print functionality
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+
+        // Modal close buttons
         modalCloseBtn.addEventListener('click', hideLoginModal);
         bookingModalClose.addEventListener('click', function() {
             bookingModal.classList.remove('active');
         });
-        
         editModalClose.addEventListener('click', function() {
             editModal.classList.remove('active');
         });
-        
         changePasswordClose.addEventListener('click', function() {
             changePasswordModal.classList.remove('active');
         });
-        
-        // Confirmation modal close button
         confirmationModalClose.addEventListener('click', function() {
             confirmationModal.classList.remove('active');
         });
-        
-        // Admin settings modal close button
         adminSettingsClose.addEventListener('click', function() {
             adminSettingsModal.classList.remove('active');
         });
-        
+
         // Close modal when clicking outside
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', function(e) {
@@ -2506,16 +2430,21 @@ Mess Secy`;
             });
         });
 
-        // Initialize
+        // ========== INITIALIZATION ==========
+
+        // Initialize the application
         document.addEventListener('DOMContentLoaded', async function() {
-            initializeTable();
-            setDefaultDates();
-            
-            // Load settings and set up real-time listeners
             try {
+                // Initialize settings first
                 await loadSettings();
                 setupSettingsListener();
+                
+                // Initialize the rest of the app
+                initializeTable();
+                setDefaultDates();
                 setupRealtimeListener();
+                
+                console.log('Application initialized successfully');
             } catch (error) {
                 console.error('Error during initialization:', error);
                 alert('Error initializing application. Please refresh the page.');
