@@ -472,11 +472,22 @@
             overflow-y: auto;
         }
         
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
         .modal-title {
             color: #2c3e50;
-            margin-bottom: 15px;
-            text-align: center;
             font-size: 22px;
+            margin: 0;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 5px;
         }
         
         .modal-form-group {
@@ -597,6 +608,16 @@
             .dates-inline {
                 flex-direction: column;
                 gap: 5px;
+            }
+            
+            .modal-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .modal-actions {
+                align-self: flex-end;
             }
         }
         
@@ -850,7 +871,7 @@
                         <th>Guest Name</th>
                         <th>Booked By</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th>Remarks</th>
                     </tr>
                 </thead>
                 <tbody id="entries-body">
@@ -878,7 +899,17 @@
     <!-- Booking Details Modal -->
     <div id="booking-modal" class="modal">
         <div class="modal-content">
-            <h2 class="modal-title">Booking Details</h2>
+            <div class="modal-header">
+                <h2 class="modal-title">Booking Details</h2>
+                <div class="modal-actions hidden" id="booking-modal-actions">
+                    <button class="icon-btn edit-btn" id="booking-edit-btn" title="Edit Booking">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="icon-btn delete-btn" id="booking-delete-btn" title="Delete Booking">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
             <div id="booking-details-content">
                 <!-- Booking details will be populated by JavaScript -->
             </div>
@@ -984,6 +1015,7 @@
         let isAdmin = false;
         let unsubscribeBookings = null;
         let filteredBookings = [];
+        let currentBookingId = null; // Track current booking for edit/delete
 
         // DOM elements
         const bookingForm = document.getElementById('booking-form');
@@ -1007,6 +1039,9 @@
         const bookingModal = document.getElementById('booking-modal');
         const bookingDetailsContent = document.getElementById('booking-details-content');
         const bookingModalClose = document.getElementById('booking-modal-close');
+        const bookingModalActions = document.getElementById('booking-modal-actions');
+        const bookingEditBtn = document.getElementById('booking-edit-btn');
+        const bookingDeleteBtn = document.getElementById('booking-delete-btn');
         const editModal = document.getElementById('edit-modal');
         const editModalClose = document.getElementById('edit-modal-close');
         const changePasswordModal = document.getElementById('change-password-modal');
@@ -1023,7 +1058,7 @@
         const resetFilter = document.getElementById('reset-filter');
         const printBtn = document.getElementById('print-btn');
 
-        // Password management with improved security
+        // Password management
         function getStoredPassword() {
             return localStorage.getItem('adminPassword') || 'Admin@11';
         }
@@ -1345,52 +1380,59 @@
                         <div class="booking-details-value">Available</div>
                     </div>
                 `;
+                // Hide action buttons for available rooms
+                bookingModalActions.classList.add('hidden');
+                currentBookingId = null;
             } else {
                 // Show booking details - ONLY FOR CURRENT MONTH
-                let bookingDetailsHTML = '';
+                // For simplicity, show the first booking that matches
+                const booking = roomBookings[0];
+                currentBookingId = booking.id;
                 
-                roomBookings.forEach(booking => {
-                    bookingDetailsHTML += `
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Room</div>
-                            <div class="booking-details-value">${booking.room}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Guest Name</div>
-                            <div class="booking-details-value">${booking.guest}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Dates</div>
-                            <div class="dates-inline">
-                                <div class="date-item">
-                                    <div class="booking-details-label">Check-in</div>
-                                    <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
-                                </div>
-                                <div class="date-item">
-                                    <div class="booking-details-label">Check-out</div>
-                                    <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
-                                </div>
+                const bookingDetailsHTML = `
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Room</div>
+                        <div class="booking-details-value">${booking.room}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Guest Name</div>
+                        <div class="booking-details-value">${booking.guest}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Dates</div>
+                        <div class="dates-inline">
+                            <div class="date-item">
+                                <div class="booking-details-label">Check-in</div>
+                                <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
+                            </div>
+                            <div class="date-item">
+                                <div class="booking-details-label">Check-out</div>
+                                <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
                             </div>
                         </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Booked By</div>
-                            <div class="booking-details-value">${booking.bookedBy}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Status</div>
-                            <div class="booking-details-value">${booking.status}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Remarks</div>
-                            <div class="booking-details-value">${booking.remarks || 'None'}</div>
-                        </div>
-                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
-                    `;
-                });
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Booked By</div>
+                        <div class="booking-details-value">${booking.bookedBy}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Status</div>
+                        <div class="booking-details-value">${booking.status}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Remarks</div>
+                        <div class="booking-details-value">${booking.remarks || 'None'}</div>
+                    </div>
+                `;
                 
-                // Remove the last separator
-                bookingDetailsHTML = bookingDetailsHTML.replace(/<hr[^>]*>$/, '');
                 bookingDetailsContent.innerHTML = bookingDetailsHTML;
+                
+                // Show action buttons only in admin mode
+                if (isAdmin) {
+                    bookingModalActions.classList.remove('hidden');
+                } else {
+                    bookingModalActions.classList.add('hidden');
+                }
             }
             
             // Show the modal
@@ -1684,87 +1726,20 @@
                    .forEach((booking, index) => {
                 const row = document.createElement('tr');
                 
-                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status'].forEach(field => {
+                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status', 'remarks'].forEach(field => {
                     const cell = document.createElement('td');
                     if (field === 'checkin' || field === 'checkout') {
                         cell.textContent = formatDateFull(booking[field]);
+                    } else if (field === 'remarks') {
+                        cell.textContent = booking[field] || 'None';
                     } else {
                         cell.textContent = booking[field];
                     }
                     row.appendChild(cell);
                 });
                 
-                // Add action buttons with icons
-                const actionCell = document.createElement('td');
-                actionCell.className = 'action-buttons';
-                
-                const viewBtn = document.createElement('button');
-                viewBtn.innerHTML = '<i class="fas fa-eye"></i>';
-                viewBtn.className = 'icon-btn view-btn';
-                viewBtn.title = 'View Details';
-                viewBtn.onclick = () => viewBookingDetails(booking);
-                
-                const editBtn = document.createElement('button');
-                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                editBtn.className = 'icon-btn edit-btn';
-                editBtn.title = 'Edit Booking';
-                editBtn.onclick = () => editBooking(booking.id, booking);
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                deleteBtn.className = 'icon-btn delete-btn';
-                deleteBtn.title = 'Delete Booking';
-                deleteBtn.onclick = () => deleteBookingFromFirebase(booking.id);
-                
-                actionCell.appendChild(viewBtn);
-                actionCell.appendChild(editBtn);
-                actionCell.appendChild(deleteBtn);
-                row.appendChild(actionCell);
-                
                 entriesBody.appendChild(row);
             });
-        }
-
-        // View booking details in popup modal
-        function viewBookingDetails(booking) {
-            const bookingDetailsHTML = `
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Room</div>
-                    <div class="booking-details-value">${booking.room}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Guest Name</div>
-                    <div class="booking-details-value">${booking.guest}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Dates</div>
-                    <div class="dates-inline">
-                        <div class="date-item">
-                            <div class="booking-details-label">Check-in</div>
-                            <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
-                        </div>
-                        <div class="date-item">
-                            <div class="booking-details-label">Check-out</div>
-                            <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Booked By</div>
-                    <div class="booking-details-value">${booking.bookedBy}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Status</div>
-                    <div class="booking-details-value">${booking.status}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Remarks</div>
-                    <div class="booking-details-value">${booking.remarks || 'None'}</div>
-                </div>
-            `;
-            
-            bookingDetailsContent.innerHTML = bookingDetailsHTML;
-            bookingModal.classList.add('active');
         }
 
         // Edit booking in popup modal
@@ -1791,6 +1766,7 @@
                 const success = await deleteBooking(id);
                 if (success) {
                     alert('Booking deleted successfully!');
+                    bookingModal.classList.remove('active');
                 }
             }
         }
@@ -1915,6 +1891,7 @@
             if (success) {
                 alert('Booking updated successfully!');
                 editModal.classList.remove('active');
+                bookingModal.classList.remove('active');
             }
         });
 
@@ -2030,6 +2007,23 @@
                 newPasswordInput.value = '';
             } else {
                 alert('Please enter a new password');
+            }
+        });
+
+        // Edit and Delete button handlers for booking modal
+        bookingEditBtn.addEventListener('click', function() {
+            if (currentBookingId) {
+                const booking = bookings.find(b => b.id === currentBookingId);
+                if (booking) {
+                    bookingModal.classList.remove('active');
+                    editBooking(currentBookingId, booking);
+                }
+            }
+        });
+
+        bookingDeleteBtn.addEventListener('click', function() {
+            if (currentBookingId) {
+                deleteBookingFromFirebase(currentBookingId);
             }
         });
 
