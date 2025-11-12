@@ -8,7 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
-        /* Your existing CSS remains exactly the same */
+        /* Your existing CSS with modifications */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -144,7 +144,7 @@
             color: #34495e;
         }
         
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ddd;
@@ -153,7 +153,7 @@
             transition: border 0.3s;
         }
         
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: #3498db;
             outline: none;
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
@@ -254,6 +254,10 @@
             padding: 2px;
             box-sizing: border-box;
             overflow: hidden;
+        }
+        
+        .booking-pending {
+            background-color: #ff9999; /* Light red for pending status */
         }
         
         .booking-top {
@@ -424,27 +428,29 @@
         
         .login-modal {
             background-color: white;
-            padding: 30px;
+            padding: 20px; /* Reduced padding */
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             width: 90%;
             max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .modal-title {
             color: #2c3e50;
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Reduced margin */
             text-align: center;
-            font-size: 24px;
+            font-size: 22px; /* Slightly smaller */
         }
         
         .modal-form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Reduced margin */
         }
         
         .modal-input {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px 12px; /* Reduced padding */
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 16px;
@@ -454,7 +460,7 @@
             background: linear-gradient(to right, #3498db, #2c3e50);
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 15px; /* Reduced padding */
             border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
@@ -471,7 +477,7 @@
             background: #e74c3c;
             color: white;
             border: none;
-            padding: 10px 15px;
+            padding: 8px 12px; /* Reduced padding */
             border-radius: 6px;
             cursor: pointer;
             width: 100%;
@@ -498,23 +504,25 @@
         
         .booking-modal {
             background-color: white;
-            padding: 30px;
+            padding: 20px; /* Reduced padding */
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             width: 90%;
             max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .booking-modal-title {
             color: #2c3e50;
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Reduced margin */
             text-align: center;
-            font-size: 24px;
+            font-size: 22px; /* Slightly smaller */
         }
         
         .booking-details-group {
-            margin-bottom: 15px;
-            padding: 10px;
+            margin-bottom: 10px; /* Reduced margin */
+            padding: 8px; /* Reduced padding */
             background-color: #f8f9fa;
             border-radius: 6px;
         }
@@ -522,11 +530,51 @@
         .booking-details-label {
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 5px;
+            margin-bottom: 3px; /* Reduced margin */
         }
         
         .booking-details-value {
             color: #34495e;
+        }
+        
+        /* Edit Modal Styles */
+        #edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        #edit-modal.active {
+            display: flex;
+        }
+        
+        .edit-modal {
+            background-color: white;
+            padding: 20px; /* Reduced padding */
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .edit-modal-title {
+            color: #2c3e50;
+            margin-bottom: 15px; /* Reduced margin */
+            text-align: center;
+            font-size: 22px; /* Slightly smaller */
+        }
+        
+        .edit-form-group {
+            margin-bottom: 15px; /* Reduced margin */
         }
         
         @media (max-width: 768px) {
@@ -663,6 +711,21 @@
             background: #219653;
         }
         
+        .change-password-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .change-password-btn:hover {
+            background: #e67e22;
+        }
+        
         @media print {
             body * {
                 visibility: hidden;
@@ -703,6 +766,7 @@
             <div class="login-section">
                 <button id="admin-login-btn" class="admin-login-btn">Login</button>
                 <button id="logout-btn" class="logout-btn hidden">Logout</button>
+                <button id="change-password-btn" class="change-password-btn hidden">Change Password</button>
                 <div id="loading-indicator" class="loading hidden"></div>
             </div>
         </div>
@@ -776,7 +840,13 @@
                                 <option value="confirm" selected>Confirm</option>
                                 <option value="pending">Pending</option>
                                 <option value="cancelled">Cancelled</option>
+                                <option value="yet-to-confirm">Yet to Confirm</option>
                             </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="remarks">Remarks</label>
+                            <textarea id="remarks" rows="3"></textarea>
                         </div>
                         
                         <button type="submit" class="btn-submit">Add Booking</button>
@@ -828,6 +898,7 @@
                         <th>Guest Name</th>
                         <th>Booked By</th>
                         <th>Status</th>
+                        <th>Remarks</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -864,17 +935,92 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
+    <div id="edit-modal">
+        <div class="edit-modal">
+            <h2 class="edit-modal-title">Edit Booking</h2>
+            <form id="edit-form">
+                <div class="edit-form-group">
+                    <label for="edit-guest-room">Guest Room</label>
+                    <select id="edit-guest-room" required>
+                        <option value="">Select Room</option>
+                        <option value="GR - 1">GR - 1</option>
+                        <option value="GR - 2">GR - 2</option>
+                        <option value="GR - 3">GR - 3</option>
+                        <option value="GR - 4">GR - 4</option>
+                        <option value="GR - 5">GR - 5</option>
+                        <option value="GR - 6">GR - 6</option>
+                    </select>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="edit-checkin-date">Check-in Date</label>
+                    <input type="date" id="edit-checkin-date" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="edit-checkout-date">Check-out Date</label>
+                    <input type="date" id="edit-checkout-date" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="edit-guest-name">Guest Name</label>
+                    <input type="text" id="edit-guest-name" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="edit-booked-by">Booked By</label>
+                    <input type="text" id="edit-booked-by" required>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="edit-status">Status</label>
+                    <select id="edit-status" required>
+                        <option value="confirm">Confirm</option>
+                        <option value="pending">Pending</option>
+                        <option value="cancelled">Cancelled</option>
+                        <option value="yet-to-confirm">Yet to Confirm</option>
+                    </select>
+                </div>
+                
+                <div class="edit-form-group">
+                    <label for="edit-remarks">Remarks</label>
+                    <textarea id="edit-remarks" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="modal-btn">Update Booking</button>
+                <button type="button" id="edit-modal-close" class="modal-close">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal">
+        <div class="login-modal">
+            <h2 class="modal-title">Change Password</h2>
+            <div class="modal-form-group">
+                <label>Current Password</label>
+                <input type="text" id="current-password-display" class="modal-input" readonly>
+            </div>
+            <div class="modal-form-group">
+                <label for="new-password">New Password</label>
+                <input type="text" id="new-password" class="modal-input" placeholder="Enter new password">
+            </div>
+            <button id="save-password-btn" class="modal-btn">Save New Password</button>
+            <button id="change-password-close" class="modal-close">Close</button>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration - REPLACE WITH YOUR CONFIG
         const firebaseConfig = {
-  apiKey: "AIzaSyBH-SO5M97-sz5p8SRkSaNAXRSFL88S_g8",
-  authDomain: "guestroom-93101.firebaseapp.com",
-  projectId: "guestroom-93101",
-  storageBucket: "guestroom-93101.firebasestorage.app",
-  messagingSenderId: "1006611136685",
-  appId: "1:1006611136685:web:0aa61f7c12a98625a14624"
-};
-
+            apiKey: "AIzaSyBH-SO5M97-sz5p8SRkSaNAXRSFL88S_g8",
+            authDomain: "guestroom-93101.firebaseapp.com",
+            projectId: "guestroom-93101",
+            storageBucket: "guestroom-93101.firebasestorage.app",
+            messagingSenderId: "1006611136685",
+            appId: "1:1006611136685:web:0aa61f7c12a98625a14624"
+        };
 
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
@@ -890,6 +1036,7 @@
 
         // DOM elements
         const bookingForm = document.getElementById('booking-form');
+        const editForm = document.getElementById('edit-form');
         const tableBody = document.getElementById('table-body');
         const entriesBody = document.getElementById('entries-body');
         const pageTitle = document.getElementById('page-title');
@@ -898,6 +1045,7 @@
         const nextMonthBtn = document.getElementById('next-month');
         const adminLoginBtn = document.getElementById('admin-login-btn');
         const logoutBtn = document.getElementById('logout-btn');
+        const changePasswordBtn = document.getElementById('change-password-btn');
         const adminFormSection = document.getElementById('admin-form-section');
         const adminEntriesSection = document.getElementById('admin-entries-section');
         const loginModal = document.getElementById('login-modal');
@@ -908,6 +1056,13 @@
         const bookingModal = document.getElementById('booking-modal');
         const bookingDetailsContent = document.getElementById('booking-details-content');
         const bookingModalClose = document.getElementById('booking-modal-close');
+        const editModal = document.getElementById('edit-modal');
+        const editModalClose = document.getElementById('edit-modal-close');
+        const changePasswordModal = document.getElementById('change-password-modal');
+        const currentPasswordDisplay = document.getElementById('current-password-display');
+        const newPasswordInput = document.getElementById('new-password');
+        const savePasswordBtn = document.getElementById('save-password-btn');
+        const changePasswordClose = document.getElementById('change-password-close');
         const loadingIndicator = document.getElementById('loading-indicator');
 
         // NEW: Filter elements
@@ -917,9 +1072,45 @@
         const resetFilter = document.getElementById('reset-filter');
         const printBtn = document.getElementById('print-btn');
 
-        // Login credentials
+        // Simple hash function for password
+        function simpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convert to 32bit integer
+            }
+            return hash.toString();
+        }
+
+        // Store password hash in localStorage
+        function setPasswordHash(hash) {
+            localStorage.setItem('adminPasswordHash', hash);
+        }
+
+        // Get password hash from localStorage
+        function getPasswordHash() {
+            return localStorage.getItem('adminPasswordHash');
+        }
+
+        // Check if password is correct
+        function checkPassword(password) {
+            const storedHash = getPasswordHash();
+            return storedHash === simpleHash(password);
+        }
+
+        // Initialize password if not set
+        function initializePassword() {
+            if (!getPasswordHash()) {
+                // Set default password hash
+                setPasswordHash(simpleHash('Admin@11'));
+            }
+            // Display current password
+            currentPasswordDisplay.value = 'Admin@11'; // This is just for display, actual auth uses hash
+        }
+
+        // Login credentials - now using hashed password
         const ADMIN_USERNAME = 'admin';
-        const ADMIN_PASSWORD = 'Admin@11';
 
         // Firebase Functions
         async function loadBookings() {
@@ -973,6 +1164,7 @@
                     guest: booking.guest,
                     bookedBy: booking.bookedBy,
                     status: booking.status,
+                    remarks: booking.remarks || '',
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 hideLoading();
@@ -1166,107 +1358,111 @@
         }
 
         // Show booking details in modal
-    function showBookingDetails(day, roomNum) {
-    // Find bookings for this room on this day IN CURRENT MONTH ONLY
-    const roomBookings = bookings.filter(booking => {
-        const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
-        if (bookingRoomNum !== roomNum) return false;
-        
-        const checkinDate = new Date(booking.checkin);
-        const checkoutDate = new Date(booking.checkout);
-        
-        // Check if booking overlaps with current month at all
-        const bookingStartMonth = checkinDate.getMonth();
-        const bookingStartYear = checkinDate.getFullYear();
-        const bookingEndMonth = checkoutDate.getMonth();
-        const bookingEndYear = checkoutDate.getFullYear();
-        
-        const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
-        const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0);
-        const currentMonthStart = new Date(currentYear, currentMonth, 1);
-        const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
-        
-        if (!(bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart)) {
-            return false; // Booking doesn't overlap with current month at all
+        function showBookingDetails(day, roomNum) {
+            // Find bookings for this room on this day IN CURRENT MONTH ONLY
+            const roomBookings = bookings.filter(booking => {
+                const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
+                if (bookingRoomNum !== roomNum) return false;
+                
+                const checkinDate = new Date(booking.checkin);
+                const checkoutDate = new Date(booking.checkout);
+                
+                // Check if booking overlaps with current month at all
+                const bookingStartMonth = checkinDate.getMonth();
+                const bookingStartYear = checkinDate.getFullYear();
+                const bookingEndMonth = checkoutDate.getMonth();
+                const bookingEndYear = checkoutDate.getFullYear();
+                
+                const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
+                const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0);
+                const currentMonthStart = new Date(currentYear, currentMonth, 1);
+                const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
+                
+                if (!(bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart)) {
+                    return false; // Booking doesn't overlap with current month at all
+                }
+                
+                let checkinDay = checkinDate.getDate();
+                let checkoutDay = checkoutDate.getDate();
+                
+                // Adjust for current month boundaries - ONLY if booking is in current month
+                if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+                    checkinDay = 1;
+                }
+                
+                if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                    checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+                }
+                
+                // Ensure boundaries are within current month
+                checkinDay = Math.max(1, checkinDay);
+                checkoutDay = Math.min(new Date(currentYear, currentMonth + 1, 0).getDate(), checkoutDay);
+                
+                return day >= checkinDay && day <= checkoutDay;
+            });
+            
+            if (roomBookings.length === 0) {
+                // No booking on this day
+                bookingDetailsContent.innerHTML = `
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Room</div>
+                        <div class="booking-details-value">GR - ${roomNum}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Date</div>
+                        <div class="booking-details-value">${day} ${getMonthName(currentMonth)} ${currentYear}</div>
+                    </div>
+                    <div class="booking-details-group">
+                        <div class="booking-details-label">Status</div>
+                        <div class="booking-details-value">Available</div>
+                    </div>
+                `;
+            } else {
+                // Show booking details - ONLY FOR CURRENT MONTH
+                let bookingDetailsHTML = '';
+                
+                roomBookings.forEach(booking => {
+                    bookingDetailsHTML += `
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Room</div>
+                            <div class="booking-details-value">${booking.room}</div>
+                        </div>
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Guest Name</div>
+                            <div class="booking-details-value">${booking.guest}</div>
+                        </div>
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Check-in</div>
+                            <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
+                        </div>
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Check-out</div>
+                            <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
+                        </div>
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Booked By</div>
+                            <div class="booking-details-value">${booking.bookedBy}</div>
+                        </div>
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Status</div>
+                            <div class="booking-details-value">${booking.status}</div>
+                        </div>
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Remarks</div>
+                            <div class="booking-details-value">${booking.remarks || 'None'}</div>
+                        </div>
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
+                    `;
+                });
+                
+                // Remove the last separator
+                bookingDetailsHTML = bookingDetailsHTML.replace(/<hr[^>]*>$/, '');
+                bookingDetailsContent.innerHTML = bookingDetailsHTML;
+            }
+            
+            // Show the modal
+            bookingModal.classList.add('active');
         }
-        
-        let checkinDay = checkinDate.getDate();
-        let checkoutDay = checkoutDate.getDate();
-        
-        // Adjust for current month boundaries - ONLY if booking is in current month
-        if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
-            checkinDay = 1;
-        }
-        
-        if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
-            checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
-        }
-        
-        // Ensure boundaries are within current month
-        checkinDay = Math.max(1, checkinDay);
-        checkoutDay = Math.min(new Date(currentYear, currentMonth + 1, 0).getDate(), checkoutDay);
-        
-        return day >= checkinDay && day <= checkoutDay;
-    });
-    
-    if (roomBookings.length === 0) {
-        // No booking on this day
-        bookingDetailsContent.innerHTML = `
-            <div class="booking-details-group">
-                <div class="booking-details-label">Room</div>
-                <div class="booking-details-value">GR - ${roomNum}</div>
-            </div>
-            <div class="booking-details-group">
-                <div class="booking-details-label">Date</div>
-                <div class="booking-details-value">${day} ${getMonthName(currentMonth)} ${currentYear}</div>
-            </div>
-            <div class="booking-details-group">
-                <div class="booking-details-label">Status</div>
-                <div class="booking-details-value">Available</div>
-            </div>
-        `;
-    } else {
-        // Show booking details - ONLY FOR CURRENT MONTH
-        let bookingDetailsHTML = '';
-        
-        roomBookings.forEach(booking => {
-            bookingDetailsHTML += `
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Room</div>
-                    <div class="booking-details-value">${booking.room}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Guest Name</div>
-                    <div class="booking-details-value">${booking.guest}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Check-in</div>
-                    <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Check-out</div>
-                    <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Booked By</div>
-                    <div class="booking-details-value">${booking.bookedBy}</div>
-                </div>
-                <div class="booking-details-group">
-                    <div class="booking-details-label">Status</div>
-                    <div class="booking-details-value">${booking.status}</div>
-                </div>
-                <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;">
-            `;
-        });
-        
-        // Remove the last separator
-        bookingDetailsHTML = bookingDetailsHTML.replace(/<hr[^>]*>$/, '');
-        bookingDetailsContent.innerHTML = bookingDetailsHTML;
-    }
-    
-    // Show the modal
-    bookingModal.classList.add('active');
-}
 
         // Update page title with current month and year
         function updatePageTitle() {
@@ -1284,116 +1480,116 @@
         }
 
         // SIMPLE APPROACH: Render each booking individually
-      function renderBookings() {
-    // First, clear all cells
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    
-    for (let day = 1; day <= daysInMonth; day++) {
-        for (let roomNum = 1; roomNum <= 6; roomNum++) {
-            const cell = document.getElementById(`day-${day}-room-${roomNum}`);
-            cell.innerHTML = '';
-            cell.className = 'empty-cell';
-            cell.rowSpan = 1;
-            cell.style.display = '';
-            cell.style.backgroundColor = '';
-        }
-    }
-
-    // Process each room separately
-    for (let roomNum = 1; roomNum <= 6; roomNum++) {
-        // Filter bookings for this room, only confirmed ones, AND only those that fall in current month
-        const roomBookings = bookings.filter(b => {
-            const bRoom = parseInt(b.room.split(' - ')[1]);
-            if (bRoom !== roomNum || b.status !== 'confirm') return false;
+        function renderBookings() {
+            // First, clear all cells
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             
-            // Check if booking falls within current month
-            const checkinDate = new Date(b.checkin);
-            const checkoutDate = new Date(b.checkout);
-            
-            const bookingStartMonth = checkinDate.getMonth();
-            const bookingStartYear = checkinDate.getFullYear();
-            const bookingEndMonth = checkoutDate.getMonth();
-            const bookingEndYear = checkoutDate.getFullYear();
-            
-            // Check if booking overlaps with current month
-            const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
-            const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0); // Last day of checkout month
-            const currentMonthStart = new Date(currentYear, currentMonth, 1);
-            const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
-            
-            return bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart;
-        });
-
-        if (roomBookings.length === 0) continue;
-
-        // For each booking in this room
-        roomBookings.forEach(booking => {
-            const checkinDate = new Date(booking.checkin);
-            const checkoutDate = new Date(booking.checkout);
-            
-            // Adjust checkin and checkout to current month boundaries
-            let checkinDay = checkinDate.getDate();
-            let checkoutDay = checkoutDate.getDate();
-            
-            // If booking starts before current month, set checkin to 1st day of current month
-            if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
-                checkinDay = 1;
-            }
-            
-            // If booking ends after current month, set checkout to last day of current month
-            if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
-                checkoutDay = daysInMonth;
-            }
-            
-            // Only proceed if booking actually falls within current month after adjustments
-            if (checkinDay > daysInMonth || checkoutDay < 1) return;
-            
-            // Ensure checkinDay is at least 1 and checkoutDay is at most daysInMonth
-            checkinDay = Math.max(1, checkinDay);
-            checkoutDay = Math.min(daysInMonth, checkoutDay);
-            
-            // Check if this booking shares any day with other bookings IN CURRENT MONTH
-            const sharedDays = [];
-            for (let day = checkinDay; day <= checkoutDay; day++) {
-                const otherBookingsOnDay = roomBookings.filter(other => {
-                    if (other === booking) return false;
-                    
-                    const otherCheckin = new Date(other.checkin);
-                    const otherCheckout = new Date(other.checkout);
-                    
-                    let otherCheckinDay = otherCheckin.getDate();
-                    let otherCheckoutDay = otherCheckout.getDate();
-                    
-                    if (otherCheckin.getMonth() < currentMonth || otherCheckin.getFullYear() < currentYear) {
-                        otherCheckinDay = 1;
-                    }
-                    
-                    if (otherCheckout.getMonth() > currentMonth || otherCheckout.getFullYear() > currentYear) {
-                        otherCheckoutDay = daysInMonth;
-                    }
-                    
-                    // Ensure boundaries are within current month
-                    otherCheckinDay = Math.max(1, otherCheckinDay);
-                    otherCheckoutDay = Math.min(daysInMonth, otherCheckoutDay);
-                    
-                    return day >= otherCheckinDay && day <= otherCheckoutDay;
-                });
-                
-                if (otherBookingsOnDay.length > 0) {
-                    sharedDays.push(day);
+            for (let day = 1; day <= daysInMonth; day++) {
+                for (let roomNum = 1; roomNum <= 6; roomNum++) {
+                    const cell = document.getElementById(`day-${day}-room-${roomNum}`);
+                    cell.innerHTML = '';
+                    cell.className = 'empty-cell';
+                    cell.rowSpan = 1;
+                    cell.style.display = '';
+                    cell.style.backgroundColor = '';
                 }
             }
 
-            // If no shared days, render as normal merged booking
-            if (sharedDays.length === 0) {
-                renderMergedBooking(roomNum, booking, checkinDay, checkoutDay);
-            } else {
-                // Handle bookings with shared days
-                renderBookingWithSharedDays(roomNum, booking, checkinDay, checkoutDay, sharedDays);
+            // Process each room separately
+            for (let roomNum = 1; roomNum <= 6; roomNum++) {
+                // Filter bookings for this room, only confirmed and yet-to-confirm ones, AND only those that fall in current month
+                const roomBookings = bookings.filter(b => {
+                    const bRoom = parseInt(b.room.split(' - ')[1]);
+                    if (bRoom !== roomNum || (b.status !== 'confirm' && b.status !== 'yet-to-confirm')) return false;
+                    
+                    // Check if booking falls within current month
+                    const checkinDate = new Date(b.checkin);
+                    const checkoutDate = new Date(b.checkout);
+                    
+                    const bookingStartMonth = checkinDate.getMonth();
+                    const bookingStartYear = checkinDate.getFullYear();
+                    const bookingEndMonth = checkoutDate.getMonth();
+                    const bookingEndYear = checkoutDate.getFullYear();
+                    
+                    // Check if booking overlaps with current month
+                    const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
+                    const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0); // Last day of checkout month
+                    const currentMonthStart = new Date(currentYear, currentMonth, 1);
+                    const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
+                    
+                    return bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart;
+                });
+
+                if (roomBookings.length === 0) continue;
+
+                // For each booking in this room
+                roomBookings.forEach(booking => {
+                    const checkinDate = new Date(booking.checkin);
+                    const checkoutDate = new Date(booking.checkout);
+                    
+                    // Adjust checkin and checkout to current month boundaries
+                    let checkinDay = checkinDate.getDate();
+                    let checkoutDay = checkoutDate.getDate();
+                    
+                    // If booking starts before current month, set checkin to 1st day of current month
+                    if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+                        checkinDay = 1;
+                    }
+                    
+                    // If booking ends after current month, set checkout to last day of current month
+                    if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                        checkoutDay = daysInMonth;
+                    }
+                    
+                    // Only proceed if booking actually falls within current month after adjustments
+                    if (checkinDay > daysInMonth || checkoutDay < 1) return;
+                    
+                    // Ensure checkinDay is at least 1 and checkoutDay is at most daysInMonth
+                    checkinDay = Math.max(1, checkinDay);
+                    checkoutDay = Math.min(daysInMonth, checkoutDay);
+                    
+                    // Check if this booking shares any day with other bookings IN CURRENT MONTH
+                    const sharedDays = [];
+                    for (let day = checkinDay; day <= checkoutDay; day++) {
+                        const otherBookingsOnDay = roomBookings.filter(other => {
+                            if (other === booking) return false;
+                            
+                            const otherCheckin = new Date(other.checkin);
+                            const otherCheckout = new Date(other.checkout);
+                            
+                            let otherCheckinDay = otherCheckin.getDate();
+                            let otherCheckoutDay = otherCheckout.getDate();
+                            
+                            if (otherCheckin.getMonth() < currentMonth || otherCheckin.getFullYear() < currentYear) {
+                                otherCheckinDay = 1;
+                            }
+                            
+                            if (otherCheckout.getMonth() > currentMonth || otherCheckout.getFullYear() > currentYear) {
+                                otherCheckoutDay = daysInMonth;
+                            }
+                            
+                            // Ensure boundaries are within current month
+                            otherCheckinDay = Math.max(1, otherCheckinDay);
+                            otherCheckoutDay = Math.min(daysInMonth, otherCheckoutDay);
+                            
+                            return day >= otherCheckinDay && day <= otherCheckoutDay;
+                        });
+                        
+                        if (otherBookingsOnDay.length > 0) {
+                            sharedDays.push(day);
+                        }
+                    }
+
+                    // If no shared days, render as normal merged booking
+                    if (sharedDays.length === 0) {
+                        renderMergedBooking(roomNum, booking, checkinDay, checkoutDay);
+                    } else {
+                        // Handle bookings with shared days
+                        renderBookingWithSharedDays(roomNum, booking, checkinDay, checkoutDay, sharedDays);
+                    }
+                });
             }
-        });
-    }
-}
+        }
 
         // Render a normal merged booking
         function renderMergedBooking(roomNum, booking, checkin, checkout) {
@@ -1405,7 +1601,7 @@
             
             // Create booking display
             const bookingDiv = document.createElement('div');
-            bookingDiv.className = 'booking';
+            bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-pending' : 'booking';
             
             const nameDiv = document.createElement('div');
             nameDiv.className = 'booking-details';
@@ -1424,10 +1620,10 @@
                 const cell = document.getElementById(`day-${day}-room-${roomNum}`);
                 if (day === checkin) {
                     // Main cell gets the booking div
-                    cell.style.backgroundColor = '#ff6b6b';
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ff9999' : '#ff6b6b';
                 } else {
                     // Hidden cells get the same background color
-                    cell.style.backgroundColor = '#ff6b6b';
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ff9999' : '#ff6b6b';
                     cell.style.display = 'none';
                 }
             }
@@ -1468,7 +1664,7 @@
             // Get all bookings on this day
             const roomBookings = bookings.filter(b => {
                 const bRoom = parseInt(b.room.split(' - ')[1]);
-                return bRoom === roomNum && b.status === 'confirm';
+                return bRoom === roomNum && (b.status === 'confirm' || b.status === 'yet-to-confirm');
             });
             
             const bookingsOnDay = roomBookings.filter(b => {
@@ -1510,16 +1706,16 @@
             if (bookingsOnDay.length === 1) {
                 // Single booking on this day
                 const bookingDiv = document.createElement('div');
-                bookingDiv.className = 'booking';
+                bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-pending' : 'booking';
                 
                 // Don't add text content for split cells
                 // Just set the background color
-                cell.style.backgroundColor = '#ff6b6b';
+                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ff9999' : '#ff6b6b';
             } else {
                 // Multiple bookings - split the cell
                 if (isEnding) {
                     const topDiv = document.createElement('div');
-                    topDiv.className = 'booking-top';
+                    topDiv.className = booking.status === 'yet-to-confirm' ? 'booking-top booking-pending' : 'booking-top';
                     
                     // Don't add text content for split cells
                     // Just set the background color
@@ -1528,7 +1724,7 @@
                 
                 if (isStarting) {
                     const bottomDiv = document.createElement('div');
-                    bottomDiv.className = 'booking-bottom';
+                    bottomDiv.className = booking.status === 'yet-to-confirm' ? 'booking-bottom booking-pending' : 'booking-bottom';
                     
                     // Don't add text content for split cells
                     // Just set the background color
@@ -1550,14 +1746,20 @@
         function updateEntriesTable() {
             entriesBody.innerHTML = '';
             
-            filteredBookings.sort((a, b) => new Date(a.checkin) - new Date(b.checkin))
+            // Sort by latest date first (descending order)
+            filteredBookings.sort((a, b) => new Date(b.checkin) - new Date(a.checkin))
                    .forEach((booking, index) => {
                 const row = document.createElement('tr');
                 
-                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status'].forEach(field => {
+                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status', 'remarks'].forEach(field => {
                     const cell = document.createElement('td');
-                    cell.textContent = field === 'checkin' || field === 'checkout' ? 
-                        formatDateFull(booking[field]) : booking[field];
+                    if (field === 'checkin' || field === 'checkout') {
+                        cell.textContent = formatDateFull(booking[field]);
+                    } else if (field === 'remarks') {
+                        cell.textContent = booking[field] || 'None';
+                    } else {
+                        cell.textContent = booking[field];
+                    }
                     row.appendChild(cell);
                 });
                 
@@ -1583,18 +1785,22 @@
             });
         }
 
-        // Edit booking
+        // Edit booking in popup modal
         function editBooking(id, booking) {
             // Fill form with booking data
-            document.getElementById('guest-room').value = booking.room;
-            document.getElementById('checkin-date').value = booking.checkin;
-            document.getElementById('checkout-date').value = booking.checkout;
-            document.getElementById('guest-name').value = booking.guest;
-            document.getElementById('booked-by').value = booking.bookedBy;
-            document.getElementById('status').value = booking.status;
+            document.getElementById('edit-guest-room').value = booking.room;
+            document.getElementById('edit-checkin-date').value = booking.checkin;
+            document.getElementById('edit-checkout-date').value = booking.checkout;
+            document.getElementById('edit-guest-name').value = booking.guest;
+            document.getElementById('edit-booked-by').value = booking.bookedBy;
+            document.getElementById('edit-status').value = booking.status;
+            document.getElementById('edit-remarks').value = booking.remarks || '';
             
             // Store the booking ID for update
-            bookingForm.dataset.editingId = id;
+            editForm.dataset.editingId = id;
+            
+            // Show the edit modal
+            editModal.classList.add('active');
         }
 
         // Delete booking from Firebase
@@ -1647,6 +1853,7 @@
             const guest = document.getElementById('guest-name').value;
             const bookedBy = document.getElementById('booked-by').value;
             const status = document.getElementById('status').value;
+            const remarks = document.getElementById('remarks').value;
             
             // Validation
             if (new Date(checkin) >= new Date(checkout)) {
@@ -1666,7 +1873,7 @@
                 return;
             }
             
-            const bookingData = { room, checkin, checkout, guest, bookedBy, status };
+            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
             
             let success = false;
             if (editingId) {
@@ -1688,6 +1895,44 @@
                 // Reset form
                 bookingForm.reset();
                 setDefaultDates();
+            }
+        });
+
+        // Edit form submission
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const room = document.getElementById('edit-guest-room').value;
+            const checkin = document.getElementById('edit-checkin-date').value;
+            const checkout = document.getElementById('edit-checkout-date').value;
+            const guest = document.getElementById('edit-guest-name').value;
+            const bookedBy = document.getElementById('edit-booked-by').value;
+            const status = document.getElementById('edit-status').value;
+            const remarks = document.getElementById('edit-remarks').value;
+            
+            // Validation
+            if (new Date(checkin) >= new Date(checkout)) {
+                alert('Check-out must be after check-in');
+                return;
+            }
+            
+            const roomNum = parseInt(room.split(' - ')[1]);
+            const checkinDate = new Date(checkin);
+            const checkoutDate = new Date(checkout);
+            
+            const editingId = editForm.dataset.editingId;
+            
+            if (status === 'confirm' && hasConflict(roomNum, checkinDate, checkoutDate, editingId)) {
+                alert('Room already booked for these dates');
+                return;
+            }
+            
+            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
+            
+            const success = await updateBooking(editingId, bookingData);
+            if (success) {
+                alert('Booking updated successfully!');
+                editModal.classList.remove('active');
             }
         });
 
@@ -1758,12 +2003,13 @@
             const username = modalUsername.value;
             const password = modalPassword.value;
             
-            if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+            if (username === ADMIN_USERNAME && checkPassword(password)) {
                 isAdmin = true;
                 adminFormSection.classList.remove('hidden');
                 adminEntriesSection.classList.remove('hidden');
                 adminLoginBtn.classList.add('hidden');
                 logoutBtn.classList.remove('hidden');
+                changePasswordBtn.classList.remove('hidden');
                 hideLoginModal();
             } else {
                 alert('Invalid username or password');
@@ -1776,6 +2022,7 @@
             adminEntriesSection.classList.add('hidden');
             adminLoginBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
+            changePasswordBtn.classList.add('hidden');
             
             // Clear editing state
             if (bookingForm.dataset.editingId) {
@@ -1785,10 +2032,36 @@
             }
         });
 
+        // Change password functionality
+        changePasswordBtn.addEventListener('click', function() {
+            currentPasswordDisplay.value = 'Admin@11'; // Display current password
+            changePasswordModal.classList.add('active');
+        });
+
+        savePasswordBtn.addEventListener('click', function() {
+            const newPassword = newPasswordInput.value;
+            if (newPassword) {
+                setPasswordHash(simpleHash(newPassword));
+                alert('Password changed successfully!');
+                changePasswordModal.classList.remove('active');
+                newPasswordInput.value = '';
+            } else {
+                alert('Please enter a new password');
+            }
+        });
+
         // Event listeners for modals
         modalCloseBtn.addEventListener('click', hideLoginModal);
         bookingModalClose.addEventListener('click', function() {
             bookingModal.classList.remove('active');
+        });
+        
+        editModalClose.addEventListener('click', function() {
+            editModal.classList.remove('active');
+        });
+        
+        changePasswordClose.addEventListener('click', function() {
+            changePasswordModal.classList.remove('active');
         });
         
         // Close modal when clicking outside
@@ -1803,11 +2076,24 @@
                 bookingModal.classList.remove('active');
             }
         });
+        
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                editModal.classList.remove('active');
+            }
+        });
+        
+        changePasswordModal.addEventListener('click', function(e) {
+            if (e.target === changePasswordModal) {
+                changePasswordModal.classList.remove('active');
+            }
+        });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             initializeTable();
             setDefaultDates();
+            initializePassword(); // Initialize password system
             setupRealtimeListener(); // Start listening for realtime updates
         });
     </script>
