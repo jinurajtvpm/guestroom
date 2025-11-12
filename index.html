@@ -1239,6 +1239,7 @@
 
         // Login credentials
         const ADMIN_USERNAME = 'admin';
+        const DEFAULT_PASSWORD = 'Admin@11';
 
         // Firebase Functions for Bookings
         async function loadBookings() {
@@ -1342,7 +1343,7 @@
                 } else {
                     // Create default settings if they don't exist
                     const defaultSettings = {
-                        password: 'Admin@11',
+                        password: DEFAULT_PASSWORD,
                         grNcoNumber: '9149513860',
                         grNcoName: '',
                         messHavNumber: '7736991184',
@@ -1353,13 +1354,20 @@
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
-                return null;
+                // Return default settings if there's an error
+                return {
+                    password: DEFAULT_PASSWORD,
+                    grNcoNumber: '9149513860',
+                    grNcoName: '',
+                    messHavNumber: '7736991184',
+                    messHavName: ''
+                };
             }
         }
 
         async function updateSettings(settings) {
             try {
-                await db.collection('settings').doc('admin').update(settings);
+                await db.collection('settings').doc('admin').set(settings, { merge: true });
                 return true;
             } catch (error) {
                 console.error('Error updating settings:', error);
@@ -2312,18 +2320,27 @@ Mess Secy`;
             const username = modalUsername.value;
             const password = modalPassword.value;
             
-            const settings = await loadSettings();
-            if (username === ADMIN_USERNAME && password === settings.password) {
-                isAdmin = true;
-                adminFormSection.classList.remove('hidden');
-                adminEntriesSection.classList.remove('hidden');
-                adminLoginBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-                changePasswordBtn.classList.remove('hidden');
-                adminSettingsBtn.classList.remove('hidden');
-                hideLoginModal();
+            if (username === ADMIN_USERNAME) {
+                try {
+                    const settings = await loadSettings();
+                    if (password === settings.password) {
+                        isAdmin = true;
+                        adminFormSection.classList.remove('hidden');
+                        adminEntriesSection.classList.remove('hidden');
+                        adminLoginBtn.classList.add('hidden');
+                        logoutBtn.classList.remove('hidden');
+                        changePasswordBtn.classList.remove('hidden');
+                        adminSettingsBtn.classList.remove('hidden');
+                        hideLoginModal();
+                    } else {
+                        alert('Invalid password. Try: ' + DEFAULT_PASSWORD);
+                    }
+                } catch (error) {
+                    console.error('Error during login:', error);
+                    alert('Error during login. Please try again.');
+                }
             } else {
-                alert('Invalid username or password');
+                alert('Invalid username');
             }
         });
 
@@ -2346,20 +2363,35 @@ Mess Secy`;
 
         // Change password functionality
         changePasswordBtn.addEventListener('click', async function() {
-            const settings = await loadSettings();
-            updatePasswordDisplay(settings.password);
-            changePasswordModal.classList.add('active');
+            try {
+                const settings = await loadSettings();
+                updatePasswordDisplay(settings.password);
+                changePasswordModal.classList.add('active');
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                alert('Error loading settings. Please try again.');
+            }
         });
 
         savePasswordBtn.addEventListener('click', async function() {
             const newPassword = newPasswordInput.value;
             if (newPassword) {
-                const success = await updateSettings({ password: newPassword });
-                if (success) {
-                    alert('Password changed successfully!');
-                    changePasswordModal.classList.remove('active');
-                    newPasswordInput.value = '';
-                } else {
+                try {
+                    const currentSettings = await loadSettings();
+                    const updatedSettings = {
+                        ...currentSettings,
+                        password: newPassword
+                    };
+                    const success = await updateSettings(updatedSettings);
+                    if (success) {
+                        alert('Password changed successfully!');
+                        changePasswordModal.classList.remove('active');
+                        newPasswordInput.value = '';
+                    } else {
+                        alert('Error changing password. Please try again.');
+                    }
+                } catch (error) {
+                    console.error('Error changing password:', error);
                     alert('Error changing password. Please try again.');
                 }
             } else {
@@ -2369,24 +2401,36 @@ Mess Secy`;
 
         // NEW: Admin settings functionality
         adminSettingsBtn.addEventListener('click', async function() {
-            const settings = await loadSettings();
-            updateAdminSettingsDisplay(settings);
-            adminSettingsModal.classList.add('active');
+            try {
+                const settings = await loadSettings();
+                updateAdminSettingsDisplay(settings);
+                adminSettingsModal.classList.add('active');
+            } catch (error) {
+                console.error('Error loading settings:', error);
+                alert('Error loading settings. Please try again.');
+            }
         });
 
         saveSettingsBtn.addEventListener('click', async function() {
-            const settings = {
-                grNcoNumber: grNcoNumberInput.value,
-                grNcoName: grNcoNameInput.value,
-                messHavNumber: messHavNumberInput.value,
-                messHavName: messHavNameInput.value
-            };
-            
-            const success = await updateSettings(settings);
-            if (success) {
-                alert('Settings saved successfully!');
-                adminSettingsModal.classList.remove('active');
-            } else {
+            try {
+                const currentSettings = await loadSettings();
+                const updatedSettings = {
+                    ...currentSettings,
+                    grNcoNumber: grNcoNumberInput.value,
+                    grNcoName: grNcoNameInput.value,
+                    messHavNumber: messHavNumberInput.value,
+                    messHavName: messHavNameInput.value
+                };
+                
+                const success = await updateSettings(updatedSettings);
+                if (success) {
+                    alert('Settings saved successfully!');
+                    adminSettingsModal.classList.remove('active');
+                } else {
+                    alert('Error saving settings. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error saving settings:', error);
                 alert('Error saving settings. Please try again.');
             }
         });
@@ -2423,10 +2467,10 @@ Mess Secy`;
 
         // Update admin settings display
         function updateAdminSettingsDisplay(settings) {
-            grNcoNumberInput.value = settings.grNcoNumber;
-            grNcoNameInput.value = settings.grNcoName;
-            messHavNumberInput.value = settings.messHavNumber;
-            messHavNameInput.value = settings.messHavName;
+            grNcoNumberInput.value = settings.grNcoNumber || '';
+            grNcoNameInput.value = settings.grNcoName || '';
+            messHavNumberInput.value = settings.messHavNumber || '';
+            messHavNameInput.value = settings.messHavName || '';
         }
 
         // Event listeners for modals
@@ -2468,9 +2512,14 @@ Mess Secy`;
             setDefaultDates();
             
             // Load settings and set up real-time listeners
-            await loadSettings();
-            setupSettingsListener();
-            setupRealtimeListener();
+            try {
+                await loadSettings();
+                setupSettingsListener();
+                setupRealtimeListener();
+            } catch (error) {
+                console.error('Error during initialization:', error);
+                alert('Error initializing application. Please refresh the page.');
+            }
         });
     </script>
 </body>
