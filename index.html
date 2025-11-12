@@ -7,8 +7,9 @@
     <!-- Add Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Your existing CSS with modifications */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -77,6 +78,7 @@
         }
         
         .admin-login-btn {
+            background: #3498db;
             color: white;
             border: none;
             padding: 8px 15px;
@@ -98,6 +100,20 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+        }
+        
+        .change-password-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .change-password-btn:hover {
+            background: #e67e22;
         }
         
         .app-container {
@@ -260,6 +276,10 @@
             background-color: #ff9999; /* Light red for pending status */
         }
         
+        .booking-yet-to-confirm {
+            background-color: #ffb3b3; /* Lighter red for yet-to-confirm status */
+        }
+        
         .booking-top {
             background-color: #4ecdc4;
             color: white;
@@ -381,35 +401,50 @@
         
         .action-buttons {
             display: flex;
-            gap: 8px;
+            gap: 5px;
+            justify-content: center;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .view-btn {
+            color: #3498db;
+        }
+        
+        .view-btn:hover {
+            background: rgba(52, 152, 219, 0.1);
         }
         
         .edit-btn {
-            background-color: #3498db;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
+            color: #f39c12;
+        }
+        
+        .edit-btn:hover {
+            background: rgba(243, 156, 18, 0.1);
         }
         
         .delete-btn {
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
+            color: #e74c3c;
+        }
+        
+        .delete-btn:hover {
+            background: rgba(231, 76, 60, 0.1);
         }
         
         .hidden {
             display: none !important;
         }
         
-        /* Login Modal Styles */
-        #login-modal {
+        /* Modal Styles */
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
@@ -422,35 +457,35 @@
             z-index: 1000;
         }
         
-        #login-modal.active {
+        .modal.active {
             display: flex;
         }
         
-        .login-modal {
+        .modal-content {
             background-color: white;
-            padding: 20px; /* Reduced padding */
+            padding: 20px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             width: 90%;
-            max-width: 400px;
+            max-width: 500px;
             max-height: 90vh;
             overflow-y: auto;
         }
         
         .modal-title {
             color: #2c3e50;
-            margin-bottom: 15px; /* Reduced margin */
+            margin-bottom: 15px;
             text-align: center;
-            font-size: 22px; /* Slightly smaller */
+            font-size: 22px;
         }
         
         .modal-form-group {
-            margin-bottom: 15px; /* Reduced margin */
+            margin-bottom: 15px;
         }
         
         .modal-input {
             width: 100%;
-            padding: 10px 12px; /* Reduced padding */
+            padding: 10px 12px;
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 16px;
@@ -460,7 +495,7 @@
             background: linear-gradient(to right, #3498db, #2c3e50);
             color: white;
             border: none;
-            padding: 10px 15px; /* Reduced padding */
+            padding: 10px 15px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
@@ -477,52 +512,16 @@
             background: #e74c3c;
             color: white;
             border: none;
-            padding: 8px 12px; /* Reduced padding */
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
         }
         
-        /* Booking Details Modal */
-        #booking-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        #booking-modal.active {
-            display: flex;
-        }
-        
-        .booking-modal {
-            background-color: white;
-            padding: 20px; /* Reduced padding */
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .booking-modal-title {
-            color: #2c3e50;
-            margin-bottom: 15px; /* Reduced margin */
-            text-align: center;
-            font-size: 22px; /* Slightly smaller */
-        }
-        
         .booking-details-group {
-            margin-bottom: 10px; /* Reduced margin */
-            padding: 8px; /* Reduced padding */
+            margin-bottom: 10px;
+            padding: 8px;
             background-color: #f8f9fa;
             border-radius: 6px;
         }
@@ -530,51 +529,21 @@
         .booking-details-label {
             font-weight: 600;
             color: #2c3e50;
-            margin-bottom: 3px; /* Reduced margin */
+            margin-bottom: 3px;
         }
         
         .booking-details-value {
             color: #34495e;
         }
         
-        /* Edit Modal Styles */
-        #edit-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        #edit-modal.active {
+        .dates-inline {
             display: flex;
+            justify-content: space-between;
+            gap: 10px;
         }
         
-        .edit-modal {
-            background-color: white;
-            padding: 20px; /* Reduced padding */
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .edit-modal-title {
-            color: #2c3e50;
-            margin-bottom: 15px; /* Reduced margin */
-            text-align: center;
-            font-size: 22px; /* Slightly smaller */
-        }
-        
-        .edit-form-group {
-            margin-bottom: 15px; /* Reduced margin */
+        .date-item {
+            flex: 1;
         }
         
         @media (max-width: 768px) {
@@ -624,6 +593,11 @@
             .login-section {
                 flex: 0 0 auto;
             }
+            
+            .dates-inline {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -636,7 +610,7 @@
                 min-width: 120px;
             }
             
-            .month-btn, .admin-login-btn, .logout-btn {
+            .month-btn, .admin-login-btn, .logout-btn, .change-password-btn {
                 padding: 6px 12px;
                 font-size: 14px;
             }
@@ -711,21 +685,6 @@
             background: #219653;
         }
         
-        .change-password-btn {
-            background: #f39c12;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-        
-        .change-password-btn:hover {
-            background: #e67e22;
-        }
-        
         @media print {
             body * {
                 visibility: hidden;
@@ -745,11 +704,6 @@
             
             .filter-section, .action-buttons {
                 display: none !important;
-            }
-            
-            .entries-table th:last-child,
-            .entries-table td:last-child {
-                display: none;
             }
         }
     </style>
@@ -775,8 +729,6 @@
         </header>
         
         <div class="app-container">
-           
-            
             <div class="table-section">
                 <div class="table-container">
                     <table id="booking-table">
@@ -898,7 +850,6 @@
                         <th>Guest Name</th>
                         <th>Booked By</th>
                         <th>Status</th>
-                        <th>Remarks</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -910,8 +861,8 @@
     </div>
 
     <!-- Login Modal -->
-    <div id="login-modal">
-        <div class="login-modal">
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
             <h2 class="modal-title">Admin Login</h2>
             <div class="modal-form-group">
                 <input type="text" id="modal-username" class="modal-input" placeholder="Username">
@@ -925,9 +876,9 @@
     </div>
 
     <!-- Booking Details Modal -->
-    <div id="booking-modal">
-        <div class="booking-modal">
-            <h2 class="booking-modal-title">Booking Details</h2>
+    <div id="booking-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Booking Details</h2>
             <div id="booking-details-content">
                 <!-- Booking details will be populated by JavaScript -->
             </div>
@@ -936,11 +887,11 @@
     </div>
 
     <!-- Edit Modal -->
-    <div id="edit-modal">
-        <div class="edit-modal">
-            <h2 class="edit-modal-title">Edit Booking</h2>
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Edit Booking</h2>
             <form id="edit-form">
-                <div class="edit-form-group">
+                <div class="modal-form-group">
                     <label for="edit-guest-room">Guest Room</label>
                     <select id="edit-guest-room" required>
                         <option value="">Select Room</option>
@@ -953,27 +904,27 @@
                     </select>
                 </div>
                 
-                <div class="edit-form-group">
+                <div class="modal-form-group">
                     <label for="edit-checkin-date">Check-in Date</label>
                     <input type="date" id="edit-checkin-date" required>
                 </div>
                 
-                <div class="edit-form-group">
+                <div class="modal-form-group">
                     <label for="edit-checkout-date">Check-out Date</label>
                     <input type="date" id="edit-checkout-date" required>
                 </div>
                 
-                <div class="edit-form-group">
+                <div class="modal-form-group">
                     <label for="edit-guest-name">Guest Name</label>
                     <input type="text" id="edit-guest-name" required>
                 </div>
                 
-                <div class="edit-form-group">
+                <div class="modal-form-group">
                     <label for="edit-booked-by">Booked By</label>
                     <input type="text" id="edit-booked-by" required>
                 </div>
                 
-                <div class="edit-form-group">
+                <div class="modal-form-group">
                     <label for="edit-status">Status</label>
                     <select id="edit-status" required>
                         <option value="confirm">Confirm</option>
@@ -983,7 +934,7 @@
                     </select>
                 </div>
                 
-                <div class="edit-form-group">
+                <div class="modal-form-group">
                     <label for="edit-remarks">Remarks</label>
                     <textarea id="edit-remarks" rows="3"></textarea>
                 </div>
@@ -995,8 +946,8 @@
     </div>
 
     <!-- Change Password Modal -->
-    <div id="change-password-modal">
-        <div class="login-modal">
+    <div id="change-password-modal" class="modal">
+        <div class="modal-content">
             <h2 class="modal-title">Change Password</h2>
             <div class="modal-form-group">
                 <label>Current Password</label>
@@ -1012,7 +963,7 @@
     </div>
 
     <script>
-        // Firebase Configuration - REPLACE WITH YOUR CONFIG
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBH-SO5M97-sz5p8SRkSaNAXRSFL88S_g8",
             authDomain: "guestroom-93101.firebaseapp.com",
@@ -1032,7 +983,7 @@
         let currentYear = 2025;
         let isAdmin = false;
         let unsubscribeBookings = null;
-        let filteredBookings = []; // NEW: Store filtered bookings
+        let filteredBookings = [];
 
         // DOM elements
         const bookingForm = document.getElementById('booking-form');
@@ -1072,44 +1023,21 @@
         const resetFilter = document.getElementById('reset-filter');
         const printBtn = document.getElementById('print-btn');
 
-        // Simple hash function for password
-        function simpleHash(str) {
-            let hash = 0;
-            for (let i = 0; i < str.length; i++) {
-                const char = str.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash; // Convert to 32bit integer
-            }
-            return hash.toString();
+        // Password management with improved security
+        function getStoredPassword() {
+            return localStorage.getItem('adminPassword') || 'Admin@11';
         }
 
-        // Store password hash in localStorage
-        function setPasswordHash(hash) {
-            localStorage.setItem('adminPasswordHash', hash);
+        function setStoredPassword(password) {
+            localStorage.setItem('adminPassword', password);
         }
 
-        // Get password hash from localStorage
-        function getPasswordHash() {
-            return localStorage.getItem('adminPasswordHash');
+        // Initialize password display
+        function updatePasswordDisplay() {
+            currentPasswordDisplay.value = getStoredPassword();
         }
 
-        // Check if password is correct
-        function checkPassword(password) {
-            const storedHash = getPasswordHash();
-            return storedHash === simpleHash(password);
-        }
-
-        // Initialize password if not set
-        function initializePassword() {
-            if (!getPasswordHash()) {
-                // Set default password hash
-                setPasswordHash(simpleHash('Admin@11'));
-            }
-            // Display current password
-            currentPasswordDisplay.value = 'Admin@11'; // This is just for display, actual auth uses hash
-        }
-
-        // Login credentials - now using hashed password
+        // Login credentials
         const ADMIN_USERNAME = 'admin';
 
         // Firebase Functions
@@ -1121,10 +1049,10 @@
                     id: doc.id,
                     ...doc.data()
                 }));
-                filteredBookings = [...bookings]; // NEW: Initialize filteredBookings
+                filteredBookings = [...bookings];
                 renderBookings();
                 updateEntriesTable();
-                populateYearFilter(); // NEW: Populate year filter options
+                populateYearFilter();
                 hideLoading();
             } catch (error) {
                 console.error('Error loading bookings:', error);
@@ -1135,7 +1063,7 @@
 
         function setupRealtimeListener() {
             if (unsubscribeBookings) {
-                unsubscribeBookings(); // Unsubscribe from previous listener
+                unsubscribeBookings();
             }
 
             unsubscribeBookings = db.collection('bookings')
@@ -1145,10 +1073,10 @@
                         id: doc.id,
                         ...doc.data()
                     }));
-                    filteredBookings = [...bookings]; // NEW: Update filteredBookings
+                    filteredBookings = [...bookings];
                     renderBookings();
                     updateEntriesTable();
-                    populateYearFilter(); // NEW: Update year filter options
+                    populateYearFilter();
                 }, error => {
                     console.error('Error in realtime listener:', error);
                 });
@@ -1432,12 +1360,17 @@
                             <div class="booking-details-value">${booking.guest}</div>
                         </div>
                         <div class="booking-details-group">
-                            <div class="booking-details-label">Check-in</div>
-                            <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
-                        </div>
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Check-out</div>
-                            <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
+                            <div class="booking-details-label">Dates</div>
+                            <div class="dates-inline">
+                                <div class="date-item">
+                                    <div class="booking-details-label">Check-in</div>
+                                    <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
+                                </div>
+                                <div class="date-item">
+                                    <div class="booking-details-label">Check-out</div>
+                                    <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
+                                </div>
+                            </div>
                         </div>
                         <div class="booking-details-group">
                             <div class="booking-details-label">Booked By</div>
@@ -1513,7 +1446,7 @@
                     
                     // Check if booking overlaps with current month
                     const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
-                    const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0); // Last day of checkout month
+                    const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0);
                     const currentMonthStart = new Date(currentYear, currentMonth, 1);
                     const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
                     
@@ -1601,7 +1534,7 @@
             
             // Create booking display
             const bookingDiv = document.createElement('div');
-            bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-pending' : 'booking';
+            bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-yet-to-confirm' : 'booking';
             
             const nameDiv = document.createElement('div');
             nameDiv.className = 'booking-details';
@@ -1620,10 +1553,10 @@
                 const cell = document.getElementById(`day-${day}-room-${roomNum}`);
                 if (day === checkin) {
                     // Main cell gets the booking div
-                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ff9999' : '#ff6b6b';
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
                 } else {
                     // Hidden cells get the same background color
-                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ff9999' : '#ff6b6b';
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
                     cell.style.display = 'none';
                 }
             }
@@ -1706,16 +1639,16 @@
             if (bookingsOnDay.length === 1) {
                 // Single booking on this day
                 const bookingDiv = document.createElement('div');
-                bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-pending' : 'booking';
+                bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-yet-to-confirm' : 'booking';
                 
                 // Don't add text content for split cells
                 // Just set the background color
-                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ff9999' : '#ff6b6b';
+                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
             } else {
                 // Multiple bookings - split the cell
                 if (isEnding) {
                     const topDiv = document.createElement('div');
-                    topDiv.className = booking.status === 'yet-to-confirm' ? 'booking-top booking-pending' : 'booking-top';
+                    topDiv.className = booking.status === 'yet-to-confirm' ? 'booking-top booking-yet-to-confirm' : 'booking-top';
                     
                     // Don't add text content for split cells
                     // Just set the background color
@@ -1724,7 +1657,7 @@
                 
                 if (isStarting) {
                     const bottomDiv = document.createElement('div');
-                    bottomDiv.className = booking.status === 'yet-to-confirm' ? 'booking-bottom booking-pending' : 'booking-bottom';
+                    bottomDiv.className = booking.status === 'yet-to-confirm' ? 'booking-bottom booking-yet-to-confirm' : 'booking-bottom';
                     
                     // Don't add text content for split cells
                     // Just set the background color
@@ -1751,38 +1684,87 @@
                    .forEach((booking, index) => {
                 const row = document.createElement('tr');
                 
-                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status', 'remarks'].forEach(field => {
+                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status'].forEach(field => {
                     const cell = document.createElement('td');
                     if (field === 'checkin' || field === 'checkout') {
                         cell.textContent = formatDateFull(booking[field]);
-                    } else if (field === 'remarks') {
-                        cell.textContent = booking[field] || 'None';
                     } else {
                         cell.textContent = booking[field];
                     }
                     row.appendChild(cell);
                 });
                 
-                // Add action buttons
+                // Add action buttons with icons
                 const actionCell = document.createElement('td');
                 actionCell.className = 'action-buttons';
                 
+                const viewBtn = document.createElement('button');
+                viewBtn.innerHTML = '<i class="fas fa-eye"></i>';
+                viewBtn.className = 'icon-btn view-btn';
+                viewBtn.title = 'View Details';
+                viewBtn.onclick = () => viewBookingDetails(booking);
+                
                 const editBtn = document.createElement('button');
-                editBtn.textContent = 'Edit';
-                editBtn.className = 'edit-btn';
+                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                editBtn.className = 'icon-btn edit-btn';
+                editBtn.title = 'Edit Booking';
                 editBtn.onclick = () => editBooking(booking.id, booking);
                 
                 const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteBtn.className = 'icon-btn delete-btn';
+                deleteBtn.title = 'Delete Booking';
                 deleteBtn.onclick = () => deleteBookingFromFirebase(booking.id);
                 
+                actionCell.appendChild(viewBtn);
                 actionCell.appendChild(editBtn);
                 actionCell.appendChild(deleteBtn);
                 row.appendChild(actionCell);
                 
                 entriesBody.appendChild(row);
             });
+        }
+
+        // View booking details in popup modal
+        function viewBookingDetails(booking) {
+            const bookingDetailsHTML = `
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Room</div>
+                    <div class="booking-details-value">${booking.room}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Guest Name</div>
+                    <div class="booking-details-value">${booking.guest}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Dates</div>
+                    <div class="dates-inline">
+                        <div class="date-item">
+                            <div class="booking-details-label">Check-in</div>
+                            <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
+                        </div>
+                        <div class="date-item">
+                            <div class="booking-details-label">Check-out</div>
+                            <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Booked By</div>
+                    <div class="booking-details-value">${booking.bookedBy}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Status</div>
+                    <div class="booking-details-value">${booking.status}</div>
+                </div>
+                <div class="booking-details-group">
+                    <div class="booking-details-label">Remarks</div>
+                    <div class="booking-details-value">${booking.remarks || 'None'}</div>
+                </div>
+            `;
+            
+            bookingDetailsContent.innerHTML = bookingDetailsHTML;
+            bookingModal.classList.add('active');
         }
 
         // Edit booking in popup modal
@@ -2003,7 +1985,7 @@
             const username = modalUsername.value;
             const password = modalPassword.value;
             
-            if (username === ADMIN_USERNAME && checkPassword(password)) {
+            if (username === ADMIN_USERNAME && password === getStoredPassword()) {
                 isAdmin = true;
                 adminFormSection.classList.remove('hidden');
                 adminEntriesSection.classList.remove('hidden');
@@ -2034,15 +2016,16 @@
 
         // Change password functionality
         changePasswordBtn.addEventListener('click', function() {
-            currentPasswordDisplay.value = 'Admin@11'; // Display current password
+            updatePasswordDisplay();
             changePasswordModal.classList.add('active');
         });
 
         savePasswordBtn.addEventListener('click', function() {
             const newPassword = newPasswordInput.value;
             if (newPassword) {
-                setPasswordHash(simpleHash(newPassword));
+                setStoredPassword(newPassword);
                 alert('Password changed successfully!');
+                updatePasswordDisplay();
                 changePasswordModal.classList.remove('active');
                 newPasswordInput.value = '';
             } else {
@@ -2065,36 +2048,20 @@
         });
         
         // Close modal when clicking outside
-        loginModal.addEventListener('click', function(e) {
-            if (e.target === loginModal) {
-                hideLoginModal();
-            }
-        });
-        
-        bookingModal.addEventListener('click', function(e) {
-            if (e.target === bookingModal) {
-                bookingModal.classList.remove('active');
-            }
-        });
-        
-        editModal.addEventListener('click', function(e) {
-            if (e.target === editModal) {
-                editModal.classList.remove('active');
-            }
-        });
-        
-        changePasswordModal.addEventListener('click', function(e) {
-            if (e.target === changePasswordModal) {
-                changePasswordModal.classList.remove('active');
-            }
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
         });
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             initializeTable();
             setDefaultDates();
-            initializePassword(); // Initialize password system
-            setupRealtimeListener(); // Start listening for realtime updates
+            updatePasswordDisplay();
+            setupRealtimeListener();
         });
     </script>
 </body>
