@@ -2234,13 +2234,20 @@ Mess Secy`;
                 statusText = '*CANCELLED*';
             }
             
-            return `Guestroom Booking Update :-
+            return `*Guestroom Booking Update :-*
+
 Room : ${booking.room} (${roomName})
+
 Guest Name : ${booking.guest}
+
 Check-in : ${checkinDate}
+
 Check-out : ${checkoutDate}
+
 Booked by : ${booking.bookedBy}
+
 Status : ${statusText}
+
 Remarks: ${booking.remarks || 'None'}`;
         }
 
