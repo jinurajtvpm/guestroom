@@ -2172,8 +2172,8 @@
             }
         }
 
-        // Generate confirmation message
-        async function generateConfirmationMessage(booking) {
+        // Generate confirmation message - FIXED: Removed async keyword
+        function generateConfirmationMessage(booking) {
             const checkinDate = formatDateFull(booking.checkin);
             const checkoutDate = formatDateFull(booking.checkout);
             
@@ -2251,7 +2251,7 @@ Status : ${statusText}
 Remarks: ${booking.remarks || 'None'}`;
         }
 
-        // NEW: Share booking via WhatsApp
+        // NEW: Share booking via WhatsApp - FIXED: Properly handles both message types
         function shareViaWhatsApp(messageType) {
             if (currentSplitCellBookings.length === 1) {
                 const booking = currentSplitCellBookings[0];
@@ -2295,11 +2295,11 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         }
 
-        // Show confirmation message modal
-        async function showConfirmationModal() {
+        // Show confirmation message modal - FIXED: Removed async keyword
+        function showConfirmationModal() {
             if (currentSplitCellBookings.length === 1) {
                 const booking = currentSplitCellBookings[0];
-                const message = await generateConfirmationMessage(booking);
+                const message = generateConfirmationMessage(booking);
                 confirmationMessageContent.value = message;
                 confirmationModal.classList.add('active');
             } else if (currentSplitCellBookings.length > 1) {
@@ -2314,7 +2314,7 @@ Remarks: ${booking.remarks || 'None'}`;
                 const bookingNumber = prompt(message);
                 if (bookingNumber && !isNaN(bookingNumber) && bookingNumber >= 1 && bookingNumber <= currentSplitCellBookings.length) {
                     const selectedBooking = currentSplitCellBookings[parseInt(bookingNumber) - 1];
-                    const confirmationMessage = await generateConfirmationMessage(selectedBooking);
+                    const confirmationMessage = generateConfirmationMessage(selectedBooking);
                     confirmationMessageContent.value = confirmationMessage;
                     confirmationModal.classList.add('active');
                 }
