@@ -1072,10 +1072,10 @@
             <div class="modal-header">
                 <h2 class="modal-title">Booking Details</h2>
                 <div class="modal-actions hidden" id="booking-modal-actions">
-                    <button class="icon-btn whatsapp-btn" id="booking-whatsapp-btn" title="Share via WhatsApp">
+                    <button class="icon-btn whatsapp-btn" id="booking-whatsapp-btn" title="Share Booking Details via WhatsApp">
                         <i class="fab fa-whatsapp"></i>
                     </button>
-                    <button class="icon-btn confirm-btn" id="booking-confirm-btn" title="Generate Confirmation Message">
+                    <button class="icon-btn confirm-btn" id="booking-confirm-btn" title="Share Confirmation Message via WhatsApp">
                         <i class="fas fa-envelope"></i>
                     </button>
                     <button class="icon-btn edit-btn" id="booking-edit-btn" title="Edit Booking">
@@ -2252,27 +2252,41 @@ Remarks: ${booking.remarks || 'None'}`;
         }
 
         // NEW: Share booking via WhatsApp
-        function shareViaWhatsApp() {
+        function shareViaWhatsApp(messageType) {
             if (currentSplitCellBookings.length === 1) {
                 const booking = currentSplitCellBookings[0];
-                const message = generateWhatsAppMessage(booking);
+                let message;
+                
+                if (messageType === 'details') {
+                    message = generateWhatsAppMessage(booking);
+                } else if (messageType === 'confirmation') {
+                    message = generateConfirmationMessage(booking);
+                }
+                
                 const encodedMessage = encodeURIComponent(message);
                 const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
                 window.open(whatsappUrl, '_blank');
             } else if (currentSplitCellBookings.length > 1) {
-                let message = "Multiple bookings found on this day. Please select which booking to share:\n\n";
+                let promptMessage = "Multiple bookings found on this day. Please select which booking to share:\n\n";
                 
                 currentSplitCellBookings.forEach((booking, index) => {
-                    message += `${index + 1}. ${booking.guest} (${formatDateFull(booking.checkin)} to ${formatDateFull(booking.checkout)})\n`;
+                    promptMessage += `${index + 1}. ${booking.guest} (${formatDateFull(booking.checkin)} to ${formatDateFull(booking.checkout)})\n`;
                 });
                 
-                message += "\nEnter the number of the booking:";
+                promptMessage += "\nEnter the number of the booking:";
                 
-                const bookingNumber = prompt(message);
+                const bookingNumber = prompt(promptMessage);
                 if (bookingNumber && !isNaN(bookingNumber) && bookingNumber >= 1 && bookingNumber <= currentSplitCellBookings.length) {
                     const selectedBooking = currentSplitCellBookings[parseInt(bookingNumber) - 1];
-                    const whatsappMessage = generateWhatsAppMessage(selectedBooking);
-                    const encodedMessage = encodeURIComponent(whatsappMessage);
+                    let message;
+                    
+                    if (messageType === 'details') {
+                        message = generateWhatsAppMessage(selectedBooking);
+                    } else if (messageType === 'confirmation') {
+                        message = generateConfirmationMessage(selectedBooking);
+                    }
+                    
+                    const encodedMessage = encodeURIComponent(message);
                     const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
                     window.open(whatsappUrl, '_blank');
                 }
@@ -2463,14 +2477,14 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
-        // NEW: WhatsApp button handler
+        // NEW: WhatsApp button handler - shares booking details
         bookingWhatsappBtn.addEventListener('click', function() {
-            shareViaWhatsApp();
+            shareViaWhatsApp('details');
         });
 
-        // Confirmation message button handler
+        // NEW: Confirmation message button handler - shares confirmation message via WhatsApp
         bookingConfirmBtn.addEventListener('click', function() {
-            showConfirmationModal();
+            shareViaWhatsApp('confirmation');
         });
 
         // Edit and Delete button handlers for booking modal
