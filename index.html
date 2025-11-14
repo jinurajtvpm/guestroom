@@ -207,6 +207,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             margin-bottom: 20px;
+            position: relative;
         }
         
         table {
@@ -779,6 +780,83 @@
             background-color: #fdeaea;
         }
         
+        /* NEW: Loading overlay for calendar */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 10px;
+        }
+        
+        .loading-message {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        /* NEW: Filter section improvements */
+        .filter-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: auto;
+        }
+        
+        .action-icons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .icon-btn-large {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.3s;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .print-icon {
+            color: #3498db;
+        }
+        
+        .print-icon:hover {
+            background: rgba(52, 152, 219, 0.1);
+        }
+        
+        .delete-icon {
+            color: #e74c3c;
+        }
+        
+        .delete-icon:hover {
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
         @media (max-width: 768px) {
             .app-container {
                 flex-direction: column;
@@ -844,6 +922,17 @@
             .settings-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .filter-row {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .filter-actions {
+                margin-left: 0;
+                width: 100%;
+                justify-content: space-between;
+            }
         }
         
         @media (max-width: 480px) {
@@ -865,6 +954,12 @@
                 font-size: 18px;
                 width: 36px;
                 height: 36px;
+            }
+            
+            .icon-btn-large {
+                font-size: 20px;
+                width: 40px;
+                height: 40px;
             }
         }
     </style>
@@ -901,6 +996,12 @@
         <div class="app-container">
             <div class="table-section">
                 <div class="table-container">
+                    <div id="calendar-loading" class="loading-overlay hidden">
+                        <div class="loading-message">
+                            <div class="loading"></div>
+                            <p>Loading Calendar...</p>
+                        </div>
+                    </div>
                     <table id="booking-table">
                         <thead>
                             <tr>
@@ -1001,9 +1102,9 @@
         <div class="entries-container hidden" id="admin-entries-section">
             <h2 class="entries-title">All Booking Entries</h2>
             
-            <!-- FILTER SECTION -->
+            <!-- NEW: Improved Filter Section -->
             <div class="filter-section">
-                <div class="filter-controls">
+                <div class="filter-row">
                     <select id="filter-month" class="filter-select">
                         <option value="all">All Months</option>
                         <option value="0">January</option>
@@ -1025,11 +1126,20 @@
                         <!-- Years will be populated by JavaScript -->
                     </select>
                     
-                    <button id="apply-filter" class="filter-btn">Apply Filter</button>
-                    <button id="reset-filter" class="filter-btn">View All</button>
+                    <div class="filter-actions">
+                        <button id="apply-filter" class="filter-btn">Apply Filter</button>
+                        <button id="reset-filter" class="filter-btn">View All</button>
+                        
+                        <div class="action-icons">
+                            <button id="print-icon-btn" class="icon-btn-large print-icon" title="Print Table">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button id="delete-range-btn" class="icon-btn-large delete-icon" title="Delete Bookings by Date Range">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                
-                <button id="print-btn" class="print-btn">Print Table</button>
             </div>
             
             <table class="entries-table">
@@ -1217,6 +1327,27 @@
         </div>
     </div>
 
+    <!-- NEW: Delete Bookings by Date Range Modal -->
+    <div id="delete-range-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Delete Bookings by Date Range</h2>
+            <div class="modal-form-group">
+                <label for="delete-start-date">Start Date</label>
+                <input type="date" id="delete-start-date" class="modal-input" required>
+            </div>
+            <div class="modal-form-group">
+                <label for="delete-end-date">End Date</label>
+                <input type="date" id="delete-end-date" class="modal-input" required>
+            </div>
+            <div class="modal-form-group">
+                <label for="delete-confirm">Type "DELETE" to confirm</label>
+                <input type="text" id="delete-confirm" class="modal-input" placeholder="Type DELETE to confirm" required>
+            </div>
+            <button id="confirm-delete-range-btn" class="modal-btn">Delete Bookings</button>
+            <button id="delete-range-close" class="modal-close">Cancel</button>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1298,7 +1429,8 @@
         const filterYear = document.getElementById('filter-year');
         const applyFilter = document.getElementById('apply-filter');
         const resetFilter = document.getElementById('reset-filter');
-        const printBtn = document.getElementById('print-btn');
+        const printIconBtn = document.getElementById('print-icon-btn');
+        const deleteRangeBtn = document.getElementById('delete-range-btn');
         const confirmationModal = document.getElementById('confirmation-modal');
         const confirmationMessageContent = document.getElementById('confirmation-message-content');
         const copyConfirmationBtn = document.getElementById('copy-confirmation-btn');
@@ -1310,6 +1442,17 @@
         const messHavNameInput = document.getElementById('mess-hav-name');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const adminSettingsClose = document.getElementById('admin-settings-close');
+        
+        // NEW: Calendar loading overlay
+        const calendarLoading = document.getElementById('calendar-loading');
+        
+        // NEW: Delete range modal elements
+        const deleteRangeModal = document.getElementById('delete-range-modal');
+        const deleteStartDate = document.getElementById('delete-start-date');
+        const deleteEndDate = document.getElementById('delete-end-date');
+        const deleteConfirm = document.getElementById('delete-confirm');
+        const confirmDeleteRangeBtn = document.getElementById('confirm-delete-range-btn');
+        const deleteRangeClose = document.getElementById('delete-range-close');
         
         // NEW: Cancelled bookings elements
         const cancelledBookingsSection = document.getElementById('cancelled-bookings-section');
@@ -1407,7 +1550,7 @@
         // Load bookings from Firebase
         async function loadBookings() {
             try {
-                showLoading();
+                showCalendarLoading();
                 const snapshot = await db.collection('bookings').orderBy('checkin').get();
                 bookings = snapshot.docs.map(doc => ({
                     id: doc.id,
@@ -1417,11 +1560,11 @@
                 renderBookings();
                 updateEntriesTable();
                 populateYearFilter();
-                updateCancelledBookingsTable(); // NEW: Update cancelled bookings table
-                hideLoading();
+                updateCancelledBookingsTable();
+                hideCalendarLoading();
             } catch (error) {
                 console.error('Error loading bookings:', error);
-                hideLoading();
+                hideCalendarLoading();
                 alert('Error loading bookings. Please refresh the page.');
             }
         }
@@ -1443,7 +1586,7 @@
                     renderBookings();
                     updateEntriesTable();
                     populateYearFilter();
-                    updateCancelledBookingsTable(); // NEW: Update cancelled bookings table
+                    updateCancelledBookingsTable();
                 }, error => {
                     console.error('Error in realtime listener:', error);
                 });
@@ -1503,6 +1646,53 @@
             }
         }
 
+        // NEW: Delete bookings by date range
+        async function deleteBookingsByDateRange(startDate, endDate) {
+            try {
+                showLoading();
+                
+                // Convert dates to proper format
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                // Get all bookings that overlap with the date range
+                const bookingsToDelete = bookings.filter(booking => {
+                    const checkin = new Date(booking.checkin);
+                    const checkout = new Date(booking.checkout);
+                    
+                    // Check if booking overlaps with the selected date range
+                    return (checkin <= end && checkout >= start);
+                });
+                
+                if (bookingsToDelete.length === 0) {
+                    hideLoading();
+                    alert('No bookings found in the selected date range.');
+                    return false;
+                }
+                
+                // Confirm deletion
+                if (!confirm(`Are you sure you want to delete ${bookingsToDelete.length} booking(s) from ${formatDateFull(startDate)} to ${formatDateFull(endDate)}?`)) {
+                    hideLoading();
+                    return false;
+                }
+                
+                // Delete each booking
+                const deletePromises = bookingsToDelete.map(booking => 
+                    db.collection('bookings').doc(booking.id).delete()
+                );
+                
+                await Promise.all(deletePromises);
+                hideLoading();
+                alert(`Successfully deleted ${bookingsToDelete.length} booking(s).`);
+                return true;
+            } catch (error) {
+                console.error('Error deleting bookings by date range:', error);
+                hideLoading();
+                alert('Error deleting bookings. Please try again.');
+                return false;
+            }
+        }
+
         // ========== UI FUNCTIONS ==========
 
         // Show/hide loading indicator
@@ -1512,6 +1702,15 @@
 
         function hideLoading() {
             loadingIndicator.classList.add('hidden');
+        }
+
+        // NEW: Show/hide calendar loading overlay
+        function showCalendarLoading() {
+            calendarLoading.classList.remove('hidden');
+        }
+
+        function hideCalendarLoading() {
+            calendarLoading.classList.add('hidden');
         }
 
         // Initialize the calendar table
@@ -1549,7 +1748,7 @@
             
             updatePageTitle();
             renderBookings();
-            updateCancelledBookingsTable(); // NEW: Update cancelled bookings table
+            updateCancelledBookingsTable();
         }
 
         // Update page title with current month and year
@@ -2559,6 +2758,52 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // NEW: Print icon button handler
+        printIconBtn.addEventListener('click', function() {
+            window.print();
+        });
+
+        // NEW: Delete range button handler
+        deleteRangeBtn.addEventListener('click', function() {
+            // Set default dates for deletion range (current month)
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            
+            deleteStartDate.value = firstDay.toISOString().split('T')[0];
+            deleteEndDate.value = lastDay.toISOString().split('T')[0];
+            deleteConfirm.value = '';
+            
+            deleteRangeModal.classList.add('active');
+        });
+
+        // NEW: Confirm delete range button handler
+        confirmDeleteRangeBtn.addEventListener('click', async function() {
+            const startDate = deleteStartDate.value;
+            const endDate = deleteEndDate.value;
+            const confirmText = deleteConfirm.value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates.');
+                return;
+            }
+            
+            if (confirmText !== 'DELETE') {
+                alert('Please type "DELETE" to confirm deletion.');
+                return;
+            }
+            
+            if (new Date(startDate) > new Date(endDate)) {
+                alert('End date must be after start date.');
+                return;
+            }
+            
+            const success = await deleteBookingsByDateRange(startDate, endDate);
+            if (success) {
+                deleteRangeModal.classList.remove('active');
+            }
+        });
+
         // NEW: WhatsApp button handler - shares booking details
         bookingWhatsappBtn.addEventListener('click', function() {
             shareViaWhatsApp('details');
@@ -2712,11 +2957,6 @@ Remarks: ${booking.remarks || 'None'}`;
             updateEntriesTable();
         });
 
-        // Print functionality
-        printBtn.addEventListener('click', function() {
-            window.print();
-        });
-
         // Modal close buttons
         modalCloseBtn.addEventListener('click', hideLoginModal);
         bookingModalClose.addEventListener('click', function() {
@@ -2733,6 +2973,9 @@ Remarks: ${booking.remarks || 'None'}`;
         });
         adminSettingsClose.addEventListener('click', function() {
             adminSettingsModal.classList.remove('active');
+        });
+        deleteRangeClose.addEventListener('click', function() {
+            deleteRangeModal.classList.remove('active');
         });
 
         // Close modal when clicking outside
