@@ -1845,7 +1845,7 @@
             });
         }
 
-        // Show booking details in modal - FIXED: Now properly handles multiple bookings
+        // Show booking details in modal
         function showBookingDetails(day, roomNum) {
             const roomBookings = bookings.filter(booking => {
                 const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
@@ -1952,7 +1952,6 @@
                     bookingModalActions.classList.add('hidden');
                 }
             } else {
-                // FIXED: Now shows action buttons for multiple bookings
                 let bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
@@ -1964,13 +1963,13 @@
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Multiple Bookings</div>
-                        <div class="booking-details-value">This day has multiple bookings. Select one to view details:</div>
+                        <div class="booking-details-value">This day has multiple bookings:</div>
                     </div>
                 `;
                 
                 roomBookings.forEach((booking, index) => {
                     bookingDetailsHTML += `
-                        <div class="booking-details-group" style="cursor: pointer; border: 1px solid #ddd; margin-bottom: 10px;" onclick="selectBookingFromMultiple(${index})">
+                        <div class="booking-details-group">
                             <div class="booking-details-label">Booking ${index + 1}</div>
                             <div class="booking-details-value">
                                 <strong>Guest:</strong> ${booking.guest}<br>
@@ -1983,68 +1982,11 @@
                 });
                 
                 bookingDetailsContent.innerHTML = bookingDetailsHTML;
-                
-                // FIXED: Show action buttons for admin even with multiple bookings
-                if (isAdmin) {
-                    bookingModalActions.classList.remove('hidden');
-                } else {
-                    bookingModalActions.classList.add('hidden');
-                }
-                
+                bookingModalActions.classList.add('hidden');
                 currentBookingId = null;
             }
             
             bookingModal.classList.add('active');
-        }
-
-        // NEW: Function to select a booking from multiple bookings in a cell
-        function selectBookingFromMultiple(index) {
-            if (index >= 0 && index < currentSplitCellBookings.length) {
-                const booking = currentSplitCellBookings[index];
-                currentBookingId = booking.id;
-                
-                const bookingDetailsHTML = `
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Room</div>
-                        <div class="booking-details-value">${booking.room} (${roomNames[booking.room]})</div>
-                    </div>
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Guest Name</div>
-                        <div class="booking-details-value">${booking.guest}</div>
-                    </div>
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Dates</div>
-                        <div class="dates-inline">
-                            <div class="date-item">
-                                <div class="booking-details-label">Check-in</div>
-                                <div class="booking-details-value">${formatDateFull(booking.checkin)}</div>
-                            </div>
-                            <div class="date-item">
-                                <div class="booking-details-label">Check-out</div>
-                                <div class="booking-details-value">${formatDateFull(booking.checkout)}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Booked By</div>
-                        <div class="booking-details-value">${booking.bookedBy}</div>
-                    </div>
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Status</div>
-                        <div class="booking-details-value">${booking.status}</div>
-                    </div>
-                    <div class="booking-details-group">
-                        <div class="booking-details-label">Remarks</div>
-                        <div class="booking-details-value">${booking.remarks || 'None'}</div>
-                    </div>
-                `;
-                
-                bookingDetailsContent.innerHTML = bookingDetailsHTML;
-                
-                if (isAdmin) {
-                    bookingModalActions.classList.remove('hidden');
-                }
-            }
         }
 
         // Update entries table with filtered data
@@ -2230,7 +2172,7 @@
             }
         }
 
-        // Generate confirmation message
+        // Generate confirmation message - FIXED: Removed async keyword
         function generateConfirmationMessage(booking) {
             const checkinDate = formatDateFull(booking.checkin);
             const checkoutDate = formatDateFull(booking.checkout);
@@ -2353,7 +2295,7 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         }
 
-        // Show confirmation message modal
+        // Show confirmation message modal - FIXED: Removed async keyword
         function showConfirmationModal() {
             if (currentSplitCellBookings.length === 1) {
                 const booking = currentSplitCellBookings[0];
@@ -2392,23 +2334,6 @@ Remarks: ${booking.remarks || 'None'}`;
             });
         }
 
-        // ========== SESSION MANAGEMENT ==========
-        
-        // Save admin session to localStorage
-        function saveAdminSession() {
-            localStorage.setItem('isAdmin', 'true');
-        }
-        
-        // Check if admin session exists
-        function checkAdminSession() {
-            return localStorage.getItem('isAdmin') === 'true';
-        }
-        
-        // Clear admin session
-        function clearAdminSession() {
-            localStorage.removeItem('isAdmin');
-        }
-
         // ========== EVENT LISTENERS ==========
 
         // Login functionality
@@ -2441,10 +2366,6 @@ Remarks: ${booking.remarks || 'None'}`;
                         logoutBtn.classList.remove('hidden');
                         // NEW: Hide cancelled bookings section for admin
                         cancelledBookingsSection.classList.add('hidden');
-                        
-                        // FIXED: Save session to localStorage
-                        saveAdminSession();
-                        
                         hideLoginModal();
                     } else {
                         alert('Invalid password. Try: ' + DEFAULT_PASSWORD);
@@ -2468,9 +2389,6 @@ Remarks: ${booking.remarks || 'None'}`;
             logoutBtn.classList.add('hidden');
             // NEW: Show cancelled bookings section for non-admin users
             cancelledBookingsSection.classList.remove('hidden');
-            
-            // FIXED: Clear session from localStorage
-            clearAdminSession();
             
             if (bookingForm.dataset.editingId) {
                 delete bookingForm.dataset.editingId;
@@ -2752,21 +2670,6 @@ Remarks: ${booking.remarks || 'None'}`;
                 // Initialize settings first
                 await loadSettings();
                 setupSettingsListener();
-                
-                // FIXED: Check for existing admin session
-                if (checkAdminSession()) {
-                    isAdmin = true;
-                    adminFormSection.classList.remove('hidden');
-                    adminEntriesSection.classList.remove('hidden');
-                    adminLoginBtn.classList.add('hidden');
-                    adminSettingsBtn.classList.remove('hidden');
-                    changePasswordBtn.classList.remove('hidden');
-                    logoutBtn.classList.remove('hidden');
-                    cancelledBookingsSection.classList.add('hidden');
-                } else {
-                    // Show cancelled bookings for non-admin users
-                    cancelledBookingsSection.classList.remove('hidden');
-                }
                 
                 // Initialize the rest of the app
                 initializeTable();
