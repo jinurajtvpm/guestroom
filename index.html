@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+=<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1886,9 +1886,9 @@
             for (let day = checkin; day <= checkout; day++) {
                 const cell = document.getElementById(`day-${day}-room-${roomNum}`);
                 if (day === checkin) {
-                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#B8B8FF' : '#ff6b6b';
                 } else {
-                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#B8B8FF' : '#ff6b6b';
                     cell.style.display = 'none';
                 }
             }
@@ -1962,7 +1962,7 @@
             const isStarting = checkinDay === day;
             
             if (bookingsOnDay.length === 1) {
-                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#B8B8FF' : '#ff6b6b';
             } else {
                 if (isEnding) {
                     const topDiv = document.createElement('div');
