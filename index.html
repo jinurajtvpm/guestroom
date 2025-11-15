@@ -846,7 +846,16 @@
                 opacity: 0.7;
             }
         }
-        
+.date-cell.current-date {
+    background-color: grey !important; /* Pink color for current date */
+    color: white;
+    font-weight: bold;
+}
+
+.date-cell.sunday-date {
+    color: red;
+    font-weight: bold;
+}
         /* NEW: Filter section improvements */
         .filter-row {
             display: flex;
@@ -1615,7 +1624,37 @@
             }
         }
 
+    function highlightSpecialDates() {
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const today = new Date();
+    const currentDate = today.getDate();
+    const currentMonthIndex = today.getMonth();
+    const currentYearFull = today.getFullYear();
+    
+    // Get all date cells
+    const dateCells = document.querySelectorAll('.date-cell');
+    
+    dateCells.forEach((dateCell, index) => {
+        const day = index + 1;
+        
+        // Remove any existing highlighting
+        dateCell.classList.remove('current-date', 'sunday-date');
+        
+        // Check if this is the current date
+        if (day === currentDate && currentMonth === currentMonthIndex && currentYear === currentYearFull) {
+            dateCell.classList.add('current-date');
+        }
+        
+        // Check if this is a Sunday
+        const date = new Date(currentYear, currentMonth, day);
+        if (date.getDay() === 0) { // 0 = Sunday
+            dateCell.classList.add('sunday-date');
+        }
+    });
+}
+
         // Setup real-time bookings listener
+
       function setupRealtimeListener() {
     if (unsubscribeBookings) {
         unsubscribeBookings();
@@ -1804,6 +1843,8 @@
             updatePageTitle();
             renderBookings();
             updateCancelledBookingsTable();
+            highlightSpecialDates();
+
         }
 
         // Update page title with current month and year
@@ -2985,6 +3026,8 @@ Remarks: ${booking.remarks || 'None'}`;
                 currentYear--;
             }
             initializeTable();
+            highlightSpecialDates(); // ADD THIS
+
         });
 
         nextMonthBtn.addEventListener('click', function() {
@@ -2994,6 +3037,8 @@ Remarks: ${booking.remarks || 'None'}`;
                 currentYear++;
             }
             initializeTable();
+            highlightSpecialDates(); // ADD THIS
+
         });
 
         // Filter functionality
