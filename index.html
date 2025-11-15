@@ -1602,6 +1602,7 @@
                     ...doc.data()
                 }));
                 filteredBookings = [...bookings];
+                console.log('Bookings loaded:', bookings.length);
                 renderBookings();
                 updateEntriesTable();
                 populateYearFilter();
@@ -1628,6 +1629,7 @@
                         ...doc.data()
                     }));
                     filteredBookings = [...bookings];
+                    console.log('Bookings updated in real-time:', bookings.length);
                     renderBookings();
                     updateEntriesTable();
                     populateYearFilter();
@@ -1751,11 +1753,11 @@
 
         // NEW: Show/hide calendar loading overlay
         function showCalendarLoading() {
-            calendarLoading.classList.remove('hidden');
+            calendarLoading.style.display = 'flex';
         }
 
         function hideCalendarLoading() {
-            calendarLoading.classList.add('hidden');
+            calendarLoading.style.display = 'none';
         }
 
         // Initialize the calendar table
