@@ -783,19 +783,19 @@
         
         /* NEW: Loading overlay for calendar */
         .loading-overlay {
-    position: absolute;
-    top: 41px; /* Table header ki height ke equal */
-    left: 0;
-    width: 100%;
-    height: calc(100% - 41px); /* Header ko exclude karo */
-    background-color: rgba(255, 255, 255, 0.95);
-    display: none; /* Default hidden */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 10;
-    border-radius: 0 0 10px 10px; /* Bottom corners rounded */
-}
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            border-radius: 10px;
+        }
         
         .loading-message {
             text-align: center;
@@ -1616,28 +1616,36 @@
         }
 
         // Setup real-time bookings listener
-        function setupRealtimeListener() {
-            if (unsubscribeBookings) {
-                unsubscribeBookings();
-            }
+      function setupRealtimeListener() {
+    if (unsubscribeBookings) {
+        unsubscribeBookings();
+    }
 
-            unsubscribeBookings = db.collection('bookings')
-                .orderBy('checkin')
-                .onSnapshot(snapshot => {
-                    bookings = snapshot.docs.map(doc => ({
-                        id: doc.id,
-                        ...doc.data()
-                    }));
-                    filteredBookings = [...bookings];
-                    console.log('Bookings updated in real-time:', bookings.length);
-                    renderBookings();
-                    updateEntriesTable();
-                    populateYearFilter();
-                    updateCancelledBookingsTable();
-                }, error => {
-                    console.error('Error in realtime listener:', error);
-                });
-        }
+    // Show loading when setting up the listener
+    showCalendarLoading();
+
+    unsubscribeBookings = db.collection('bookings')
+        .orderBy('checkin')
+        .onSnapshot(snapshot => {
+            bookings = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            filteredBookings = [...bookings];
+            console.log('Bookings updated in real-time:', bookings.length);
+            renderBookings();
+            updateEntriesTable();
+            populateYearFilter();
+            updateCancelledBookingsTable();
+            
+            // ADD THIS LINE - Hide loading after real-time data is processed
+            hideCalendarLoading();
+        }, error => {
+            console.error('Error in realtime listener:', error);
+            // ADD THIS LINE - Hide loading even if there's an error
+            hideCalendarLoading();
+        });
+}
 
         // Add booking to Firebase
         async function addBooking(booking) {
