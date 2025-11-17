@@ -283,11 +283,11 @@
         }
         
         .booking-pending {
-            background-color: #ff9999; /* Light red for pending status */
+            background-color: #ff9999;
         }
         
         .booking-yet-to-confirm {
-            background-color: #ffb3b3; /* Lighter red for yet-to-confirm status */
+            background-color: #ffb3b3;
         }
         
         .booking-top {
@@ -573,7 +573,52 @@
             flex: 1;
         }
         
-        /* NEW STYLES FOR CONFIRMATION MESSAGE MODAL */
+        /* NEW STYLES FOR MULTIPLE ROOM SELECTION */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+        }
+        
+        /* NEW STYLES FOR CONTACT NUMBER */
+        .contact-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .contact-number {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .contact-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .call-btn {
+            color: #3498db;
+            cursor: pointer;
+        }
+        
+        .contact-whatsapp-btn {
+            color: #25D366;
+            cursor: pointer;
+        }
+        
         .confirmation-message {
             background-color: #f8f9fa;
             padding: 15px;
@@ -846,16 +891,18 @@
                 opacity: 0.7;
             }
         }
-.date-cell.current-date {
-    background-color: grey !important; /* Pink color for current date */
-    color: white;
-    font-weight: bold;
-}
+        
+        .date-cell.current-date {
+            background-color: grey !important;
+            color: white;
+            font-weight: bold;
+        }
 
-.date-cell.sunday-date {
-    color: red;
-    font-weight: bold;
-}
+        .date-cell.sunday-date {
+            color: red;
+            font-weight: bold;
+        }
+        
         /* NEW: Filter section improvements */
         .filter-row {
             display: flex;
@@ -984,6 +1031,10 @@
                 width: 100%;
                 justify-content: space-between;
             }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
         }
         
         @media (max-width: 480px) {
@@ -1079,16 +1130,33 @@
                     <h2 class="form-title">Add New Booking</h2>
                     <form id="booking-form">
                         <div class="form-group">
-                            <label for="guest-room">Guest Room</label>
-                            <select id="guest-room" required>
-                                <option value="">Select Room</option>
-                                <option value="GR - 1">GR - 1 (Umium)</option>
-                                <option value="GR - 2">GR - 2 (Laitlum)</option>
-                                <option value="GR - 3">GR - 3 (Mawsmai)</option>
-                                <option value="GR - 4">GR - 4 (Sohra)</option>
-                                <option value="GR - 5">GR - 5 (Shella)</option>
-                                <option value="GR - 6">GR - 6 (Arwah)</option>
-                            </select>
+                            <label for="guest-room">Guest Room(s)</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="room-gr1" name="rooms" value="GR - 1">
+                                    <label for="room-gr1">GR - 1 (Umium)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="room-gr2" name="rooms" value="GR - 2">
+                                    <label for="room-gr2">GR - 2 (Laitlum)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="room-gr3" name="rooms" value="GR - 3">
+                                    <label for="room-gr3">GR - 3 (Mawsmai)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="room-gr4" name="rooms" value="GR - 4">
+                                    <label for="room-gr4">GR - 4 (Sohra)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="room-gr5" name="rooms" value="GR - 5">
+                                    <label for="room-gr5">GR - 5 (Shella)</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="room-gr6" name="rooms" value="GR - 6">
+                                    <label for="room-gr6">GR - 6 (Arwah)</label>
+                                </div>
+                            </div>
                         </div>
                         
                         <div class="form-group">
@@ -1104,6 +1172,11 @@
                         <div class="form-group">
                             <label for="guest-name">Guest Name</label>
                             <input type="text" id="guest-name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact-number">Contact Number</label>
+                            <input type="tel" id="contact-number" placeholder="Enter contact number">
                         </div>
                         
                         <div class="form-group">
@@ -1126,7 +1199,7 @@
                             <textarea id="remarks" rows="3"></textarea>
                         </div>
                         
-                        <button type="submit" class="btn-submit">Add Booking</button>
+                        <button type="submit" class="btn-submit">Add Booking(s)</button>
                     </form>
                 </div>
             </div>
@@ -1288,6 +1361,11 @@
                 <div class="modal-form-group">
                     <label for="edit-guest-name">Guest Name</label>
                     <input type="text" id="edit-guest-name" required>
+                </div>
+                
+                <div class="modal-form-group">
+                    <label for="edit-contact-number">Contact Number</label>
+                    <input type="tel" id="edit-contact-number" placeholder="Enter contact number">
                 </div>
                 
                 <div class="modal-form-group">
@@ -1624,67 +1702,37 @@
             }
         }
 
-    function highlightSpecialDates() {
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-    const today = new Date();
-    const currentDate = today.getDate();
-    const currentMonthIndex = today.getMonth();
-    const currentYearFull = today.getFullYear();
-    
-    // Get all date cells
-    const dateCells = document.querySelectorAll('.date-cell');
-    
-    dateCells.forEach((dateCell, index) => {
-        const day = index + 1;
-        
-        // Remove any existing highlighting
-        dateCell.classList.remove('current-date', 'sunday-date');
-        
-        // Check if this is the current date
-        if (day === currentDate && currentMonth === currentMonthIndex && currentYear === currentYearFull) {
-            dateCell.classList.add('current-date');
-        }
-        
-        // Check if this is a Sunday
-        const date = new Date(currentYear, currentMonth, day);
-        if (date.getDay() === 0) { // 0 = Sunday
-            dateCell.classList.add('sunday-date');
-        }
-    });
-}
-
         // Setup real-time bookings listener
+        function setupRealtimeListener() {
+            if (unsubscribeBookings) {
+                unsubscribeBookings();
+            }
 
-      function setupRealtimeListener() {
-    if (unsubscribeBookings) {
-        unsubscribeBookings();
-    }
+            // Show loading when setting up the listener
+            showCalendarLoading();
 
-    // Show loading when setting up the listener
-    showCalendarLoading();
-
-    unsubscribeBookings = db.collection('bookings')
-        .orderBy('checkin')
-        .onSnapshot(snapshot => {
-            bookings = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            filteredBookings = [...bookings];
-            console.log('Bookings updated in real-time:', bookings.length);
-            renderBookings();
-            updateEntriesTable();
-            populateYearFilter();
-            updateCancelledBookingsTable();
-            
-            // ADD THIS LINE - Hide loading after real-time data is processed
-            hideCalendarLoading();
-        }, error => {
-            console.error('Error in realtime listener:', error);
-            // ADD THIS LINE - Hide loading even if there's an error
-            hideCalendarLoading();
-        });
-}
+            unsubscribeBookings = db.collection('bookings')
+                .orderBy('checkin')
+                .onSnapshot(snapshot => {
+                    bookings = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    filteredBookings = [...bookings];
+                    console.log('Bookings updated in real-time:', bookings.length);
+                    renderBookings();
+                    updateEntriesTable();
+                    populateYearFilter();
+                    updateCancelledBookingsTable();
+                    
+                    // Hide loading after real-time data is processed
+                    hideCalendarLoading();
+                }, error => {
+                    console.error('Error in realtime listener:', error);
+                    // Hide loading even if there's an error
+                    hideCalendarLoading();
+                });
+        }
 
         // Add booking to Firebase
         async function addBooking(booking) {
@@ -1695,6 +1743,7 @@
                     checkin: booking.checkin,
                     checkout: booking.checkout,
                     guest: booking.guest,
+                    contactNumber: booking.contactNumber || '',
                     bookedBy: booking.bookedBy,
                     status: booking.status,
                     remarks: booking.remarks || '',
@@ -1706,6 +1755,38 @@
                 console.error('Error adding booking:', error);
                 hideLoading();
                 alert('Error adding booking. Please try again.');
+                return false;
+            }
+        }
+
+        // Add multiple bookings to Firebase
+        async function addMultipleBookings(bookingsData) {
+            try {
+                showLoading();
+                const batch = db.batch();
+                
+                bookingsData.forEach(booking => {
+                    const docRef = db.collection('bookings').doc();
+                    batch.set(docRef, {
+                        room: booking.room,
+                        checkin: booking.checkin,
+                        checkout: booking.checkout,
+                        guest: booking.guest,
+                        contactNumber: booking.contactNumber || '',
+                        bookedBy: booking.bookedBy,
+                        status: booking.status,
+                        remarks: booking.remarks || '',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+                
+                await batch.commit();
+                hideLoading();
+                return true;
+            } catch (error) {
+                console.error('Error adding multiple bookings:', error);
+                hideLoading();
+                alert('Error adding bookings. Please try again.');
                 return false;
             }
         }
@@ -1844,7 +1925,6 @@
             renderBookings();
             updateCancelledBookingsTable();
             highlightSpecialDates();
-
         }
 
         // Update page title with current month and year
@@ -1856,6 +1936,36 @@
             
             // NEW: Update cancelled bookings title
             cancelledBookingsTitle.textContent = `Cancelled Bookings - ${monthNames[currentMonth]} ${currentYear}`;
+        }
+
+        // Highlight current date and Sundays
+        function highlightSpecialDates() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const today = new Date();
+            const currentDate = today.getDate();
+            const currentMonthIndex = today.getMonth();
+            const currentYearFull = today.getFullYear();
+            
+            // Get all date cells
+            const dateCells = document.querySelectorAll('.date-cell');
+            
+            dateCells.forEach((dateCell, index) => {
+                const day = index + 1;
+                
+                // Remove any existing highlighting
+                dateCell.classList.remove('current-date', 'sunday-date');
+                
+                // Check if this is the current date
+                if (day === currentDate && currentMonth === currentMonthIndex && currentYear === currentYearFull) {
+                    dateCell.classList.add('current-date');
+                }
+                
+                // Check if this is a Sunday
+                const date = new Date(currentYear, currentMonth, day);
+                if (date.getDay() === 0) { // 0 = Sunday
+                    dateCell.classList.add('sunday-date');
+                }
+            });
         }
 
         // Render bookings on the calendar
@@ -2140,7 +2250,7 @@
             });
         }
 
-        // Show booking details in modal - FIXED: Now properly handles multiple bookings
+        // Show booking details in modal
         function showBookingDetails(day, roomNum) {
             const roomBookings = bookings.filter(booking => {
                 const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
@@ -2203,6 +2313,27 @@
                 const booking = roomBookings[0];
                 currentBookingId = booking.id;
                 
+                // NEW: Include contact number in booking details for admin
+                let contactHTML = '';
+                if (isAdmin && booking.contactNumber) {
+                    contactHTML = `
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Contact Number</div>
+                            <div class="contact-info">
+                                <span class="contact-number">${booking.contactNumber}</span>
+                                <div class="contact-actions">
+                                    <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                    <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
                 const bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
@@ -2212,6 +2343,7 @@
                         <div class="booking-details-label">Guest Name</div>
                         <div class="booking-details-value">${booking.guest}</div>
                     </div>
+                    ${contactHTML}
                     <div class="booking-details-group">
                         <div class="booking-details-label">Dates</div>
                         <div class="dates-inline">
@@ -2247,7 +2379,7 @@
                     bookingModalActions.classList.add('hidden');
                 }
             } else {
-                // FIXED: Now shows action buttons for multiple bookings
+                // Multiple bookings in the same cell
                 let bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
@@ -2279,7 +2411,7 @@
                 
                 bookingDetailsContent.innerHTML = bookingDetailsHTML;
                 
-                // FIXED: Show action buttons for admin even with multiple bookings
+                // Show action buttons for admin even with multiple bookings
                 if (isAdmin) {
                     bookingModalActions.classList.remove('hidden');
                 } else {
@@ -2298,6 +2430,27 @@
                 const booking = currentSplitCellBookings[index];
                 currentBookingId = booking.id;
                 
+                // NEW: Include contact number in booking details for admin
+                let contactHTML = '';
+                if (isAdmin && booking.contactNumber) {
+                    contactHTML = `
+                        <div class="booking-details-group">
+                            <div class="booking-details-label">Contact Number</div>
+                            <div class="contact-info">
+                                <span class="contact-number">${booking.contactNumber}</span>
+                                <div class="contact-actions">
+                                    <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                    <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
                 const bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
@@ -2307,6 +2460,7 @@
                         <div class="booking-details-label">Guest Name</div>
                         <div class="booking-details-value">${booking.guest}</div>
                     </div>
+                    ${contactHTML}
                     <div class="booking-details-group">
                         <div class="booking-details-label">Dates</div>
                         <div class="dates-inline">
@@ -2340,6 +2494,18 @@
                     bookingModalActions.classList.remove('hidden');
                 }
             }
+        }
+
+        // NEW: Function to call a phone number
+        function callNumber(phoneNumber) {
+            window.open(`tel:${phoneNumber}`, '_self');
+        }
+
+        // NEW: Function to open WhatsApp chat
+        function openWhatsApp(phoneNumber) {
+            // Remove any non-digit characters from phone number
+            const cleanNumber = phoneNumber.replace(/\D/g, '');
+            window.open(`https://wa.me/${cleanNumber}`, '_blank');
         }
 
         // Update entries table with filtered data
@@ -2506,6 +2672,7 @@
             document.getElementById('edit-checkin-date').value = booking.checkin;
             document.getElementById('edit-checkout-date').value = booking.checkout;
             document.getElementById('edit-guest-name').value = booking.guest;
+            document.getElementById('edit-contact-number').value = booking.contactNumber || '';
             document.getElementById('edit-booked-by').value = booking.bookedBy;
             document.getElementById('edit-status').value = booking.status;
             document.getElementById('edit-remarks').value = booking.remarks || '';
@@ -2569,7 +2736,7 @@ Wish you a comfortable stay!
 Mess Secy`;
         }
 
-        // NEW: Generate WhatsApp update message
+        // Generate WhatsApp update message
         function generateWhatsAppMessage(booking) {
             const checkinDate = formatDateFull(booking.checkin);
             const checkoutDate = formatDateFull(booking.checkout);
@@ -2604,7 +2771,7 @@ Status : ${statusText}
 Remarks: ${booking.remarks || 'None'}`;
         }
 
-        // NEW: Share booking via WhatsApp - FIXED: Properly handles both message types
+        // Share booking via WhatsApp
         function shareViaWhatsApp(messageType) {
             if (currentSplitCellBookings.length === 1) {
                 const booking = currentSplitCellBookings[0];
@@ -2734,10 +2901,10 @@ Remarks: ${booking.remarks || 'None'}`;
                         adminSettingsBtn.classList.remove('hidden');
                         changePasswordBtn.classList.remove('hidden');
                         logoutBtn.classList.remove('hidden');
-                        // NEW: Hide cancelled bookings section for admin
+                        // Hide cancelled bookings section for admin
                         cancelledBookingsSection.classList.add('hidden');
                         
-                        // FIXED: Save session to localStorage
+                        // Save session to localStorage
                         saveAdminSession();
                         
                         hideLoginModal();
@@ -2761,10 +2928,10 @@ Remarks: ${booking.remarks || 'None'}`;
             adminSettingsBtn.classList.add('hidden');
             changePasswordBtn.classList.add('hidden');
             logoutBtn.classList.add('hidden');
-            // NEW: Show cancelled bookings section for non-admin users
+            // Show cancelled bookings section for non-admin users
             cancelledBookingsSection.classList.remove('hidden');
             
-            // FIXED: Clear session from localStorage
+            // Clear session from localStorage
             clearAdminSession();
             
             if (bookingForm.dataset.editingId) {
@@ -2854,12 +3021,12 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
-        // NEW: Print icon button handler
+        // Print icon button handler
         printIconBtn.addEventListener('click', function() {
             window.print();
         });
 
-        // NEW: Delete range button handler
+        // Delete range button handler
         deleteRangeBtn.addEventListener('click', function() {
             // Set default dates for deletion range (current month)
             const today = new Date();
@@ -2873,7 +3040,7 @@ Remarks: ${booking.remarks || 'None'}`;
             deleteRangeModal.classList.add('active');
         });
 
-        // NEW: Confirm delete range button handler
+        // Confirm delete range button handler
         confirmDeleteRangeBtn.addEventListener('click', async function() {
             const startDate = deleteStartDate.value;
             const endDate = deleteEndDate.value;
@@ -2900,12 +3067,12 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
-        // NEW: WhatsApp button handler - shares booking details
+        // WhatsApp button handler - shares booking details
         bookingWhatsappBtn.addEventListener('click', function() {
             shareViaWhatsApp('details');
         });
 
-        // NEW: Confirmation message button handler - shares confirmation message via WhatsApp
+        // Confirmation message button handler - shares confirmation message via WhatsApp
         bookingConfirmBtn.addEventListener('click', function() {
             shareViaWhatsApp('confirmation');
         });
@@ -2934,49 +3101,71 @@ Remarks: ${booking.remarks || 'None'}`;
         bookingForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const room = document.getElementById('guest-room').value;
+            const roomCheckboxes = document.querySelectorAll('input[name="rooms"]:checked');
             const checkin = document.getElementById('checkin-date').value;
             const checkout = document.getElementById('checkout-date').value;
             const guest = document.getElementById('guest-name').value;
+            const contactNumber = document.getElementById('contact-number').value;
             const bookedBy = document.getElementById('booked-by').value;
             const status = document.getElementById('status').value;
             const remarks = document.getElementById('remarks').value;
+            
+            if (roomCheckboxes.length === 0) {
+                alert('Please select at least one guest room');
+                return;
+            }
             
             if (new Date(checkin) > new Date(checkout)) {
                 alert('Check-out must be on or after check-in');
                 return;
             }
             
-            const roomNum = parseInt(room.split(' - ')[1]);
             const checkinDate = new Date(checkin);
             const checkoutDate = new Date(checkout);
             
-            const editingId = bookingForm.dataset.editingId;
+            // Check for conflicts for each selected room
+            const roomsWithConflicts = [];
+            roomCheckboxes.forEach(checkbox => {
+                const roomNum = parseInt(checkbox.value.split(' - ')[1]);
+                if (status === 'confirm' && hasConflict(roomNum, checkinDate, checkoutDate)) {
+                    roomsWithConflicts.push(checkbox.value);
+                }
+            });
             
-            if (status === 'confirm' && hasConflict(roomNum, checkinDate, checkoutDate, editingId)) {
-                alert('Room already booked for these dates');
+            if (roomsWithConflicts.length > 0) {
+                alert(`The following rooms are already booked for these dates: ${roomsWithConflicts.join(', ')}`);
                 return;
             }
             
-            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
+            // Create booking data for each selected room
+            const bookingsData = Array.from(roomCheckboxes).map(checkbox => ({
+                room: checkbox.value,
+                checkin,
+                checkout,
+                guest,
+                contactNumber,
+                bookedBy,
+                status,
+                remarks
+            }));
             
             let success = false;
-            if (editingId) {
-                success = await updateBooking(editingId, bookingData);
-                if (success) {
-                    alert('Booking updated successfully!');
-                    delete bookingForm.dataset.editingId;
-                }
+            if (bookingsData.length === 1) {
+                success = await addBooking(bookingsData[0]);
             } else {
-                success = await addBooking(bookingData);
-                if (success) {
-                    alert('Booking added successfully!');
-                }
+                success = await addMultipleBookings(bookingsData);
             }
             
             if (success) {
+                if (bookingsData.length === 1) {
+                    alert('Booking added successfully!');
+                } else {
+                    alert(`${bookingsData.length} bookings added successfully!`);
+                }
                 bookingForm.reset();
                 setDefaultDates();
+                // Uncheck all room checkboxes
+                roomCheckboxes.forEach(checkbox => checkbox.checked = false);
             }
         });
 
@@ -2988,6 +3177,7 @@ Remarks: ${booking.remarks || 'None'}`;
             const checkin = document.getElementById('edit-checkin-date').value;
             const checkout = document.getElementById('edit-checkout-date').value;
             const guest = document.getElementById('edit-guest-name').value;
+            const contactNumber = document.getElementById('edit-contact-number').value;
             const bookedBy = document.getElementById('edit-booked-by').value;
             const status = document.getElementById('edit-status').value;
             const remarks = document.getElementById('edit-remarks').value;
@@ -3008,7 +3198,7 @@ Remarks: ${booking.remarks || 'None'}`;
                 return;
             }
             
-            const bookingData = { room, checkin, checkout, guest, bookedBy, status, remarks };
+            const bookingData = { room, checkin, checkout, guest, contactNumber, bookedBy, status, remarks };
             
             const success = await updateBooking(editingId, bookingData);
             if (success) {
@@ -3026,8 +3216,6 @@ Remarks: ${booking.remarks || 'None'}`;
                 currentYear--;
             }
             initializeTable();
-            highlightSpecialDates(); // ADD THIS
-
         });
 
         nextMonthBtn.addEventListener('click', function() {
@@ -3037,8 +3225,6 @@ Remarks: ${booking.remarks || 'None'}`;
                 currentYear++;
             }
             initializeTable();
-            highlightSpecialDates(); // ADD THIS
-
         });
 
         // Filter functionality
@@ -3096,7 +3282,7 @@ Remarks: ${booking.remarks || 'None'}`;
                 await loadSettings();
                 setupSettingsListener();
                 
-                // FIXED: Check for existing admin session
+                // Check for existing admin session
                 if (checkAdminSession()) {
                     isAdmin = true;
                     adminFormSection.classList.remove('hidden');
