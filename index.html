@@ -605,10 +605,16 @@
         }
         
         .contact-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}   
+.contact-actions .icon-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+     
         .call-btn {
             color: #3498db;
             cursor: pointer;
@@ -1312,9 +1318,13 @@
                     <button class="icon-btn whatsapp-btn" id="booking-whatsapp-btn" title="Share Booking Details via WhatsApp">
                         <i class="fab fa-whatsapp"></i>
                     </button>
+                    <!--
+
                     <button class="icon-btn confirm-btn" id="booking-confirm-btn" title="Share Confirmation Message via WhatsApp">
                         <i class="fas fa-envelope"></i>
                     </button>
+                    -->
+
                     <button class="icon-btn edit-btn" id="booking-edit-btn" title="Edit Booking">
                         <i class="fas fa-edit"></i>
                     </button>
@@ -1937,6 +1947,16 @@
             // NEW: Update cancelled bookings title
             cancelledBookingsTitle.textContent = `Cancelled Bookings - ${monthNames[currentMonth]} ${currentYear}`;
         }
+        function showConfirmationModalForContact(bookingId) {
+    const booking = bookings.find(b => b.id === bookingId);
+    if (booking) {
+        const message = generateConfirmationMessage(booking);
+        confirmationMessageContent.value = message;
+        confirmationModal.classList.add('active');
+    } else {
+        alert("Booking not found.");
+    }
+}
 
         // Highlight current date and Sundays
         function highlightSpecialDates() {
@@ -2314,25 +2334,29 @@
                 currentBookingId = booking.id;
                 
                 // NEW: Include contact number in booking details for admin
-                let contactHTML = '';
-                if (isAdmin && booking.contactNumber) {
-                    contactHTML = `
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Contact Number</div>
-                            <div class="contact-info">
-                                <span class="contact-number">${booking.contactNumber}</span>
-                                <div class="contact-actions">
-                                    <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
-                                        <i class="fas fa-phone"></i>
-                                    </button>
-                                    <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
+                // In both showBookingDetails and selectBookingFromMultiple functions, update the contactHTML section:
+let contactHTML = '';
+if (isAdmin && booking.contactNumber) {
+    contactHTML = `
+        <div class="booking-details-group">
+            <div class="booking-details-label">Contact Number</div>
+            <div class="contact-info">
+                <span class="contact-number">${booking.contactNumber}</span>
+                <div class="contact-actions">
+                    <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                    <button class="icon-btn confirm-btn" onclick="showConfirmationModalForContact('${booking.id}')" title="Confirmation Message">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
                 
                 const bookingDetailsHTML = `
                     <div class="booking-details-group">
@@ -2432,24 +2456,27 @@
                 
                 // NEW: Include contact number in booking details for admin
                 let contactHTML = '';
-                if (isAdmin && booking.contactNumber) {
-                    contactHTML = `
-                        <div class="booking-details-group">
-                            <div class="booking-details-label">Contact Number</div>
-                            <div class="contact-info">
-                                <span class="contact-number">${booking.contactNumber}</span>
-                                <div class="contact-actions">
-                                    <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
-                                        <i class="fas fa-phone"></i>
-                                    </button>
-                                    <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
-                                        <i class="fab fa-whatsapp"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
+if (isAdmin && booking.contactNumber) {
+    contactHTML = `
+        <div class="booking-details-group">
+            <div class="booking-details-label">Contact Number</div>
+            <div class="contact-info">
+                <span class="contact-number">${booking.contactNumber}</span>
+                <div class="contact-actions">
+                    <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                    <button class="icon-btn confirm-btn" onclick="showConfirmationModalForContact('${booking.id}')" title="Confirmation Message">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+}
                 
                 const bookingDetailsHTML = `
                     <div class="booking-details-group">
