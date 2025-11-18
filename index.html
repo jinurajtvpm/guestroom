@@ -2324,7 +2324,7 @@
                                     <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
                                         <i class="fab fa-whatsapp"></i>
                                     </button>
-                                    <button class="icon-btn confirm-btn" onclick="showConfirmationModalForContact('${booking.id}')" title="Confirmation Message">
+                                    <button class="icon-btn confirm-btn" onclick="sendConfirmationViaWhatsApp('${booking.id}')" title="Send Confirmation via WhatsApp">
                                         <i class="fas fa-envelope"></i>
                                     </button>
                                 </div>
@@ -2444,7 +2444,7 @@
                                     <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
                                         <i class="fab fa-whatsapp"></i>
                                     </button>
-                                    <button class="icon-btn confirm-btn" onclick="showConfirmationModalForContact('${booking.id}')" title="Confirmation Message">
+                                    <button class="icon-btn confirm-btn" onclick="sendConfirmationViaWhatsApp('${booking.id}')" title="Send Confirmation via WhatsApp">
                                         <i class="fas fa-envelope"></i>
                                     </button>
                                 </div>
@@ -2510,15 +2510,17 @@
             window.open(`https://wa.me/${cleanNumber}`, '_blank');
         }
 
-        // NEW: Function to show confirmation modal from contact field
-        function showConfirmationModalForContact(bookingId) {
+        // NEW: Function to send confirmation message via WhatsApp directly
+        function sendConfirmationViaWhatsApp(bookingId) {
             const booking = bookings.find(b => b.id === bookingId);
-            if (booking) {
+            if (booking && booking.contactNumber) {
                 const message = generateConfirmationMessage(booking);
-                confirmationMessageContent.value = message;
-                confirmationModal.classList.add('active');
+                const encodedMessage = encodeURIComponent(message);
+                const cleanNumber = booking.contactNumber.replace(/\D/g, '');
+                const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
             } else {
-                alert("Booking not found.");
+                alert("No contact number available for this booking.");
             }
         }
 
