@@ -125,6 +125,14 @@
             background: rgba(155, 89, 182, 0.1);
         }
         
+        .user-management-btn {
+            color: #2c3e50;
+        }
+        
+        .user-management-btn:hover {
+            background: rgba(44, 62, 80, 0.1);
+        }
+        
         .app-container {
             display: flex;
             flex-wrap: wrap;
@@ -964,30 +972,6 @@
             margin-left: auto;
         }
         
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            color: #2c3e50;
-            padding: 5px 10px;
-            background-color: rgba(255, 255, 255, 0.7);
-            border-radius: 20px;
-            max-width: 300px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .user-role {
-            font-weight: 600;
-            color: #3498db;
-        }
-        
-        .user-email {
-            color: #7f8c8d;
-        }
-        
         .auth-buttons {
             display: flex;
             gap: 5px;
@@ -999,14 +983,6 @@
         
         .register-btn:hover {
             background: rgba(39, 174, 96, 0.1);
-        }
-        
-        .forgot-password-btn {
-            color: #f39c12;
-        }
-        
-        .forgot-password-btn:hover {
-            background: rgba(243, 156, 18, 0.1);
         }
         
         .auth-tabs {
@@ -1057,8 +1033,8 @@
             text-align: center;
         }
         
-        /* NEW: Pending approvals section */
-        .pending-users-container {
+        /* NEW: User management modal */
+        .user-management-container {
             background-color: white;
             padding: 25px;
             border-radius: 10px;
@@ -1066,36 +1042,36 @@
             margin-bottom: 30px;
         }
         
-        .pending-users-title {
+        .user-management-title {
             color: #2c3e50;
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #f39c12;
         }
         
-        .pending-users-table {
+        .user-management-table {
             width: 100%;
             border-collapse: collapse;
         }
         
-        .pending-users-table th {
+        .user-management-table th {
             background: linear-gradient(to bottom, #f39c12, #e67e22);
             color: white;
             padding: 12px 15px;
             text-align: left;
         }
         
-        .pending-users-table td {
+        .user-management-table td {
             padding: 12px 15px;
             border-bottom: 1px solid #e1e1e1;
             height: auto;
         }
         
-        .pending-users-table tr:nth-child(even) {
+        .user-management-table tr:nth-child(even) {
             background-color: #f8f9fa;
         }
         
-        .pending-users-table tr:hover {
+        .user-management-table tr:hover {
             background-color: #fef9e7;
         }
         
@@ -1118,6 +1094,17 @@
             border-radius: 4px;
             cursor: pointer;
             font-weight: 600;
+        }
+        
+        .delete-user-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 5px;
         }
         
         @media (max-width: 768px) {
@@ -1206,11 +1193,6 @@
                 gap: 5px;
                 margin-left: 0;
             }
-            
-            .user-info {
-                max-width: 200px;
-                font-size: 12px;
-            }
         }
         
         @media (max-width: 480px) {
@@ -1250,17 +1232,13 @@
 <body>
     <div class="container">
         
-        <div class="month-selector">
+        <div class="month-selector hidden" id="month-selector">
             <div class="month-controls">
                 <button id="prev-month" class="month-btn">Prev</button>
                 <div id="month-display" class="month-display">November 2025</div>
                 <button id="next-month" class="month-btn">Next</button>
             </div>
             <div class="auth-section" id="auth-section">
-                <div class="user-info hidden" id="user-info">
-                    <span id="user-role-display"></span>
-                    <span id="user-email-display"></span>
-                </div>
                 <div class="auth-buttons">
                     <button id="login-btn" class="icon-btn login-btn" title="Login">
                         <i class="fas fa-sign-in-alt"></i>
@@ -1268,8 +1246,8 @@
                     <button id="register-btn" class="icon-btn register-btn" title="Register">
                         <i class="fas fa-user-plus"></i>
                     </button>
-                    <button id="forgot-password-btn" class="icon-btn forgot-password-btn" title="Forgot Password">
-                        <i class="fas fa-key"></i>
+                    <button id="user-management-btn" class="icon-btn user-management-btn hidden" title="User Management">
+                        <i class="fas fa-users"></i>
                     </button>
                     <button id="admin-settings-btn" class="icon-btn admin-settings-btn hidden" title="Settings">
                         <i class="fas fa-cog"></i>
@@ -1284,7 +1262,8 @@
                 <div id="loading-indicator" class="loading hidden"></div>
             </div>
         </div>
-        <header>
+        
+        <header class="hidden" id="header">
             <h1 id="page-title"></h1>
         </header>
         
@@ -1408,24 +1387,6 @@
             </div>
         </div>
         
-        <!-- NEW: Pending Approvals Section (Admin Only) -->
-        <div class="pending-users-container hidden" id="pending-users-section">
-            <h2 class="pending-users-title">Pending User Approvals</h2>
-            <table class="pending-users-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Registered Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="pending-users-body">
-                    <!-- Pending users will be populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-        
         <!-- NEW: Cancelled Bookings Table - Visible to All Users -->
         <div class="cancelled-bookings-container hidden" id="cancelled-bookings-section">
             <h2 class="cancelled-bookings-title" id="cancelled-bookings-title">Cancelled Bookings - November 2025</h2>
@@ -1515,7 +1476,6 @@
             <div class="auth-tabs">
                 <div class="auth-tab active" data-tab="login">Login</div>
                 <div class="auth-tab" data-tab="register">Register</div>
-                <div class="auth-tab" data-tab="forgot-password">Reset Password</div>
             </div>
             
             <!-- Login Form -->
@@ -1552,17 +1512,6 @@
                 <div id="register-error" class="error-message"></div>
                 <div id="register-success" class="success-message"></div>
                 <button id="modal-register-btn" class="modal-btn">Register</button>
-            </div>
-            
-            <!-- Forgot Password Form -->
-            <div id="forgot-password-form" class="auth-form">
-                <h2 class="modal-title">Reset Password</h2>
-                <div class="modal-form-group">
-                    <input type="email" id="reset-email" class="modal-input" placeholder="Enter your email" required>
-                </div>
-                <div id="reset-error" class="error-message"></div>
-                <div id="reset-success" class="success-message"></div>
-                <button id="modal-reset-btn" class="modal-btn">Send Reset Link</button>
             </div>
             
             <button id="auth-modal-close" class="modal-close">Close</button>
@@ -1743,6 +1692,48 @@
         </div>
     </div>
 
+    <!-- NEW: User Management Modal -->
+    <div id="user-management-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">User Management</h2>
+            </div>
+            <div class="user-management-container">
+                <h3 class="user-management-title">Pending User Approvals</h3>
+                <table class="user-management-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Registered Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-management-body">
+                        <!-- Pending users will be populated by JavaScript -->
+                    </tbody>
+                </table>
+                
+                <h3 class="user-management-title" style="margin-top: 30px;">All Users</h3>
+                <table class="user-management-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-users-body">
+                        <!-- All users will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <button id="user-management-close" class="modal-close">Close</button>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1774,6 +1765,7 @@
         let appSettings = null;
         let currentUser = null;
         let pendingUsers = [];
+        let allUsers = [];
 
         // Room name mappings
         const roomNames = {
@@ -1799,32 +1791,25 @@
         const logoutBtn = document.getElementById('logout-btn');
         const changePasswordBtn = document.getElementById('change-password-btn');
         const adminSettingsBtn = document.getElementById('admin-settings-btn');
-        const forgotPasswordBtn = document.getElementById('forgot-password-btn');
+        const userManagementBtn = document.getElementById('user-management-btn');
         const adminFormSection = document.getElementById('admin-form-section');
         const adminEntriesSection = document.getElementById('admin-entries-section');
-        const pendingUsersSection = document.getElementById('pending-users-section');
-        const pendingUsersBody = document.getElementById('pending-users-body');
         const authModal = document.getElementById('auth-modal');
         const authModalClose = document.getElementById('auth-modal-close');
         const authTabs = document.querySelectorAll('.auth-tab');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
-        const forgotPasswordForm = document.getElementById('forgot-password-form');
         const modalLoginBtn = document.getElementById('modal-login-btn');
         const modalRegisterBtn = document.getElementById('modal-register-btn');
-        const modalResetBtn = document.getElementById('modal-reset-btn');
         const loginEmail = document.getElementById('login-email');
         const loginPassword = document.getElementById('login-password');
         const registerName = document.getElementById('register-name');
         const registerEmail = document.getElementById('register-email');
         const registerPassword = document.getElementById('register-password');
         const registerConfirmPassword = document.getElementById('register-confirm-password');
-        const resetEmail = document.getElementById('reset-email');
         const loginError = document.getElementById('login-error');
         const registerError = document.getElementById('register-error');
         const registerSuccess = document.getElementById('register-success');
-        const resetError = document.getElementById('reset-error');
-        const resetSuccess = document.getElementById('reset-success');
         const bookingModal = document.getElementById('booking-modal');
         const bookingDetailsContent = document.getElementById('booking-details-content');
         const bookingModalClose = document.getElementById('booking-modal-close');
@@ -1859,14 +1844,13 @@
         const adminSettingsClose = document.getElementById('admin-settings-close');
         const authRequiredMessage = document.getElementById('auth-required-message');
         const appContent = document.getElementById('app-content');
-        const userInfo = document.getElementById('user-info');
-        const userRoleDisplay = document.getElementById('user-role-display');
-        const userEmailDisplay = document.getElementById('user-email-display');
         const authLoginBtn = document.getElementById('auth-login-btn');
         const authRegisterBtn = document.getElementById('auth-register-btn');
         const cancelledBookingsSection = document.getElementById('cancelled-bookings-section');
         const cancelledBookingsTitle = document.getElementById('cancelled-bookings-title');
         const cancelledBookingsBody = document.getElementById('cancelled-bookings-body');
+        const monthSelector = document.getElementById('month-selector');
+        const header = document.getElementById('header');
         
         // NEW: Calendar loading overlay
         const calendarLoading = document.getElementById('calendar-loading');
@@ -1878,6 +1862,12 @@
         const deleteConfirm = document.getElementById('delete-confirm');
         const confirmDeleteRangeBtn = document.getElementById('confirm-delete-range-btn');
         const deleteRangeClose = document.getElementById('delete-range-close');
+        
+        // NEW: User management modal elements
+        const userManagementModal = document.getElementById('user-management-modal');
+        const userManagementBody = document.getElementById('user-management-body');
+        const allUsersBody = document.getElementById('all-users-body');
+        const userManagementClose = document.getElementById('user-management-close');
 
         // ========== AUTHENTICATION MANAGEMENT ==========
 
@@ -2039,20 +2029,6 @@
             }
         }
 
-        // Send password reset email
-        async function resetPassword(email) {
-            try {
-                showLoading();
-                await auth.sendPasswordResetEmail(email);
-                hideLoading();
-                return { success: true, message: 'Password reset email sent!' };
-            } catch (error) {
-                hideLoading();
-                console.error('Error sending password reset:', error);
-                return { success: false, message: getAuthErrorMessage(error) };
-            }
-        }
-
         // Logout user
         async function logoutUser() {
             try {
@@ -2096,16 +2072,12 @@
                 authRequiredMessage.classList.add('hidden');
                 appContent.classList.remove('hidden');
                 cancelledBookingsSection.classList.remove('hidden');
-                
-                // Update user info display
-                userInfo.classList.remove('hidden');
-                userRoleDisplay.textContent = isAdmin ? 'Admin: ' : 'User: ';
-                userEmailDisplay.textContent = currentUser.email;
+                monthSelector.classList.remove('hidden');
+                header.classList.remove('hidden');
                 
                 // Update auth buttons
                 loginBtn.classList.add('hidden');
                 registerBtn.classList.add('hidden');
-                forgotPasswordBtn.classList.add('hidden');
                 logoutBtn.classList.remove('hidden');
                 
                 // Show admin features if user is admin
@@ -2114,14 +2086,14 @@
                     adminEntriesSection.classList.remove('hidden');
                     adminSettingsBtn.classList.remove('hidden');
                     changePasswordBtn.classList.remove('hidden');
-                    pendingUsersSection.classList.remove('hidden');
+                    userManagementBtn.classList.remove('hidden');
                     cancelledBookingsSection.classList.add('hidden');
                 } else {
                     adminFormSection.classList.add('hidden');
                     adminEntriesSection.classList.add('hidden');
                     adminSettingsBtn.classList.add('hidden');
                     changePasswordBtn.classList.add('hidden');
-                    pendingUsersSection.classList.add('hidden');
+                    userManagementBtn.classList.add('hidden');
                 }
                 
             } else {
@@ -2130,17 +2102,17 @@
                 appContent.classList.add('hidden');
                 adminFormSection.classList.add('hidden');
                 adminEntriesSection.classList.add('hidden');
-                pendingUsersSection.classList.add('hidden');
                 cancelledBookingsSection.classList.add('hidden');
+                monthSelector.classList.add('hidden');
+                header.classList.add('hidden');
                 
                 // Update auth buttons
-                userInfo.classList.add('hidden');
                 loginBtn.classList.remove('hidden');
                 registerBtn.classList.remove('hidden');
-                forgotPasswordBtn.classList.remove('hidden');
                 logoutBtn.classList.add('hidden');
                 adminSettingsBtn.classList.add('hidden');
                 changePasswordBtn.classList.add('hidden');
+                userManagementBtn.classList.add('hidden');
             }
         }
 
@@ -2155,24 +2127,30 @@
             }
 
             unsubscribeUsers = db.collection('users')
-                .where('status', '==', 'pending')
                 .onSnapshot(snapshot => {
-                    pendingUsers = snapshot.docs.map(doc => ({
+                    const users = snapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data()
                     }));
-                    console.log('Pending users updated:', pendingUsers.length);
-                    updatePendingUsersTable();
+                    
+                    pendingUsers = users.filter(user => user.status === 'pending');
+                    allUsers = users;
+                    
+                    console.log('Users updated:', allUsers.length);
+                    console.log('Pending users:', pendingUsers.length);
+                    
+                    updateUserManagementTables();
                 }, error => {
                     console.error('Error in users listener:', error);
                 });
         }
 
-        // Update pending users table
-        function updatePendingUsersTable() {
+        // Update user management tables
+        function updateUserManagementTables() {
             if (!isAdmin) return;
             
-            pendingUsersBody.innerHTML = '';
+            // Update pending users table
+            userManagementBody.innerHTML = '';
             
             if (pendingUsers.length === 0) {
                 const row = document.createElement('tr');
@@ -2183,46 +2161,102 @@
                 cell.style.padding = '20px';
                 cell.style.color = '#7f8c8d';
                 row.appendChild(cell);
-                pendingUsersBody.appendChild(row);
-                return;
+                userManagementBody.appendChild(row);
+            } else {
+                pendingUsers.forEach(user => {
+                    const row = document.createElement('tr');
+                    
+                    // Name
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = user.name;
+                    row.appendChild(nameCell);
+                    
+                    // Email
+                    const emailCell = document.createElement('td');
+                    emailCell.textContent = user.email;
+                    row.appendChild(emailCell);
+                    
+                    // Registered Date
+                    const dateCell = document.createElement('td');
+                    dateCell.textContent = user.createdAt ? user.createdAt.toDate().toLocaleDateString() : 'N/A';
+                    row.appendChild(dateCell);
+                    
+                    // Actions
+                    const actionsCell = document.createElement('td');
+                    const approveBtn = document.createElement('button');
+                    approveBtn.textContent = 'Approve';
+                    approveBtn.className = 'approve-btn';
+                    approveBtn.addEventListener('click', () => approveUser(user.id));
+                    
+                    const rejectBtn = document.createElement('button');
+                    rejectBtn.textContent = 'Reject';
+                    rejectBtn.className = 'reject-btn';
+                    rejectBtn.addEventListener('click', () => rejectUser(user.id));
+                    
+                    actionsCell.appendChild(approveBtn);
+                    actionsCell.appendChild(rejectBtn);
+                    row.appendChild(actionsCell);
+                    
+                    userManagementBody.appendChild(row);
+                });
             }
             
-            pendingUsers.forEach(user => {
+            // Update all users table
+            allUsersBody.innerHTML = '';
+            
+            if (allUsers.length === 0) {
                 const row = document.createElement('tr');
-                
-                // Name
-                const nameCell = document.createElement('td');
-                nameCell.textContent = user.name;
-                row.appendChild(nameCell);
-                
-                // Email
-                const emailCell = document.createElement('td');
-                emailCell.textContent = user.email;
-                row.appendChild(emailCell);
-                
-                // Registered Date
-                const dateCell = document.createElement('td');
-                dateCell.textContent = user.createdAt ? user.createdAt.toDate().toLocaleDateString() : 'N/A';
-                row.appendChild(dateCell);
-                
-                // Actions
-                const actionsCell = document.createElement('td');
-                const approveBtn = document.createElement('button');
-                approveBtn.textContent = 'Approve';
-                approveBtn.className = 'approve-btn';
-                approveBtn.addEventListener('click', () => approveUser(user.id));
-                
-                const rejectBtn = document.createElement('button');
-                rejectBtn.textContent = 'Reject';
-                rejectBtn.className = 'reject-btn';
-                rejectBtn.addEventListener('click', () => rejectUser(user.id));
-                
-                actionsCell.appendChild(approveBtn);
-                actionsCell.appendChild(rejectBtn);
-                row.appendChild(actionsCell);
-                
-                pendingUsersBody.appendChild(row);
-            });
+                const cell = document.createElement('td');
+                cell.colSpan = 5;
+                cell.textContent = 'No users found';
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = '#7f8c8d';
+                row.appendChild(cell);
+                allUsersBody.appendChild(row);
+            } else {
+                allUsers.forEach(user => {
+                    const row = document.createElement('tr');
+                    
+                    // Name
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = user.name;
+                    row.appendChild(nameCell);
+                    
+                    // Email
+                    const emailCell = document.createElement('td');
+                    emailCell.textContent = user.email;
+                    row.appendChild(emailCell);
+                    
+                    // Role
+                    const roleCell = document.createElement('td');
+                    roleCell.textContent = user.role;
+                    row.appendChild(roleCell);
+                    
+                    // Status
+                    const statusCell = document.createElement('td');
+                    statusCell.textContent = user.status;
+                    row.appendChild(statusCell);
+                    
+                    // Actions
+                    const actionsCell = document.createElement('td');
+                    
+                    // Don't show delete button for current admin user
+                    if (user.id !== currentUser.uid) {
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.className = 'delete-user-btn';
+                        deleteBtn.addEventListener('click', () => deleteUser(user.id));
+                        actionsCell.appendChild(deleteBtn);
+                    } else {
+                        actionsCell.textContent = 'Current User';
+                    }
+                    
+                    row.appendChild(actionsCell);
+                    
+                    allUsersBody.appendChild(row);
+                });
+            }
         }
 
         // Approve user
@@ -2256,6 +2290,28 @@
                 hideLoading();
                 console.error('Error rejecting user:', error);
                 alert('Error rejecting user. Please try again.');
+            }
+        }
+
+        // Delete user
+        async function deleteUser(userId) {
+            try {
+                if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                    showLoading();
+                    
+                    // Delete user from Firestore
+                    await db.collection('users').doc(userId).delete();
+                    
+                    // Note: We cannot delete the user from Firebase Auth via client-side code
+                    // This would require a Cloud Function or admin SDK
+                    
+                    hideLoading();
+                    alert('User deleted successfully from the database!');
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Error deleting user:', error);
+                alert('Error deleting user. Please try again.');
             }
         }
 
@@ -3557,12 +3613,9 @@ Remarks: ${booking.remarks || 'None'}`;
             registerEmail.value = '';
             registerPassword.value = '';
             registerConfirmPassword.value = '';
-            resetEmail.value = '';
             loginError.textContent = '';
             registerError.textContent = '';
             registerSuccess.textContent = '';
-            resetError.textContent = '';
-            resetSuccess.textContent = '';
         }
 
         function switchAuthTab(tabName) {
@@ -3578,7 +3631,6 @@ Remarks: ${booking.remarks || 'None'}`;
             // Update forms
             loginForm.classList.toggle('active', tabName === 'login');
             registerForm.classList.toggle('active', tabName === 'register');
-            forgotPasswordForm.classList.toggle('active', tabName === 'forgot-password');
         }
 
         // Auth tab switching
@@ -3652,31 +3704,6 @@ Remarks: ${booking.remarks || 'None'}`;
             } else {
                 registerSuccess.textContent = '';
                 registerError.textContent = result.message;
-            }
-        });
-
-        // Forgot password functionality
-        forgotPasswordBtn.addEventListener('click', () => {
-            showAuthModal();
-            switchAuthTab('forgot-password');
-        });
-
-        modalResetBtn.addEventListener('click', async function() {
-            const email = resetEmail.value;
-            
-            if (!email) {
-                resetError.textContent = 'Please enter your email.';
-                return;
-            }
-            
-            const result = await resetPassword(email);
-            if (result.success) {
-                resetError.textContent = '';
-                resetSuccess.textContent = result.message;
-                resetEmail.value = '';
-            } else {
-                resetSuccess.textContent = '';
-                resetError.textContent = result.message;
             }
         });
 
@@ -3761,6 +3788,11 @@ Remarks: ${booking.remarks || 'None'}`;
                 console.error('Error saving settings:', error);
                 alert('Error saving settings. Please try again.');
             }
+        });
+
+        // User management functionality
+        userManagementBtn.addEventListener('click', function() {
+            userManagementModal.classList.add('active');
         });
 
         // Print icon button handler
@@ -3999,6 +4031,9 @@ Remarks: ${booking.remarks || 'None'}`;
         });
         deleteRangeClose.addEventListener('click', function() {
             deleteRangeModal.classList.remove('active');
+        });
+        userManagementClose.addEventListener('click', function() {
+            userManagementModal.classList.remove('active');
         });
 
         // Close modal when clicking outside
