@@ -1107,6 +1107,23 @@
             margin-left: 5px;
         }
         
+        /* NEW: Authentication loading state */
+        .auth-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .auth-loading-text {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #3498db;
+            font-weight: 600;
+        }
+        
         @media (max-width: 768px) {
             .app-container {
                 flex-direction: column;
@@ -1202,7 +1219,7 @@
             
             .month-display {
                 font-size: 16px;
-                min-width: 10px;
+                min-width: 120px;
             }
             
             .month-btn {
@@ -1269,11 +1286,17 @@
         
         <!-- Authentication Required Message -->
         <div id="auth-required-message" class="form-container">
-            <h2 class="form-title">Authentication Required</h2>
-            <p>Please log in or register to access the Guest Room Booking System.</p>
-            <div class="auth-buttons" style="justify-content: center; margin-top: 20px;">
-                <button id="auth-login-btn" class="month-btn">Login</button>
-                <button id="auth-register-btn" class="month-btn">Register</button>
+            <div id="auth-loading" class="auth-loading hidden">
+                <div class="loading-spinner"></div>
+                <div class="auth-loading-text">Logging in...</div>
+            </div>
+            <div id="auth-content">
+                <h2 class="form-title">Authentication Required</h2>
+                <p>Please log in or register to access the Guest Room Booking System.</p>
+                <div class="auth-buttons" style="justify-content: center; margin-top: 20px;">
+                    <button id="auth-login-btn" class="month-btn">Login</button>
+                    <button id="auth-register-btn" class="month-btn">Register</button>
+                </div>
             </div>
         </div>
         
@@ -1868,11 +1891,18 @@
         const userManagementBody = document.getElementById('user-management-body');
         const allUsersBody = document.getElementById('all-users-body');
         const userManagementClose = document.getElementById('user-management-close');
+        
+        // NEW: Authentication loading elements
+        const authLoading = document.getElementById('auth-loading');
+        const authContent = document.getElementById('auth-content');
 
         // ========== AUTHENTICATION MANAGEMENT ==========
 
         // Initialize authentication state
         function initAuth() {
+            // Show loading state while checking authentication
+            showAuthLoading();
+            
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     currentUser = user;
@@ -1893,6 +1923,8 @@
                         setupUsersListener();
                     }
                     
+                    hideAuthLoading();
+                    
                 } else {
                     // User is signed out
                     console.log('User signed out');
@@ -1911,6 +1943,8 @@
                     if (unsubscribeUsers) {
                         unsubscribeUsers();
                     }
+                    
+                    hideAuthLoading();
                 }
             });
         }
@@ -2114,6 +2148,17 @@
                 changePasswordBtn.classList.add('hidden');
                 userManagementBtn.classList.add('hidden');
             }
+        }
+
+        // NEW: Show/hide authentication loading state
+        function showAuthLoading() {
+            authLoading.classList.remove('hidden');
+            authContent.classList.add('hidden');
+        }
+
+        function hideAuthLoading() {
+            authLoading.classList.add('hidden');
+            authContent.classList.remove('hidden');
         }
 
         // ========== USER MANAGEMENT (ADMIN ONLY) ==========
