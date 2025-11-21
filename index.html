@@ -109,14 +109,6 @@
             background: rgba(231, 76, 60, 0.1);
         }
         
-        .change-password-btn {
-            color: #f39c12;
-        }
-        
-        .change-password-btn:hover {
-            background: rgba(243, 156, 18, 0.1);
-        }
-        
         .admin-settings-btn {
             color: #9b59b6;
         }
@@ -1140,6 +1132,34 @@
             color: #3498db;
         }
         
+        /* NEW: Password requirements styling */
+        .password-requirements {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .password-valid {
+            color: #27ae60;
+        }
+        
+        .password-invalid {
+            color: #e74c3c;
+        }
+        
+        /* NEW: Registration approval note in red */
+        .registration-note {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            background-color: #fdeaea;
+            border-radius: 6px;
+            border: 1px solid #e74c3c;
+        }
+        
         @media (max-width: 768px) {
             .app-container {
                 flex-direction: column;
@@ -1285,9 +1305,6 @@
                     <button id="admin-settings-btn" class="icon-btn admin-settings-btn hidden" title="Settings">
                         <i class="fas fa-cog"></i>
                     </button>
-                 <button id="change-password-btn" class="icon-btn change-password-btn hidden" title="Change Password">
-                        <i class="fas fa-key"></i>
-                    </button> 
                     <button id="logout-btn" class="icon-btn logout-btn hidden" title="Logout">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
@@ -1533,7 +1550,7 @@
             <!-- Register Form -->
             <div id="register-form" class="auth-form">
                 <h2 class="modal-title">Register</h2>
-                <div class="info-message" style="margin-bottom: 15px;">
+                <div class="registration-note">
                     After registration, your account will be pending admin approval. You will be able to login once approved.
                 </div>
                 <div class="modal-form-group">
@@ -1543,7 +1560,13 @@
                     <input type="email" id="register-email" class="modal-input" placeholder="Email" required>
                 </div>
                 <div class="modal-form-group">
-                    <input type="password" id="register-password" class="modal-input" placeholder="Password (min 6 characters)" required minlength="6">
+                    <input type="password" id="register-password" class="modal-input" placeholder="Password (min 8 characters)" required minlength="8">
+                    <div class="password-requirements">
+                        <div id="length-requirement" class="password-invalid">✓ At least 8 characters</div>
+                        <div id="uppercase-requirement" class="password-invalid">✓ At least 1 uppercase letter</div>
+                        <div id="number-requirement" class="password-invalid">✓ At least 1 number</div>
+                        <div id="symbol-requirement" class="password-invalid">✓ At least 1 symbol</div>
+                    </div>
                 </div>
                 <div class="modal-form-group">
                     <input type="password" id="register-confirm-password" class="modal-input" placeholder="Confirm Password" required>
@@ -1642,23 +1665,6 @@
                 <button type="submit" class="modal-btn">Update Booking</button>
                 <button type="button" id="edit-modal-close" class="modal-close">Cancel</button>
             </form>
-        </div>
-    </div>
-
-    <!-- Change Password Modal -->
-    <div id="change-password-modal" class="modal">
-        <div class="modal-content">
-            <h2 class="modal-title">Change Password</h2>
-            <div class="modal-form-group">
-                <label>Current Password</label>
-                <input type="text" id="current-password-display" class="modal-input" readonly>
-            </div>
-            <div class="modal-form-group">
-                <label for="new-password">New Password</label>
-                <input type="text" id="new-password" class="modal-input" placeholder="Enter new password">
-            </div>
-            <button id="save-password-btn" class="modal-btn">Save New Password</button>
-            <button id="change-password-close" class="modal-close">Close</button>
         </div>
     </div>
 
@@ -1777,6 +1783,40 @@
         </div>
     </div>
 
+    <!-- NEW: Edit User Modal -->
+    <div id="edit-user-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Edit User</h2>
+            <form id="edit-user-form">
+                <div class="modal-form-group">
+                    <label for="edit-user-name">Name</label>
+                    <input type="text" id="edit-user-name" class="modal-input" required>
+                </div>
+                <div class="modal-form-group">
+                    <label for="edit-user-email">Email</label>
+                    <input type="email" id="edit-user-email" class="modal-input" required readonly>
+                </div>
+                <div class="modal-form-group">
+                    <label for="edit-user-role">Role</label>
+                    <select id="edit-user-role" class="modal-input" required>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="modal-form-group">
+                    <label for="edit-user-status">Status</label>
+                    <select id="edit-user-status" class="modal-input" required>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+                <button type="submit" class="modal-btn">Save Changes</button>
+                <button type="button" id="edit-user-close" class="modal-close">Cancel</button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1809,6 +1849,7 @@
         let currentUser = null;
         let pendingUsers = [];
         let allUsers = [];
+        let editingUserId = null;
 
         // Room name mappings
         const roomNames = {
@@ -1832,7 +1873,6 @@
         const loginBtn = document.getElementById('login-btn');
         const registerBtn = document.getElementById('register-btn');
         const logoutBtn = document.getElementById('logout-btn');
-        const changePasswordBtn = document.getElementById('change-password-btn');
         const adminSettingsBtn = document.getElementById('admin-settings-btn');
         const userManagementBtn = document.getElementById('user-management-btn');
         const adminFormSection = document.getElementById('admin-form-section');
@@ -1862,11 +1902,6 @@
         const bookingDeleteBtn = document.getElementById('booking-delete-btn');
         const editModal = document.getElementById('edit-modal');
         const editModalClose = document.getElementById('edit-modal-close');
-        const changePasswordModal = document.getElementById('change-password-modal');
-        const currentPasswordDisplay = document.getElementById('current-password-display');
-        const newPasswordInput = document.getElementById('new-password');
-        const savePasswordBtn = document.getElementById('save-password-btn');
-        const changePasswordClose = document.getElementById('change-password-close');
         const loadingIndicator = document.getElementById('loading-indicator');
         const filterMonth = document.getElementById('filter-month');
         const filterYear = document.getElementById('filter-year');
@@ -1918,6 +1953,21 @@
         
         // NEW: User management loading
         const userManagementLoading = document.getElementById('user-management-loading');
+        
+        // NEW: Edit user modal elements
+        const editUserModal = document.getElementById('edit-user-modal');
+        const editUserForm = document.getElementById('edit-user-form');
+        const editUserName = document.getElementById('edit-user-name');
+        const editUserEmail = document.getElementById('edit-user-email');
+        const editUserRole = document.getElementById('edit-user-role');
+        const editUserStatus = document.getElementById('edit-user-status');
+        const editUserClose = document.getElementById('edit-user-close');
+        
+        // NEW: Password requirement elements
+        const lengthRequirement = document.getElementById('length-requirement');
+        const uppercaseRequirement = document.getElementById('uppercase-requirement');
+        const numberRequirement = document.getElementById('number-requirement');
+        const symbolRequirement = document.getElementById('symbol-requirement');
 
         // ========== AUTHENTICATION MANAGEMENT ==========
 
@@ -1943,7 +1993,7 @@
                     if (isAdmin || await isUserApproved(user.uid)) {
                         await loadSettings();
                         setupRealtimeListener();
-                        setupUsersListener(); // FIX: Added this line to setup users listener
+                        setupUsersListener();
                     }
                     
                     hideAuthLoading();
@@ -2005,6 +2055,22 @@
                 isAdmin = false;
                 return false;
             }
+        }
+
+        // NEW: Validate password strength
+        function validatePassword(password) {
+            const minLength = password.length >= 8;
+            const hasUppercase = /[A-Z]/.test(password);
+            const hasNumber = /[0-9]/.test(password);
+            const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+            
+            // Update UI
+            lengthRequirement.className = minLength ? 'password-valid' : 'password-invalid';
+            uppercaseRequirement.className = hasUppercase ? 'password-valid' : 'password-invalid';
+            numberRequirement.className = hasNumber ? 'password-valid' : 'password-invalid';
+            symbolRequirement.className = hasSymbol ? 'password-valid' : 'password-invalid';
+            
+            return minLength && hasUppercase && hasNumber && hasSymbol;
         }
 
         // Register new user
@@ -2142,14 +2208,12 @@
                     adminFormSection.classList.remove('hidden');
                     adminEntriesSection.classList.remove('hidden');
                     adminSettingsBtn.classList.remove('hidden');
-                    changePasswordBtn.classList.remove('hidden');
                     userManagementBtn.classList.remove('hidden');
                     cancelledBookingsSection.classList.add('hidden');
                 } else {
                     adminFormSection.classList.add('hidden');
                     adminEntriesSection.classList.add('hidden');
                     adminSettingsBtn.classList.add('hidden');
-                    changePasswordBtn.classList.add('hidden');
                     userManagementBtn.classList.add('hidden');
                 }
                 
@@ -2168,7 +2232,6 @@
                 registerBtn.classList.remove('hidden');
                 logoutBtn.classList.add('hidden');
                 adminSettingsBtn.classList.add('hidden');
-                changePasswordBtn.classList.add('hidden');
                 userManagementBtn.classList.add('hidden');
             }
         }
@@ -2325,18 +2388,29 @@
                     
                     // Actions
                     const actionsCell = document.createElement('td');
+                    const actionButtons = document.createElement('div');
+                    actionButtons.className = 'action-buttons';
                     
-                    // Don't show delete button for current admin user
+                    // Edit button
+                    const editBtn = document.createElement('button');
+                    editBtn.className = 'icon-btn edit-btn';
+                    editBtn.title = 'Edit User';
+                    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
+                    editBtn.addEventListener('click', () => editUser(user));
+                    
+                    // Delete button (don't show for current user)
                     if (user.id !== currentUser.uid) {
                         const deleteBtn = document.createElement('button');
-                        deleteBtn.textContent = 'Delete';
-                        deleteBtn.className = 'delete-user-btn';
+                        deleteBtn.className = 'icon-btn delete-btn';
+                        deleteBtn.title = 'Delete User';
+                        deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
                         deleteBtn.addEventListener('click', () => deleteUser(user.id));
-                        actionsCell.appendChild(deleteBtn);
-                    } else {
-                        actionsCell.textContent = 'Current User';
+                        
+                        actionButtons.appendChild(deleteBtn);
                     }
                     
+                    actionButtons.appendChild(editBtn);
+                    actionsCell.appendChild(actionButtons);
                     row.appendChild(actionsCell);
                     
                     allUsersBody.appendChild(row);
@@ -2375,6 +2449,31 @@
                 hideLoading();
                 console.error('Error rejecting user:', error);
                 alert('Error rejecting user. Please try again.');
+            }
+        }
+
+        // Edit user
+        function editUser(user) {
+            editingUserId = user.id;
+            editUserName.value = user.name || '';
+            editUserEmail.value = user.email || '';
+            editUserRole.value = user.role || 'user';
+            editUserStatus.value = user.status || 'pending';
+            editUserModal.classList.add('active');
+        }
+
+        // Update user
+        async function updateUser(userId, userData) {
+            try {
+                showLoading();
+                await db.collection('users').doc(userId).update(userData);
+                hideLoading();
+                return true;
+            } catch (error) {
+                hideLoading();
+                console.error('Error updating user:', error);
+                alert('Error updating user. Please try again.');
+                return false;
             }
         }
 
@@ -2462,18 +2561,10 @@
                         appSettings = doc.data();
                         console.log('Settings updated in real-time:', appSettings);
                         updateAdminSettingsDisplay();
-                        updatePasswordDisplay();
                     }
                 }, error => {
                     console.error('Error in settings listener:', error);
                 });
-        }
-
-        // Update password display
-        function updatePasswordDisplay() {
-            if (appSettings && appSettings.password) {
-                currentPasswordDisplay.value = appSettings.password;
-            }
         }
 
         // Update admin settings display
@@ -3772,8 +3863,8 @@ Remarks: ${booking.remarks || 'None'}`;
                 return;
             }
             
-            if (password.length < 6) {
-                registerError.textContent = 'Password must be at least 6 characters.';
+            if (!validatePassword(password)) {
+                registerError.textContent = 'Password does not meet requirements.';
                 return;
             }
             
@@ -3792,49 +3883,13 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // Password validation on input
+        registerPassword.addEventListener('input', function() {
+            validatePassword(this.value);
+        });
+
         // Logout functionality
         logoutBtn.addEventListener('click', logoutUser);
-
-        // Change password functionality
-        changePasswordBtn.addEventListener('click', async function() {
-            try {
-                await loadSettings();
-                updatePasswordDisplay();
-                changePasswordModal.classList.add('active');
-            } catch (error) {
-                console.error('Error loading settings:', error);
-                alert('Error loading settings. Please try again.');
-            }
-        });
-
-        savePasswordBtn.addEventListener('click', async function() {
-            const newPassword = newPasswordInput.value;
-            if (newPassword) {
-                try {
-                    showLoading();
-                    const updatedSettings = {
-                        ...appSettings,
-                        password: newPassword
-                    };
-                    const success = await updateSettings(updatedSettings);
-                    hideLoading();
-                    
-                    if (success) {
-                        alert('Password changed successfully!');
-                        changePasswordModal.classList.remove('active');
-                        newPasswordInput.value = '';
-                    } else {
-                        alert('Error changing password. Please try again.');
-                    }
-                } catch (error) {
-                    hideLoading();
-                    console.error('Error changing password:', error);
-                    alert('Error changing password. Please try again.');
-                }
-            } else {
-                alert('Please enter a new password');
-            }
-        });
 
         // Admin settings functionality
         adminSettingsBtn.addEventListener('click', async function() {
@@ -3878,6 +3933,23 @@ Remarks: ${booking.remarks || 'None'}`;
         // User management functionality
         userManagementBtn.addEventListener('click', function() {
             userManagementModal.classList.add('active');
+        });
+
+        // Edit user form submission
+        editUserForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                name: editUserName.value,
+                role: editUserRole.value,
+                status: editUserStatus.value
+            };
+            
+            const success = await updateUser(editingUserId, userData);
+            if (success) {
+                alert('User updated successfully!');
+                editUserModal.classList.remove('active');
+            }
         });
 
         // Print icon button handler
@@ -4105,9 +4177,6 @@ Remarks: ${booking.remarks || 'None'}`;
         editModalClose.addEventListener('click', function() {
             editModal.classList.remove('active');
         });
-        changePasswordClose.addEventListener('click', function() {
-            changePasswordModal.classList.remove('active');
-        });
         confirmationModalClose.addEventListener('click', function() {
             confirmationModal.classList.remove('active');
         });
@@ -4119,6 +4188,9 @@ Remarks: ${booking.remarks || 'None'}`;
         });
         userManagementClose.addEventListener('click', function() {
             userManagementModal.classList.remove('active');
+        });
+        editUserClose.addEventListener('click', function() {
+            editUserModal.classList.remove('active');
         });
 
         // Close modal when clicking outside
