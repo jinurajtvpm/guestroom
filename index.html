@@ -1009,14 +1009,6 @@
             background: rgba(243, 156, 18, 0.1);
         }
         
-        .verify-email-btn {
-            color: #9b59b6;
-        }
-        
-        .verify-email-btn:hover {
-            background: rgba(155, 89, 182, 0.1);
-        }
-        
         .auth-tabs {
             display: flex;
             margin-bottom: 20px;
@@ -1063,6 +1055,69 @@
             font-size: 14px;
             margin-top: 5px;
             text-align: center;
+        }
+        
+        /* NEW: Pending approvals section */
+        .pending-users-container {
+            background-color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .pending-users-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f39c12;
+        }
+        
+        .pending-users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .pending-users-table th {
+            background: linear-gradient(to bottom, #f39c12, #e67e22);
+            color: white;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        .pending-users-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e1e1e1;
+            height: auto;
+        }
+        
+        .pending-users-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .pending-users-table tr:hover {
+            background-color: #fef9e7;
+        }
+        
+        .approve-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 5px;
+        }
+        
+        .reject-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
         }
         
         @media (max-width: 768px) {
@@ -1213,9 +1268,6 @@
                     <button id="register-btn" class="icon-btn register-btn" title="Register">
                         <i class="fas fa-user-plus"></i>
                     </button>
-                    <button id="verify-email-btn" class="icon-btn verify-email-btn hidden" title="Verify Email">
-                        <i class="fas fa-envelope"></i>
-                    </button>
                     <button id="forgot-password-btn" class="icon-btn forgot-password-btn" title="Forgot Password">
                         <i class="fas fa-key"></i>
                     </button>
@@ -1356,6 +1408,24 @@
             </div>
         </div>
         
+        <!-- NEW: Pending Approvals Section (Admin Only) -->
+        <div class="pending-users-container hidden" id="pending-users-section">
+            <h2 class="pending-users-title">Pending User Approvals</h2>
+            <table class="pending-users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Registered Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="pending-users-body">
+                    <!-- Pending users will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
         <!-- NEW: Cancelled Bookings Table - Visible to All Users -->
         <div class="cancelled-bookings-container hidden" id="cancelled-bookings-section">
             <h2 class="cancelled-bookings-title" id="cancelled-bookings-title">Cancelled Bookings - November 2025</h2>
@@ -1464,6 +1534,9 @@
             <!-- Register Form -->
             <div id="register-form" class="auth-form">
                 <h2 class="modal-title">Register</h2>
+                <div class="info-message" style="margin-bottom: 15px;">
+                    After registration, your account will be pending admin approval. You will be able to login once approved.
+                </div>
                 <div class="modal-form-group">
                     <input type="text" id="register-name" class="modal-input" placeholder="Full Name" required>
                 </div>
@@ -1471,7 +1544,7 @@
                     <input type="email" id="register-email" class="modal-input" placeholder="Email" required>
                 </div>
                 <div class="modal-form-group">
-                    <input type="password" id="register-password" class="modal-input" placeholder="Password (min 6 characters)" required>
+                    <input type="password" id="register-password" class="modal-input" placeholder="Password (min 6 characters)" required minlength="6">
                 </div>
                 <div class="modal-form-group">
                     <input type="password" id="register-confirm-password" class="modal-input" placeholder="Confirm Password" required>
@@ -1694,11 +1767,13 @@
         let isLoggedIn = false;
         let unsubscribeBookings = null;
         let unsubscribeSettings = null;
+        let unsubscribeUsers = null;
         let filteredBookings = [];
         let currentBookingId = null;
         let currentSplitCellBookings = [];
         let appSettings = null;
         let currentUser = null;
+        let pendingUsers = [];
 
         // Room name mappings
         const roomNames = {
@@ -1724,10 +1799,11 @@
         const logoutBtn = document.getElementById('logout-btn');
         const changePasswordBtn = document.getElementById('change-password-btn');
         const adminSettingsBtn = document.getElementById('admin-settings-btn');
-        const verifyEmailBtn = document.getElementById('verify-email-btn');
         const forgotPasswordBtn = document.getElementById('forgot-password-btn');
         const adminFormSection = document.getElementById('admin-form-section');
         const adminEntriesSection = document.getElementById('admin-entries-section');
+        const pendingUsersSection = document.getElementById('pending-users-section');
+        const pendingUsersBody = document.getElementById('pending-users-body');
         const authModal = document.getElementById('auth-modal');
         const authModalClose = document.getElementById('auth-modal-close');
         const authTabs = document.querySelectorAll('.auth-tab');
@@ -1788,6 +1864,9 @@
         const userEmailDisplay = document.getElementById('user-email-display');
         const authLoginBtn = document.getElementById('auth-login-btn');
         const authRegisterBtn = document.getElementById('auth-register-btn');
+        const cancelledBookingsSection = document.getElementById('cancelled-bookings-section');
+        const cancelledBookingsTitle = document.getElementById('cancelled-bookings-title');
+        const cancelledBookingsBody = document.getElementById('cancelled-bookings-body');
         
         // NEW: Calendar loading overlay
         const calendarLoading = document.getElementById('calendar-loading');
@@ -1799,11 +1878,6 @@
         const deleteConfirm = document.getElementById('delete-confirm');
         const confirmDeleteRangeBtn = document.getElementById('confirm-delete-range-btn');
         const deleteRangeClose = document.getElementById('delete-range-close');
-        
-        // NEW: Cancelled bookings elements
-        const cancelledBookingsSection = document.getElementById('cancelled-bookings-section');
-        const cancelledBookingsTitle = document.getElementById('cancelled-bookings-title');
-        const cancelledBookingsBody = document.getElementById('cancelled-bookings-body');
 
         // ========== AUTHENTICATION MANAGEMENT ==========
 
@@ -1814,24 +1888,24 @@
                     currentUser = user;
                     isLoggedIn = true;
                     
-                    // Check if email is verified
-                    if (!user.emailVerified) {
-                        showEmailVerificationNotice();
-                        return;
-                    }
+                    console.log('User logged in:', user.email);
                     
-                    // Check if user is admin
+                    // Check if user is approved and get role
                     await checkUserRole(user.uid);
                     
                     // Update UI based on authentication
                     updateAuthUI();
                     
-                    // Load app data
-                    await loadSettings();
-                    setupRealtimeListener();
+                    // Load app data if user is approved
+                    if (isAdmin || await isUserApproved(user.uid)) {
+                        await loadSettings();
+                        setupRealtimeListener();
+                        setupUsersListener();
+                    }
                     
                 } else {
                     // User is signed out
+                    console.log('User signed out');
                     currentUser = null;
                     isLoggedIn = false;
                     isAdmin = false;
@@ -1844,8 +1918,26 @@
                     if (unsubscribeSettings) {
                         unsubscribeSettings();
                     }
+                    if (unsubscribeUsers) {
+                        unsubscribeUsers();
+                    }
                 }
             });
+        }
+
+        // Check if user is approved
+        async function isUserApproved(uid) {
+            try {
+                const userDoc = await db.collection('users').doc(uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    return userData.status === 'approved';
+                }
+                return false;
+            } catch (error) {
+                console.error('Error checking user approval:', error);
+                return false;
+            }
         }
 
         // Check user role from Firestore
@@ -1857,13 +1949,8 @@
                     isAdmin = userData.role === 'admin';
                     return isAdmin;
                 } else {
-                    // Create user document if it doesn't exist
-                    await db.collection('users').doc(uid).set({
-                        email: currentUser.email,
-                        role: 'user',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    isAdmin = false;
+                    // User document doesn't exist (shouldn't happen)
+                    console.error('User document not found for:', uid);
                     return false;
                 }
             } catch (error) {
@@ -1877,30 +1964,50 @@
         async function registerUser(email, password, name) {
             try {
                 showLoading();
+                console.log('Starting registration for:', email);
+                
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
+                
+                console.log('User created, updating profile');
                 
                 // Update user profile
                 await user.updateProfile({
                     displayName: name
                 });
                 
-                // Create user document in Firestore
+                // Create user document in Firestore with pending status
                 await db.collection('users').doc(user.uid).set({
                     email: user.email,
                     name: name,
                     role: 'user',
+                    status: 'pending', // pending, approved, rejected
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
-                // Send email verification
-                await user.sendEmailVerification();
+                console.log('User document created with pending status');
+                
+                // Logout the user immediately after registration
+                await auth.signOut();
                 
                 hideLoading();
-                return { success: true, message: 'Registration successful! Please check your email for verification.' };
+                return { 
+                    success: true, 
+                    message: 'Registration successful! Your account is pending admin approval. You will be notified once approved.' 
+                };
             } catch (error) {
                 hideLoading();
                 console.error('Error registering user:', error);
+                
+                // If there's an error, try to delete the created user
+                if (auth.currentUser) {
+                    try {
+                        await auth.currentUser.delete();
+                    } catch (deleteError) {
+                        console.error('Error cleaning up user:', deleteError);
+                    }
+                }
+                
                 return { success: false, message: getAuthErrorMessage(error) };
             }
         }
@@ -1912,11 +2019,15 @@
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 
-                // Check if email is verified
-                if (!user.emailVerified) {
+                // Check if user is approved
+                const approved = await isUserApproved(user.uid);
+                if (!approved) {
                     await auth.signOut();
                     hideLoading();
-                    return { success: false, message: 'Please verify your email before logging in.' };
+                    return { 
+                        success: false, 
+                        message: 'Your account is pending admin approval. Please wait for approval before logging in.' 
+                    };
                 }
                 
                 hideLoading();
@@ -1938,20 +2049,6 @@
             } catch (error) {
                 hideLoading();
                 console.error('Error sending password reset:', error);
-                return { success: false, message: getAuthErrorMessage(error) };
-            }
-        }
-
-        // Send email verification
-        async function sendEmailVerification() {
-            try {
-                showLoading();
-                await currentUser.sendEmailVerification();
-                hideLoading();
-                return { success: true, message: 'Verification email sent!' };
-            } catch (error) {
-                hideLoading();
-                console.error('Error sending verification email:', error);
                 return { success: false, message: getAuthErrorMessage(error) };
             }
         }
@@ -1992,38 +2089,10 @@
             }
         }
 
-        // Show email verification notice
-        function showEmailVerificationNotice() {
-            authRequiredMessage.innerHTML = `
-                <h2 class="form-title">Email Verification Required</h2>
-                <p>Please verify your email address to access the Guest Room Booking System.</p>
-                <p>We've sent a verification email to <strong>${currentUser.email}</strong>.</p>
-                <div class="auth-buttons" style="justify-content: center; margin-top: 20px;">
-                    <button id="resend-verification-btn" class="month-btn">Resend Verification Email</button>
-                    <button id="logout-unverified-btn" class="month-btn">Logout</button>
-                </div>
-            `;
-            authRequiredMessage.classList.remove('hidden');
-            appContent.classList.add('hidden');
-            
-            document.getElementById('resend-verification-btn').addEventListener('click', async () => {
-                const result = await sendEmailVerification();
-                if (result.success) {
-                    alert('Verification email sent!');
-                } else {
-                    alert(result.message);
-                }
-            });
-            
-            document.getElementById('logout-unverified-btn').addEventListener('click', () => {
-                logoutUser();
-            });
-        }
-
         // Update UI based on authentication state
         function updateAuthUI() {
-            if (isLoggedIn && currentUser && currentUser.emailVerified) {
-                // User is logged in and verified
+            if (isLoggedIn && currentUser) {
+                // User is logged in
                 authRequiredMessage.classList.add('hidden');
                 appContent.classList.remove('hidden');
                 cancelledBookingsSection.classList.remove('hidden');
@@ -2037,7 +2106,6 @@
                 loginBtn.classList.add('hidden');
                 registerBtn.classList.add('hidden');
                 forgotPasswordBtn.classList.add('hidden');
-                verifyEmailBtn.classList.add('hidden');
                 logoutBtn.classList.remove('hidden');
                 
                 // Show admin features if user is admin
@@ -2046,20 +2114,23 @@
                     adminEntriesSection.classList.remove('hidden');
                     adminSettingsBtn.classList.remove('hidden');
                     changePasswordBtn.classList.remove('hidden');
+                    pendingUsersSection.classList.remove('hidden');
                     cancelledBookingsSection.classList.add('hidden');
                 } else {
                     adminFormSection.classList.add('hidden');
                     adminEntriesSection.classList.add('hidden');
                     adminSettingsBtn.classList.add('hidden');
                     changePasswordBtn.classList.add('hidden');
+                    pendingUsersSection.classList.add('hidden');
                 }
                 
             } else {
-                // User is not logged in or not verified
+                // User is not logged in
                 authRequiredMessage.classList.remove('hidden');
                 appContent.classList.add('hidden');
                 adminFormSection.classList.add('hidden');
                 adminEntriesSection.classList.add('hidden');
+                pendingUsersSection.classList.add('hidden');
                 cancelledBookingsSection.classList.add('hidden');
                 
                 // Update auth buttons
@@ -2070,6 +2141,121 @@
                 logoutBtn.classList.add('hidden');
                 adminSettingsBtn.classList.add('hidden');
                 changePasswordBtn.classList.add('hidden');
+            }
+        }
+
+        // ========== USER MANAGEMENT (ADMIN ONLY) ==========
+
+        // Setup users listener for admin
+        function setupUsersListener() {
+            if (!isAdmin) return;
+            
+            if (unsubscribeUsers) {
+                unsubscribeUsers();
+            }
+
+            unsubscribeUsers = db.collection('users')
+                .where('status', '==', 'pending')
+                .onSnapshot(snapshot => {
+                    pendingUsers = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    console.log('Pending users updated:', pendingUsers.length);
+                    updatePendingUsersTable();
+                }, error => {
+                    console.error('Error in users listener:', error);
+                });
+        }
+
+        // Update pending users table
+        function updatePendingUsersTable() {
+            if (!isAdmin) return;
+            
+            pendingUsersBody.innerHTML = '';
+            
+            if (pendingUsers.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.textContent = 'No pending user approvals';
+                cell.style.textAlign = 'center';
+                cell.style.padding = '20px';
+                cell.style.color = '#7f8c8d';
+                row.appendChild(cell);
+                pendingUsersBody.appendChild(row);
+                return;
+            }
+            
+            pendingUsers.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // Name
+                const nameCell = document.createElement('td');
+                nameCell.textContent = user.name;
+                row.appendChild(nameCell);
+                
+                // Email
+                const emailCell = document.createElement('td');
+                emailCell.textContent = user.email;
+                row.appendChild(emailCell);
+                
+                // Registered Date
+                const dateCell = document.createElement('td');
+                dateCell.textContent = user.createdAt ? user.createdAt.toDate().toLocaleDateString() : 'N/A';
+                row.appendChild(dateCell);
+                
+                // Actions
+                const actionsCell = document.createElement('td');
+                const approveBtn = document.createElement('button');
+                approveBtn.textContent = 'Approve';
+                approveBtn.className = 'approve-btn';
+                approveBtn.addEventListener('click', () => approveUser(user.id));
+                
+                const rejectBtn = document.createElement('button');
+                rejectBtn.textContent = 'Reject';
+                rejectBtn.className = 'reject-btn';
+                rejectBtn.addEventListener('click', () => rejectUser(user.id));
+                
+                actionsCell.appendChild(approveBtn);
+                actionsCell.appendChild(rejectBtn);
+                row.appendChild(actionsCell);
+                
+                pendingUsersBody.appendChild(row);
+            });
+        }
+
+        // Approve user
+        async function approveUser(userId) {
+            try {
+                showLoading();
+                await db.collection('users').doc(userId).update({
+                    status: 'approved'
+                });
+                hideLoading();
+                alert('User approved successfully!');
+            } catch (error) {
+                hideLoading();
+                console.error('Error approving user:', error);
+                alert('Error approving user. Please try again.');
+            }
+        }
+
+        // Reject user
+        async function rejectUser(userId) {
+            try {
+                if (confirm('Are you sure you want to reject this user? This action cannot be undone.')) {
+                    showLoading();
+                    await db.collection('users').doc(userId).update({
+                        status: 'rejected'
+                    });
+                    hideLoading();
+                    alert('User rejected successfully!');
+                }
+            } catch (error) {
+                hideLoading();
+                console.error('Error rejecting user:', error);
+                alert('Error rejecting user. Please try again.');
             }
         }
 
@@ -3491,16 +3677,6 @@ Remarks: ${booking.remarks || 'None'}`;
             } else {
                 resetSuccess.textContent = '';
                 resetError.textContent = result.message;
-            }
-        });
-
-        // Verify email functionality
-        verifyEmailBtn.addEventListener('click', async function() {
-            const result = await sendEmailVerification();
-            if (result.success) {
-                alert('Verification email sent!');
-            } else {
-                alert(result.message);
             }
         });
 
