@@ -7,6 +7,7 @@
     <!-- Add Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <!-- Add Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -955,6 +956,115 @@
             background: rgba(231, 76, 60, 0.1);
         }
         
+        /* NEW: Authentication UI */
+        .auth-section {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-left: auto;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #2c3e50;
+            padding: 5px 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .user-role {
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .user-email {
+            color: #7f8c8d;
+        }
+        
+        .auth-buttons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .register-btn {
+            color: #27ae60;
+        }
+        
+        .register-btn:hover {
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .forgot-password-btn {
+            color: #f39c12;
+        }
+        
+        .forgot-password-btn:hover {
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .verify-email-btn {
+            color: #9b59b6;
+        }
+        
+        .verify-email-btn:hover {
+            background: rgba(155, 89, 182, 0.1);
+        }
+        
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .auth-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .auth-tab.active {
+            border-bottom: 2px solid #3498db;
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        
+        .error-message {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .success-message {
+            color: #27ae60;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .info-message {
+            color: #3498db;
+            font-size: 14px;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
         @media (max-width: 768px) {
             .app-container {
                 flex-direction: column;
@@ -1035,6 +1145,17 @@
             .checkbox-group {
                 grid-template-columns: 1fr;
             }
+            
+            .auth-section {
+                flex-direction: column;
+                gap: 5px;
+                margin-left: 0;
+            }
+            
+            .user-info {
+                max-width: 200px;
+                font-size: 12px;
+            }
         }
         
         @media (max-width: 480px) {
@@ -1063,6 +1184,11 @@
                 width: 40px;
                 height: 40px;
             }
+            
+            .auth-tab {
+                padding: 8px 15px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -1075,19 +1201,34 @@
                 <div id="month-display" class="month-display">November 2025</div>
                 <button id="next-month" class="month-btn">Next</button>
             </div>
-            <div class="login-section">
-                <button id="admin-login-btn" class="icon-btn login-btn" title="Login">
-                    <i class="fas fa-sign-in-alt"></i>
-                </button>
-                <button id="admin-settings-btn" class="icon-btn admin-settings-btn hidden" title="Settings">
-                    <i class="fas fa-cog"></i>
-                </button>
-                <button id="change-password-btn" class="icon-btn change-password-btn hidden" title="Change Password">
-                    <i class="fas fa-key"></i>
-                </button>
-                <button id="logout-btn" class="icon-btn logout-btn hidden" title="Logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
+            <div class="auth-section" id="auth-section">
+                <div class="user-info hidden" id="user-info">
+                    <span id="user-role-display"></span>
+                    <span id="user-email-display"></span>
+                </div>
+                <div class="auth-buttons">
+                    <button id="login-btn" class="icon-btn login-btn" title="Login">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </button>
+                    <button id="register-btn" class="icon-btn register-btn" title="Register">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button id="verify-email-btn" class="icon-btn verify-email-btn hidden" title="Verify Email">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                    <button id="forgot-password-btn" class="icon-btn forgot-password-btn" title="Forgot Password">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button id="admin-settings-btn" class="icon-btn admin-settings-btn hidden" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                    <button id="change-password-btn" class="icon-btn change-password-btn hidden" title="Change Password">
+                        <i class="fas fa-key"></i>
+                    </button>
+                    <button id="logout-btn" class="icon-btn logout-btn hidden" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </div>
                 <div id="loading-indicator" class="loading hidden"></div>
             </div>
         </div>
@@ -1095,7 +1236,17 @@
             <h1 id="page-title"></h1>
         </header>
         
-        <div class="app-container">
+        <!-- Authentication Required Message -->
+        <div id="auth-required-message" class="form-container">
+            <h2 class="form-title">Authentication Required</h2>
+            <p>Please log in or register to access the Guest Room Booking System.</p>
+            <div class="auth-buttons" style="justify-content: center; margin-top: 20px;">
+                <button id="auth-login-btn" class="month-btn">Login</button>
+                <button id="auth-register-btn" class="month-btn">Register</button>
+            </div>
+        </div>
+        
+        <div class="app-container hidden" id="app-content">
             <div class="table-section">
                 <div class="table-container">
                     <div id="calendar-loading" class="loading-overlay">
@@ -1206,7 +1357,7 @@
         </div>
         
         <!-- NEW: Cancelled Bookings Table - Visible to All Users -->
-        <div class="cancelled-bookings-container" id="cancelled-bookings-section">
+        <div class="cancelled-bookings-container hidden" id="cancelled-bookings-section">
             <h2 class="cancelled-bookings-title" id="cancelled-bookings-title">Cancelled Bookings - November 2025</h2>
             <table class="cancelled-bookings-table">
                 <thead>
@@ -1288,18 +1439,60 @@
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal">
+    <!-- Authentication Modal -->
+    <div id="auth-modal" class="modal">
         <div class="modal-content">
-            <h2 class="modal-title">Admin Login</h2>
-            <div class="modal-form-group">
-                <input type="text" id="modal-username" class="modal-input" placeholder="Username">
+            <div class="auth-tabs">
+                <div class="auth-tab active" data-tab="login">Login</div>
+                <div class="auth-tab" data-tab="register">Register</div>
+                <div class="auth-tab" data-tab="forgot-password">Reset Password</div>
             </div>
-            <div class="modal-form-group">
-                <input type="password" id="modal-password" class="modal-input" placeholder="Password">
+            
+            <!-- Login Form -->
+            <div id="login-form" class="auth-form active">
+                <h2 class="modal-title">Login</h2>
+                <div class="modal-form-group">
+                    <input type="email" id="login-email" class="modal-input" placeholder="Email" required>
+                </div>
+                <div class="modal-form-group">
+                    <input type="password" id="login-password" class="modal-input" placeholder="Password" required>
+                </div>
+                <div id="login-error" class="error-message"></div>
+                <button id="modal-login-btn" class="modal-btn">Login</button>
             </div>
-            <button id="modal-login-btn" class="modal-btn">Login</button>
-            <button id="modal-close-btn" class="modal-close">Close</button>
+            
+            <!-- Register Form -->
+            <div id="register-form" class="auth-form">
+                <h2 class="modal-title">Register</h2>
+                <div class="modal-form-group">
+                    <input type="text" id="register-name" class="modal-input" placeholder="Full Name" required>
+                </div>
+                <div class="modal-form-group">
+                    <input type="email" id="register-email" class="modal-input" placeholder="Email" required>
+                </div>
+                <div class="modal-form-group">
+                    <input type="password" id="register-password" class="modal-input" placeholder="Password (min 6 characters)" required>
+                </div>
+                <div class="modal-form-group">
+                    <input type="password" id="register-confirm-password" class="modal-input" placeholder="Confirm Password" required>
+                </div>
+                <div id="register-error" class="error-message"></div>
+                <div id="register-success" class="success-message"></div>
+                <button id="modal-register-btn" class="modal-btn">Register</button>
+            </div>
+            
+            <!-- Forgot Password Form -->
+            <div id="forgot-password-form" class="auth-form">
+                <h2 class="modal-title">Reset Password</h2>
+                <div class="modal-form-group">
+                    <input type="email" id="reset-email" class="modal-input" placeholder="Enter your email" required>
+                </div>
+                <div id="reset-error" class="error-message"></div>
+                <div id="reset-success" class="success-message"></div>
+                <button id="modal-reset-btn" class="modal-btn">Send Reset Link</button>
+            </div>
+            
+            <button id="auth-modal-close" class="modal-close">Close</button>
         </div>
     </div>
 
@@ -1491,18 +1684,21 @@
         // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        const auth = firebase.auth();
 
         // Global variables
         let bookings = [];
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let isAdmin = false;
+        let isLoggedIn = false;
         let unsubscribeBookings = null;
         let unsubscribeSettings = null;
         let filteredBookings = [];
         let currentBookingId = null;
         let currentSplitCellBookings = [];
         let appSettings = null;
+        let currentUser = null;
 
         // Room name mappings
         const roomNames = {
@@ -1514,10 +1710,6 @@
             "GR - 6": "Arwah"
         };
 
-        // Login credentials
-        const ADMIN_USERNAME = 'admin';
-        const DEFAULT_PASSWORD = 'Admin@11';
-
         // DOM elements
         const bookingForm = document.getElementById('booking-form');
         const editForm = document.getElementById('edit-form');
@@ -1527,17 +1719,36 @@
         const monthDisplay = document.getElementById('month-display');
         const prevMonthBtn = document.getElementById('prev-month');
         const nextMonthBtn = document.getElementById('next-month');
-        const adminLoginBtn = document.getElementById('admin-login-btn');
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
         const logoutBtn = document.getElementById('logout-btn');
         const changePasswordBtn = document.getElementById('change-password-btn');
         const adminSettingsBtn = document.getElementById('admin-settings-btn');
+        const verifyEmailBtn = document.getElementById('verify-email-btn');
+        const forgotPasswordBtn = document.getElementById('forgot-password-btn');
         const adminFormSection = document.getElementById('admin-form-section');
         const adminEntriesSection = document.getElementById('admin-entries-section');
-        const loginModal = document.getElementById('login-modal');
-        const modalUsername = document.getElementById('modal-username');
-        const modalPassword = document.getElementById('modal-password');
+        const authModal = document.getElementById('auth-modal');
+        const authModalClose = document.getElementById('auth-modal-close');
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const forgotPasswordForm = document.getElementById('forgot-password-form');
         const modalLoginBtn = document.getElementById('modal-login-btn');
-        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const modalRegisterBtn = document.getElementById('modal-register-btn');
+        const modalResetBtn = document.getElementById('modal-reset-btn');
+        const loginEmail = document.getElementById('login-email');
+        const loginPassword = document.getElementById('login-password');
+        const registerName = document.getElementById('register-name');
+        const registerEmail = document.getElementById('register-email');
+        const registerPassword = document.getElementById('register-password');
+        const registerConfirmPassword = document.getElementById('register-confirm-password');
+        const resetEmail = document.getElementById('reset-email');
+        const loginError = document.getElementById('login-error');
+        const registerError = document.getElementById('register-error');
+        const registerSuccess = document.getElementById('register-success');
+        const resetError = document.getElementById('reset-error');
+        const resetSuccess = document.getElementById('reset-success');
         const bookingModal = document.getElementById('booking-modal');
         const bookingDetailsContent = document.getElementById('booking-details-content');
         const bookingModalClose = document.getElementById('booking-modal-close');
@@ -1570,6 +1781,13 @@
         const messHavNameInput = document.getElementById('mess-hav-name');
         const saveSettingsBtn = document.getElementById('save-settings-btn');
         const adminSettingsClose = document.getElementById('admin-settings-close');
+        const authRequiredMessage = document.getElementById('auth-required-message');
+        const appContent = document.getElementById('app-content');
+        const userInfo = document.getElementById('user-info');
+        const userRoleDisplay = document.getElementById('user-role-display');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const authLoginBtn = document.getElementById('auth-login-btn');
+        const authRegisterBtn = document.getElementById('auth-register-btn');
         
         // NEW: Calendar loading overlay
         const calendarLoading = document.getElementById('calendar-loading');
@@ -1587,6 +1805,274 @@
         const cancelledBookingsTitle = document.getElementById('cancelled-bookings-title');
         const cancelledBookingsBody = document.getElementById('cancelled-bookings-body');
 
+        // ========== AUTHENTICATION MANAGEMENT ==========
+
+        // Initialize authentication state
+        function initAuth() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    isLoggedIn = true;
+                    
+                    // Check if email is verified
+                    if (!user.emailVerified) {
+                        showEmailVerificationNotice();
+                        return;
+                    }
+                    
+                    // Check if user is admin
+                    await checkUserRole(user.uid);
+                    
+                    // Update UI based on authentication
+                    updateAuthUI();
+                    
+                    // Load app data
+                    await loadSettings();
+                    setupRealtimeListener();
+                    
+                } else {
+                    // User is signed out
+                    currentUser = null;
+                    isLoggedIn = false;
+                    isAdmin = false;
+                    updateAuthUI();
+                    
+                    // Stop real-time listeners
+                    if (unsubscribeBookings) {
+                        unsubscribeBookings();
+                    }
+                    if (unsubscribeSettings) {
+                        unsubscribeSettings();
+                    }
+                }
+            });
+        }
+
+        // Check user role from Firestore
+        async function checkUserRole(uid) {
+            try {
+                const userDoc = await db.collection('users').doc(uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    isAdmin = userData.role === 'admin';
+                    return isAdmin;
+                } else {
+                    // Create user document if it doesn't exist
+                    await db.collection('users').doc(uid).set({
+                        email: currentUser.email,
+                        role: 'user',
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    isAdmin = false;
+                    return false;
+                }
+            } catch (error) {
+                console.error('Error checking user role:', error);
+                isAdmin = false;
+                return false;
+            }
+        }
+
+        // Register new user
+        async function registerUser(email, password, name) {
+            try {
+                showLoading();
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Update user profile
+                await user.updateProfile({
+                    displayName: name
+                });
+                
+                // Create user document in Firestore
+                await db.collection('users').doc(user.uid).set({
+                    email: user.email,
+                    name: name,
+                    role: 'user',
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // Send email verification
+                await user.sendEmailVerification();
+                
+                hideLoading();
+                return { success: true, message: 'Registration successful! Please check your email for verification.' };
+            } catch (error) {
+                hideLoading();
+                console.error('Error registering user:', error);
+                return { success: false, message: getAuthErrorMessage(error) };
+            }
+        }
+
+        // Login user
+        async function loginUser(email, password) {
+            try {
+                showLoading();
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Check if email is verified
+                if (!user.emailVerified) {
+                    await auth.signOut();
+                    hideLoading();
+                    return { success: false, message: 'Please verify your email before logging in.' };
+                }
+                
+                hideLoading();
+                return { success: true, message: 'Login successful!' };
+            } catch (error) {
+                hideLoading();
+                console.error('Error logging in:', error);
+                return { success: false, message: getAuthErrorMessage(error) };
+            }
+        }
+
+        // Send password reset email
+        async function resetPassword(email) {
+            try {
+                showLoading();
+                await auth.sendPasswordResetEmail(email);
+                hideLoading();
+                return { success: true, message: 'Password reset email sent!' };
+            } catch (error) {
+                hideLoading();
+                console.error('Error sending password reset:', error);
+                return { success: false, message: getAuthErrorMessage(error) };
+            }
+        }
+
+        // Send email verification
+        async function sendEmailVerification() {
+            try {
+                showLoading();
+                await currentUser.sendEmailVerification();
+                hideLoading();
+                return { success: true, message: 'Verification email sent!' };
+            } catch (error) {
+                hideLoading();
+                console.error('Error sending verification email:', error);
+                return { success: false, message: getAuthErrorMessage(error) };
+            }
+        }
+
+        // Logout user
+        async function logoutUser() {
+            try {
+                showLoading();
+                await auth.signOut();
+                hideLoading();
+            } catch (error) {
+                hideLoading();
+                console.error('Error logging out:', error);
+            }
+        }
+
+        // Get user-friendly error messages
+        function getAuthErrorMessage(error) {
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    return 'This email is already registered.';
+                case 'auth/invalid-email':
+                    return 'Invalid email address.';
+                case 'auth/operation-not-allowed':
+                    return 'Email/password accounts are not enabled.';
+                case 'auth/weak-password':
+                    return 'Password is too weak.';
+                case 'auth/user-disabled':
+                    return 'This account has been disabled.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email.';
+                case 'auth/wrong-password':
+                    return 'Incorrect password.';
+                case 'auth/too-many-requests':
+                    return 'Too many attempts. Please try again later.';
+                default:
+                    return error.message;
+            }
+        }
+
+        // Show email verification notice
+        function showEmailVerificationNotice() {
+            authRequiredMessage.innerHTML = `
+                <h2 class="form-title">Email Verification Required</h2>
+                <p>Please verify your email address to access the Guest Room Booking System.</p>
+                <p>We've sent a verification email to <strong>${currentUser.email}</strong>.</p>
+                <div class="auth-buttons" style="justify-content: center; margin-top: 20px;">
+                    <button id="resend-verification-btn" class="month-btn">Resend Verification Email</button>
+                    <button id="logout-unverified-btn" class="month-btn">Logout</button>
+                </div>
+            `;
+            authRequiredMessage.classList.remove('hidden');
+            appContent.classList.add('hidden');
+            
+            document.getElementById('resend-verification-btn').addEventListener('click', async () => {
+                const result = await sendEmailVerification();
+                if (result.success) {
+                    alert('Verification email sent!');
+                } else {
+                    alert(result.message);
+                }
+            });
+            
+            document.getElementById('logout-unverified-btn').addEventListener('click', () => {
+                logoutUser();
+            });
+        }
+
+        // Update UI based on authentication state
+        function updateAuthUI() {
+            if (isLoggedIn && currentUser && currentUser.emailVerified) {
+                // User is logged in and verified
+                authRequiredMessage.classList.add('hidden');
+                appContent.classList.remove('hidden');
+                cancelledBookingsSection.classList.remove('hidden');
+                
+                // Update user info display
+                userInfo.classList.remove('hidden');
+                userRoleDisplay.textContent = isAdmin ? 'Admin: ' : 'User: ';
+                userEmailDisplay.textContent = currentUser.email;
+                
+                // Update auth buttons
+                loginBtn.classList.add('hidden');
+                registerBtn.classList.add('hidden');
+                forgotPasswordBtn.classList.add('hidden');
+                verifyEmailBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                
+                // Show admin features if user is admin
+                if (isAdmin) {
+                    adminFormSection.classList.remove('hidden');
+                    adminEntriesSection.classList.remove('hidden');
+                    adminSettingsBtn.classList.remove('hidden');
+                    changePasswordBtn.classList.remove('hidden');
+                    cancelledBookingsSection.classList.add('hidden');
+                } else {
+                    adminFormSection.classList.add('hidden');
+                    adminEntriesSection.classList.add('hidden');
+                    adminSettingsBtn.classList.add('hidden');
+                    changePasswordBtn.classList.add('hidden');
+                }
+                
+            } else {
+                // User is not logged in or not verified
+                authRequiredMessage.classList.remove('hidden');
+                appContent.classList.add('hidden');
+                adminFormSection.classList.add('hidden');
+                adminEntriesSection.classList.add('hidden');
+                cancelledBookingsSection.classList.add('hidden');
+                
+                // Update auth buttons
+                userInfo.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
+                registerBtn.classList.remove('hidden');
+                forgotPasswordBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                adminSettingsBtn.classList.add('hidden');
+                changePasswordBtn.classList.add('hidden');
+            }
+        }
+
         // ========== SETTINGS MANAGEMENT ==========
         
         // Load settings from Firebase
@@ -1600,7 +2086,7 @@
                 } else {
                     // Create default settings if they don't exist
                     appSettings = {
-                        password: DEFAULT_PASSWORD,
+                        password: 'Admin@11',
                         grNcoNumber: '9149513860',
                         grNcoName: '',
                         messHavNumber: '7736991184',
@@ -1614,7 +2100,7 @@
                 console.error('Error loading settings:', error);
                 // Return default settings if there's an error
                 appSettings = {
-                    password: DEFAULT_PASSWORD,
+                    password: 'Admin@11',
                     grNcoNumber: '9149513860',
                     grNcoName: '',
                     messHavNumber: '7736991184',
@@ -2870,92 +3356,156 @@ Remarks: ${booking.remarks || 'None'}`;
             });
         }
 
-        // ========== SESSION MANAGEMENT ==========
-        
-        // Save admin session to localStorage
-        function saveAdminSession() {
-            localStorage.setItem('isAdmin', 'true');
-        }
-        
-        // Check if admin session exists
-        function checkAdminSession() {
-            return localStorage.getItem('isAdmin') === 'true';
-        }
-        
-        // Clear admin session
-        function clearAdminSession() {
-            localStorage.removeItem('isAdmin');
-        }
-
         // ========== EVENT LISTENERS ==========
 
+        // Authentication modal functionality
+        function showAuthModal() {
+            authModal.classList.add('active');
+        }
+
+        function hideAuthModal() {
+            authModal.classList.remove('active');
+            loginEmail.value = '';
+            loginPassword.value = '';
+            registerName.value = '';
+            registerEmail.value = '';
+            registerPassword.value = '';
+            registerConfirmPassword.value = '';
+            resetEmail.value = '';
+            loginError.textContent = '';
+            registerError.textContent = '';
+            registerSuccess.textContent = '';
+            resetError.textContent = '';
+            resetSuccess.textContent = '';
+        }
+
+        function switchAuthTab(tabName) {
+            // Update tabs
+            authTabs.forEach(tab => {
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Update forms
+            loginForm.classList.toggle('active', tabName === 'login');
+            registerForm.classList.toggle('active', tabName === 'register');
+            forgotPasswordForm.classList.toggle('active', tabName === 'forgot-password');
+        }
+
+        // Auth tab switching
+        authTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                switchAuthTab(tab.dataset.tab);
+            });
+        });
+
         // Login functionality
-        function showLoginModal() {
-            loginModal.classList.add('active');
-        }
-
-        function hideLoginModal() {
-            loginModal.classList.remove('active');
-            modalUsername.value = '';
-            modalPassword.value = '';
-        }
-
-        adminLoginBtn.addEventListener('click', showLoginModal);
+        loginBtn.addEventListener('click', showAuthModal);
+        authLoginBtn.addEventListener('click', showAuthModal);
 
         modalLoginBtn.addEventListener('click', async function() {
-            const username = modalUsername.value;
-            const password = modalPassword.value;
+            const email = loginEmail.value;
+            const password = loginPassword.value;
             
-            if (username === ADMIN_USERNAME) {
-                try {
-                    const settings = await loadSettings();
-                    if (password === settings.password) {
-                        isAdmin = true;
-                        adminFormSection.classList.remove('hidden');
-                        adminEntriesSection.classList.remove('hidden');
-                        adminLoginBtn.classList.add('hidden');
-                        adminSettingsBtn.classList.remove('hidden');
-                        changePasswordBtn.classList.remove('hidden');
-                        logoutBtn.classList.remove('hidden');
-                        // Hide cancelled bookings section for admin
-                        cancelledBookingsSection.classList.add('hidden');
-                        
-                        // Save session to localStorage
-                        saveAdminSession();
-                        
-                        hideLoginModal();
-                    } else {
-                        alert('Invalid password. Try: ' + DEFAULT_PASSWORD);
-                    }
-                } catch (error) {
-                    console.error('Error during login:', error);
-                    alert('Error during login. Please try again.');
-                }
+            if (!email || !password) {
+                loginError.textContent = 'Please fill in all fields.';
+                return;
+            }
+            
+            const result = await loginUser(email, password);
+            if (result.success) {
+                hideAuthModal();
             } else {
-                alert('Invalid username');
+                loginError.textContent = result.message;
             }
         });
 
-        logoutBtn.addEventListener('click', function() {
-            isAdmin = false;
-            adminFormSection.classList.add('hidden');
-            adminEntriesSection.classList.add('hidden');
-            adminLoginBtn.classList.remove('hidden');
-            adminSettingsBtn.classList.add('hidden');
-            changePasswordBtn.classList.add('hidden');
-            logoutBtn.classList.add('hidden');
-            // Show cancelled bookings section for non-admin users
-            cancelledBookingsSection.classList.remove('hidden');
+        // Register functionality
+        registerBtn.addEventListener('click', () => {
+            showAuthModal();
+            switchAuthTab('register');
+        });
+        authRegisterBtn.addEventListener('click', () => {
+            showAuthModal();
+            switchAuthTab('register');
+        });
+
+        modalRegisterBtn.addEventListener('click', async function() {
+            const name = registerName.value;
+            const email = registerEmail.value;
+            const password = registerPassword.value;
+            const confirmPassword = registerConfirmPassword.value;
             
-            // Clear session from localStorage
-            clearAdminSession();
+            if (!name || !email || !password || !confirmPassword) {
+                registerError.textContent = 'Please fill in all fields.';
+                return;
+            }
             
-            if (bookingForm.dataset.editingId) {
-                delete bookingForm.dataset.editingId;
-                bookingForm.reset();
-                setDefaultDates();
+            if (password !== confirmPassword) {
+                registerError.textContent = 'Passwords do not match.';
+                return;
+            }
+            
+            if (password.length < 6) {
+                registerError.textContent = 'Password must be at least 6 characters.';
+                return;
+            }
+            
+            const result = await registerUser(email, password, name);
+            if (result.success) {
+                registerError.textContent = '';
+                registerSuccess.textContent = result.message;
+                // Clear form
+                registerName.value = '';
+                registerEmail.value = '';
+                registerPassword.value = '';
+                registerConfirmPassword.value = '';
+            } else {
+                registerSuccess.textContent = '';
+                registerError.textContent = result.message;
             }
         });
+
+        // Forgot password functionality
+        forgotPasswordBtn.addEventListener('click', () => {
+            showAuthModal();
+            switchAuthTab('forgot-password');
+        });
+
+        modalResetBtn.addEventListener('click', async function() {
+            const email = resetEmail.value;
+            
+            if (!email) {
+                resetError.textContent = 'Please enter your email.';
+                return;
+            }
+            
+            const result = await resetPassword(email);
+            if (result.success) {
+                resetError.textContent = '';
+                resetSuccess.textContent = result.message;
+                resetEmail.value = '';
+            } else {
+                resetSuccess.textContent = '';
+                resetError.textContent = result.message;
+            }
+        });
+
+        // Verify email functionality
+        verifyEmailBtn.addEventListener('click', async function() {
+            const result = await sendEmailVerification();
+            if (result.success) {
+                alert('Verification email sent!');
+            } else {
+                alert(result.message);
+            }
+        });
+
+        // Logout functionality
+        logoutBtn.addEventListener('click', logoutUser);
 
         // Change password functionality
         changePasswordBtn.addEventListener('click', async function() {
@@ -3255,7 +3805,7 @@ Remarks: ${booking.remarks || 'None'}`;
         });
 
         // Modal close buttons
-        modalCloseBtn.addEventListener('click', hideLoginModal);
+        authModalClose.addEventListener('click', hideAuthModal);
         bookingModalClose.addEventListener('click', function() {
             bookingModal.classList.remove('active');
         });
@@ -3289,29 +3839,12 @@ Remarks: ${booking.remarks || 'None'}`;
         // Initialize the application
         document.addEventListener('DOMContentLoaded', async function() {
             try {
-                // Initialize settings first
-                await loadSettings();
-                setupSettingsListener();
+                // Initialize authentication
+                initAuth();
                 
-                // Check for existing admin session
-                if (checkAdminSession()) {
-                    isAdmin = true;
-                    adminFormSection.classList.remove('hidden');
-                    adminEntriesSection.classList.remove('hidden');
-                    adminLoginBtn.classList.add('hidden');
-                    adminSettingsBtn.classList.remove('hidden');
-                    changePasswordBtn.classList.remove('hidden');
-                    logoutBtn.classList.remove('hidden');
-                    cancelledBookingsSection.classList.add('hidden');
-                } else {
-                    // Show cancelled bookings for non-admin users
-                    cancelledBookingsSection.classList.remove('hidden');
-                }
-                
-                // Initialize the rest of the app
+                // Initialize the calendar
                 initializeTable();
                 setDefaultDates();
-                setupRealtimeListener();
                 
                 console.log('Application initialized successfully');
             } catch (error) {
