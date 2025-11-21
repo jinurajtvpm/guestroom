@@ -1124,6 +1124,22 @@
             font-weight: 600;
         }
         
+        /* NEW: User management loading */
+        .user-management-loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .user-management-loading-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #3498db;
+        }
+        
         @media (max-width: 768px) {
             .app-container {
                 flex-direction: column;
@@ -1219,7 +1235,7 @@
             
             .month-display {
                 font-size: 16px;
-                min-width: 120px;
+                min-width: 10px;
             }
             
             .month-btn {
@@ -1723,6 +1739,10 @@
             </div>
             <div class="user-management-container">
                 <h3 class="user-management-title">Pending User Approvals</h3>
+                <div id="user-management-loading" class="user-management-loading">
+                    <div class="loading-spinner" style="width: 40px; height: 40px;"></div>
+                    <div class="user-management-loading-text">Loading user data...</div>
+                </div>
                 <table class="user-management-table">
                     <thead>
                         <tr>
@@ -1895,6 +1915,9 @@
         // NEW: Authentication loading elements
         const authLoading = document.getElementById('auth-loading');
         const authContent = document.getElementById('auth-content');
+        
+        // NEW: User management loading
+        const userManagementLoading = document.getElementById('user-management-loading');
 
         // ========== AUTHENTICATION MANAGEMENT ==========
 
@@ -1920,7 +1943,7 @@
                     if (isAdmin || await isUserApproved(user.uid)) {
                         await loadSettings();
                         setupRealtimeListener();
-                        setupUsersListener();
+                        setupUsersListener(); // FIX: Added this line to setup users listener
                     }
                     
                     hideAuthLoading();
@@ -2167,12 +2190,21 @@
         function setupUsersListener() {
             if (!isAdmin) return;
             
+            console.log('Setting up users listener for admin');
+            
             if (unsubscribeUsers) {
                 unsubscribeUsers();
             }
 
+            // Show loading initially
+            userManagementLoading.classList.remove('hidden');
+            userManagementBody.innerHTML = '';
+            allUsersBody.innerHTML = '';
+
             unsubscribeUsers = db.collection('users')
                 .onSnapshot(snapshot => {
+                    console.log('Users snapshot received:', snapshot.size, 'users');
+                    
                     const users = snapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data()
@@ -2185,14 +2217,21 @@
                     console.log('Pending users:', pendingUsers.length);
                     
                     updateUserManagementTables();
+                    
+                    // Hide loading after data is loaded
+                    userManagementLoading.classList.add('hidden');
                 }, error => {
                     console.error('Error in users listener:', error);
+                    userManagementLoading.classList.add('hidden');
+                    alert('Error loading user data. Please try again.');
                 });
         }
 
         // Update user management tables
         function updateUserManagementTables() {
             if (!isAdmin) return;
+            
+            console.log('Updating user management tables');
             
             // Update pending users table
             userManagementBody.innerHTML = '';
@@ -2213,17 +2252,18 @@
                     
                     // Name
                     const nameCell = document.createElement('td');
-                    nameCell.textContent = user.name;
+                    nameCell.textContent = user.name || 'N/A';
                     row.appendChild(nameCell);
                     
                     // Email
                     const emailCell = document.createElement('td');
-                    emailCell.textContent = user.email;
+                    emailCell.textContent = user.email || 'N/A';
                     row.appendChild(emailCell);
                     
                     // Registered Date
                     const dateCell = document.createElement('td');
-                    dateCell.textContent = user.createdAt ? user.createdAt.toDate().toLocaleDateString() : 'N/A';
+                    dateCell.textContent = user.createdAt ? 
+                        user.createdAt.toDate().toLocaleDateString() : 'N/A';
                     row.appendChild(dateCell);
                     
                     // Actions
@@ -2265,22 +2305,22 @@
                     
                     // Name
                     const nameCell = document.createElement('td');
-                    nameCell.textContent = user.name;
+                    nameCell.textContent = user.name || 'N/A';
                     row.appendChild(nameCell);
                     
                     // Email
                     const emailCell = document.createElement('td');
-                    emailCell.textContent = user.email;
+                    emailCell.textContent = user.email || 'N/A';
                     row.appendChild(emailCell);
                     
                     // Role
                     const roleCell = document.createElement('td');
-                    roleCell.textContent = user.role;
+                    roleCell.textContent = user.role || 'N/A';
                     row.appendChild(roleCell);
                     
                     // Status
                     const statusCell = document.createElement('td');
-                    statusCell.textContent = user.status;
+                    statusCell.textContent = user.status || 'N/A';
                     row.appendChild(statusCell);
                     
                     // Actions
