@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guest Room Booking System</title>
+    <title>Transit Facility Booking System</title>
     <!-- Add Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -1325,7 +1325,7 @@
             </div>
             <div id="auth-content">
                 <h2 class="form-title">Authentication Required</h2>
-                <p>Please log in or register to access the Guest Room Booking System.</p>
+                <p>Please log in or register to access the Transit Facility Booking System.</p>
                 <div class="auth-buttons" style="justify-content: center; margin-top: 20px;">
                     <button id="auth-login-btn" class="month-btn">Login</button>
                     <button id="auth-register-btn" class="month-btn">Register</button>
@@ -1368,31 +1368,31 @@
                     <h2 class="form-title">Add New Booking</h2>
                     <form id="booking-form">
                         <div class="form-group">
-                            <label for="guest-room">Guest Room(s)</label>
+                            <label for="guest-room">Transit Facility</label>
                             <div class="checkbox-group">
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="room-gr1" name="rooms" value="GR - 1">
-                                    <label for="room-gr1">GR - 1 (Umium)</label>
+                                    <label for="room-gr1">Umium</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="room-gr2" name="rooms" value="GR - 2">
-                                    <label for="room-gr2">GR - 2 (Laitlum)</label>
+                                    <label for="room-gr2">Laitlum</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="room-gr3" name="rooms" value="GR - 3">
-                                    <label for="room-gr3">GR - 3 (Mawsmai)</label>
+                                    <label for="room-gr3">Mawsmai</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="room-gr4" name="rooms" value="GR - 4">
-                                    <label for="room-gr4">GR - 4 (Sohra)</label>
+                                    <label for="room-gr4">Sohra</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="room-gr5" name="rooms" value="GR - 5">
-                                    <label for="room-gr5">GR - 5 (Shella)</label>
+                                    <label for="room-gr5">Dawki</label>
                                 </div>
                                 <div class="checkbox-item">
                                     <input type="checkbox" id="room-gr6" name="rooms" value="GR - 6">
-                                    <label for="room-gr6">GR - 6 (Arwah)</label>
+                                    <label for="room-gr6">Nohkalikai</label>
                                 </div>
                             </div>
                         </div>
@@ -1449,7 +1449,7 @@
             <table class="cancelled-bookings-table">
                 <thead>
                     <tr>
-                        <th>Guest Room</th>
+                        <th>Transit Facility</th>
                         <th>Check-in Date</th>
                         <th>Check-out Date</th>
                         <th>Guest Name</th>
@@ -1510,7 +1510,7 @@
             <table class="entries-table">
                 <thead>
                     <tr>
-                        <th>Guest Room</th>
+                        <th>Transit Facility</th>
                         <th>Check-in Date</th>
                         <th>Check-out Date</th>
                         <th>Guest Name</th>
@@ -1610,15 +1610,15 @@
             <h2 class="modal-title">Edit Booking</h2>
             <form id="edit-form">
                 <div class="modal-form-group">
-                    <label for="edit-guest-room">Guest Room</label>
+                    <label for="edit-guest-room">Transit Facility</label>
                     <select id="edit-guest-room" required>
                         <option value="">Select Room</option>
                         <option value="GR - 1">GR - 1 (Umium)</option>
                         <option value="GR - 2">GR - 2 (Laitlum)</option>
                         <option value="GR - 3">GR - 3 (Mawsmai)</option>
                         <option value="GR - 4">GR - 4 (Sohra)</option>
-                        <option value="GR - 5">GR - 5 (Shella)</option>
-                        <option value="GR - 6">GR - 6 (Arwah)</option>
+                        <option value="GR - 5">GR - 5 (Dawki)</option>
+                        <option value="GR - 6">GR - 6 (Nohkalikai)</option>
                     </select>
                 </div>
                 
@@ -2831,7 +2831,7 @@
         function updatePageTitle() {
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            pageTitle.textContent = `Guestroom Booking Status - ${monthNames[currentMonth]} ${currentYear}`;
+            pageTitle.textContent = `T/F Booking Status - ${monthNames[currentMonth]} ${currentYear}`;
             monthDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
             
             // NEW: Update cancelled bookings title
@@ -3632,11 +3632,11 @@
 We are so happy you chose us for your stay. We can't wait to make your stay comfortable and relaxing! Your booking is *confirmed*👍
 Please find the details below👇
 
-*1. Guestroom Name* : ${roomName}
+*1. TF Name* : ${roomName}
 
 *2. Guest* : ${booking.guest}
 
-*3. GR NCO Number* : ${grNcoInfo}
+*3. TF NCO Number* : ${grNcoInfo}
 
 *4. Check-in Date* : ${checkinDate}
 
@@ -3674,7 +3674,7 @@ Mess Secy`;
                 statusText = '*CANCELLED*';
             }
             
-            return `*Guestroom Booking Update :-*
+            return `*Transit Facility Booking Update :-*
 
 Room : ${booking.room} (${roomName})
 
