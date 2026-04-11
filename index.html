@@ -1280,6 +1280,23 @@
                 font-size: 14px;
             }
         }
+        .bill-btn { color: #8e44ad; }
+.bill-item-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
+.bill-item-select { flex: 2; min-width: 180px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+.bill-amount-input { flex: 1; min-width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+.bill-add-btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+.bill-items-list { margin: 20px 0; max-height: 300px; overflow-y: auto; }
+.bill-item-display { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #eee; background: #f9f9f9; margin: 5px 0; border-radius: 6px; }
+.bill-item-name { font-weight: 600; }
+.bill-total { font-size: 20px; font-weight: bold; text-align: right; padding: 15px; background: #f0f0f0; border-radius: 8px; margin-top: 15px; }
+.bill-print-btn { background: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; }
+.bill-preview { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-top: 20px; }
+.bill-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+.bill-guest-details { background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 15px 0; display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.bill-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+.bill-table th, .bill-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+.bill-table th { background: #f2f2f2; }
+.upi-text { text-align: center; font-weight: bold; background: #e8f5e9; padding: 10px; border-radius: 8px; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -1595,6 +1612,9 @@
                     <button class="icon-btn delete-btn" id="booking-delete-btn" title="Delete Booking">
                         <i class="fas fa-trash"></i>
                     </button>
+                    <button class="icon-btn bill-btn" id="booking-bill-btn" title="Generate Bill">
+    <i class="fas fa-file-invoice-dollar"></i>
+</button>
                 </div>
             </div>
             <div id="booking-details-content">
@@ -1816,7 +1836,47 @@
             </form>
         </div>
     </div>
-
+<!-- Bill Generation Modal -->
+<div id="bill-modal" class="modal">
+    <div class="modal-content" style="max-width:950px">
+        <div class="modal-header">
+            <h2 class="modal-title">Generate Bill / Invoice</h2>
+            <button id="bill-modal-close" style="background:#e74c3c;border:none;padding:8px 12px;border-radius:6px;color:white;cursor:pointer">✕</button>
+        </div>
+        <div id="bill-interface">
+            <div style="background:#f0f7ff;padding:15px;border-radius:8px;margin-bottom:20px">
+                <h3>Add Bill Items</h3>
+                <div class="bill-item-row">
+                    <select id="bill-item-select" class="bill-item-select">
+                        <option value="">-- Select Item --</option>
+                        <option value="BBF">BBF</option>
+                        <option value="Offrs Contribution">Offrs Contribution</option>
+                        <option value="Transit Facility Charges">Transit Facility Charges</option>
+                        <option value="Messing">Messing</option>
+                        <option value="Extra Messing">Extra Messing</option>
+                        <option value="Wine/Beer">Wine/Beer</option>
+                        <option value="Soft/Soda/Cig">Soft/Soda/Cig</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Subscription">Subscription</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Paper & Periodicals">Paper & Periodicals</option>
+                        <option value="Mess Deposit">Mess Deposit</option>
+                        <option value="Property">Property</option>
+                        <option value="Tea Bar">Tea Bar</option>
+                    </select>
+                    <input type="number" id="bill-amount-input" class="bill-amount-input" placeholder="Amount ₹" step="0.01">
+                    <button id="bill-add-item-btn" class="bill-add-btn"><i class="fas fa-plus"></i> Add Item</button>
+                </div>
+            </div>
+            <div id="bill-items-list" class="bill-items-list">
+                <h4>Bill Items</h4>
+                <div id="bill-items-container"></div>
+            </div>
+            <div id="bill-preview" class="bill-preview"></div>
+            <button id="print-bill-btn" class="bill-print-btn"><i class="fas fa-print"></i> Print Bill & Save</button>
+        </div>
+    </div>
+</div>
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -3213,6 +3273,13 @@
                 const booking = roomBookings[0];
                 currentBookingId = booking.id;
                 
+                const billBtn = document.getElementById('booking-bill-btn');
+    if (billBtn) {
+        billBtn.onclick = () => { 
+            openBillModal(booking); 
+            bookingModal.classList.remove('active'); 
+        };
+    }
                 // NEW: Include contact number in booking details for admin with confirmation button
                 let contactHTML = '';
                 if (isAdmin && booking.contactNumber) {
@@ -4220,6 +4287,153 @@ Remarks: ${booking.remarks || 'None'}`;
                 alert('Error initializing application. Please refresh the page.');
             }
         });
+        // ========== BILL SYSTEM (ADDITIONAL FEATURE) ==========
+let currentBillBooking = null;
+let billItems = [];
+
+function renderBillPreview() {
+    if(!currentBillBooking) return;
+    const previewDiv = document.getElementById('bill-preview');
+    let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+    let total = 0;
+    billItems.forEach(item => {
+        itemsHtml += `<tr><td>${item.name}</td><td>₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
+        total += parseFloat(item.amount);
+    });
+    itemsHtml += `</tbody></table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
+    const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+    const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+    previewDiv.innerHTML = `
+        <div class="bill-header">
+            <h3>OFFICERS MESS TF</h3>
+            <h4>${currentBillBooking.room} (${roomNames[currentBillBooking.room] || ''})</h4>
+        </div>
+        <div class="bill-guest-details">
+            <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
+            <div><strong>Check-in:</strong> ${checkin}</div>
+            <div><strong>Check-out:</strong> ${checkout}</div>
+        </div>
+        ${itemsHtml}
+        <div class="upi-text">Please pay to UPI ID: <strong>87876766@oksbi</strong></div>
+    `;
+}
+
+function addBillItem() {
+    const select = document.getElementById('bill-item-select');
+    const amountInput = document.getElementById('bill-amount-input');
+    const itemName = select.value;
+    const amount = parseFloat(amountInput.value);
+    if(!itemName || isNaN(amount) || amount <= 0){
+        alert("Select item and enter valid amount");
+        return;
+    }
+    billItems.push({name: itemName, amount: amount});
+    updateBillItemsList();
+    select.value = "";
+    amountInput.value = "";
+    renderBillPreview();
+}
+
+function updateBillItemsList() {
+    const container = document.getElementById('bill-items-container');
+    container.innerHTML = '';
+    billItems.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'bill-item-display';
+        div.innerHTML = `
+            <span class="bill-item-name">${item.name}</span>
+            <span>₹${item.amount.toFixed(2)}</span>
+            <button class="icon-btn delete-btn" data-idx="${idx}" style="margin-left:10px"><i class="fas fa-trash"></i></button>
+        `;
+        container.appendChild(div);
+    });
+    document.querySelectorAll('.delete-btn[data-idx]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(btn.dataset.idx);
+            billItems.splice(idx, 1);
+            updateBillItemsList();
+            renderBillPreview();
+        });
+    });
+}
+
+async function saveBillToDatabase(bookingId, items, total) {
+    if(!bookingId) return;
+    const billData = {
+        bookingId: bookingId,
+        items: items,
+        total: total,
+        generatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        generatedBy: currentUser?.email
+    };
+    await db.collection('bills').doc(bookingId).set(billData, { merge: true });
+}
+
+async function printBillAndSave() {
+    if(!currentBillBooking) return;
+    const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
+    await saveBillToDatabase(currentBillBooking.id, billItems, total);
+    
+    const printWindow = window.open('', '_blank');
+    const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+    const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+    let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+    billItems.forEach(i => {
+        itemsTable += `<tr><td>${i.name}</td><td>₹${i.amount.toFixed(2)}</td></tr>`;
+    });
+    itemsTable += `</tbody></table><h3>Total: ₹${total.toFixed(2)}</h3>`;
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Bill - ${currentBillBooking.guest}</title>
+            <style>
+                body{font-family:sans-serif;padding:20px}
+                .header{text-align:center}
+                table{border-collapse:collapse;width:100%}
+                th,td{border:1px solid #ddd;padding:8px;text-align:left}
+                th{background:#f2f2f2}
+                .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h2>OFFICERS MESS TF</h2>
+                <h3>${currentBillBooking.room} (${roomNames[currentBillBooking.room] || ''})</h3>
+            </div>
+            <div>
+                <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
+                <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
+            </div>
+            ${itemsTable}
+            <div class="upi">Please pay to UPI ID: <strong>87876766@oksbi</strong></div>
+            <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+    alert('Bill saved successfully!');
+    document.getElementById('bill-modal').classList.remove('active');
+}
+
+function openBillModal(booking) {
+    currentBillBooking = booking;
+    billItems = [];
+    updateBillItemsList();
+    renderBillPreview();
+    document.getElementById('bill-modal').classList.add('active');
+}
+
+// Attach event listeners for bill modal (add these after your existing event listeners)
+document.getElementById('bill-add-item-btn')?.addEventListener('click', addBillItem);
+document.getElementById('print-bill-btn')?.addEventListener('click', printBillAndSave);
+document.getElementById('bill-modal-close')?.addEventListener('click', () => {
+    document.getElementById('bill-modal').classList.remove('active');
+});
+
+// Make openBillModal globally available for the bill button
+window.openBillModal = openBillModal;
     </script>
 </body>
 </html>
