@@ -1365,7 +1365,7 @@
                     <table id="booking-table">
                         <thead>
                             <tr>
-                                <th>DAT</th>
+                                <th>DATE</th>
                                 <th>TF - 1</th>
                                 <th>TF - 2</th>
                                 <th>TF - 3</th>
@@ -4291,6 +4291,23 @@ Remarks: ${booking.remarks || 'None'}`;
 let currentBillBooking = null;
 let billItems = [];
 
+// Function to load existing bill from database
+async function loadExistingBill(bookingId) {
+    try {
+        const billDoc = await db.collection('bills').doc(bookingId).get();
+        if (billDoc.exists) {
+            const billData = billDoc.data();
+            if (billData.items && billData.items.length) {
+                billItems = billData.items;
+                updateBillItemsList();
+                renderBillPreview();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading bill:', error);
+    }
+}
+
 function renderBillPreview() {
     if(!currentBillBooking) return;
     const previewDiv = document.getElementById('bill-preview');
@@ -4300,7 +4317,7 @@ function renderBillPreview() {
         itemsHtml += `<tr><td>${item.name}</td><td>₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
         total += parseFloat(item.amount);
     });
-    itemsHtml += `</tbody></table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
+    itemsHtml += `</tbody>树<table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
     const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
     const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
     previewDiv.innerHTML = `
@@ -4364,57 +4381,65 @@ async function saveBillToDatabase(bookingId, items, total) {
         items: items,
         total: total,
         generatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        generatedBy: currentUser?.email
+        generatedBy: currentUser?.email || 'unknown'
     };
     await db.collection('bills').doc(bookingId).set(billData, { merge: true });
 }
 
 async function printBillAndSave() {
     if(!currentBillBooking) return;
-    const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
-    await saveBillToDatabase(currentBillBooking.id, billItems, total);
-    
-    const printWindow = window.open('', '_blank');
-    const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
-    const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
-    let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
-    billItems.forEach(i => {
-        itemsTable += `<tr><td>${i.name}</td><td>₹${i.amount.toFixed(2)}</td></tr>`;
-    });
-    itemsTable += `</tbody></table><h3>Total: ₹${total.toFixed(2)}</h3>`;
-    
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>Bill - ${currentBillBooking.guest}</title>
-            <style>
-                body{font-family:sans-serif;padding:20px}
-                .header{text-align:center}
-                table{border-collapse:collapse;width:100%}
-                th,td{border:1px solid #ddd;padding:8px;text-align:left}
-                th{background:#f2f2f2}
-                .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
-            </style>
-        </head>
-        <body>
-            <div class="header">
-                <h2>OFFICERS MESS TF</h2>
-                <h3>${currentBillBooking.room} (${roomNames[currentBillBooking.room] || ''})</h3>
-            </div>
-            <div>
-                <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
-                <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
-            </div>
-            ${itemsTable}
-            <div class="upi">Please pay to UPI ID: <strong>87876766@oksbi</strong></div>
-            <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
-    alert('Bill saved successfully!');
-    document.getElementById('bill-modal').classList.remove('active');
+    showLoading();
+    try {
+        const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
+        await saveBillToDatabase(currentBillBooking.id, billItems, total);
+        
+        const printWindow = window.open('', '_blank');
+        const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+        const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+        let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+        billItems.forEach(i => {
+            itemsTable += `<tr><td>${i.name}</td><td>₹${i.amount.toFixed(2)}</td></tr>`;
+        });
+        itemsTable += `</tbody></table><h3>Total: ₹${total.toFixed(2)}</h3>`;
+        
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Bill - ${currentBillBooking.guest}</title>
+                <style>
+                    body{font-family:sans-serif;padding:20px}
+                    .header{text-align:center}
+                    table{border-collapse:collapse;width:100%}
+                    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+                    th{background:#f2f2f2}
+                    .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>OFFICERS MESS TF</h2>
+                    <h3>${currentBillBooking.room} (${roomNames[currentBillBooking.room] || ''})</h3>
+                </div>
+                <div>
+                    <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
+                    <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
+                </div>
+                ${itemsTable}
+                <div class="upi">Please pay to UPI ID: <strong>87876766@oksbi</strong></div>
+                <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        alert('Bill saved successfully and sent to printer!');
+        document.getElementById('bill-modal').classList.remove('active');
+    } catch (error) {
+        console.error('Error in bill save/print:', error);
+        alert('Error saving bill. Please try again.');
+    } finally {
+        hideLoading();
+    }
 }
 
 function openBillModal(booking) {
@@ -4422,10 +4447,12 @@ function openBillModal(booking) {
     billItems = [];
     updateBillItemsList();
     renderBillPreview();
-    document.getElementById('bill-modal').classList.add('active');
+    loadExistingBill(booking.id).then(() => {
+        document.getElementById('bill-modal').classList.add('active');
+    });
 }
 
-// Attach event listeners for bill modal (add these after your existing event listeners)
+// Attach event listeners for bill modal
 document.getElementById('bill-add-item-btn')?.addEventListener('click', addBillItem);
 document.getElementById('print-bill-btn')?.addEventListener('click', printBillAndSave);
 document.getElementById('bill-modal-close')?.addEventListener('click', () => {
