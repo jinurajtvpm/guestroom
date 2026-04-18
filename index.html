@@ -4317,13 +4317,13 @@ function renderBillPreview() {
         itemsHtml += `<tr><td>${item.name}</td><td>₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
         total += parseFloat(item.amount);
     });
-    itemsHtml += `</tbody>树<table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
+    itemsHtml += `</tbody><table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
     const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
     const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
     previewDiv.innerHTML = `
         <div class="bill-header">
-            <h3>OFFICERS MESS TF</h3>
-            <h4>${currentBillBooking.room} (${roomNames[currentBillBooking.room] || ''})</h4>
+            <h3>TRANSIT FACILITY, OFFRS' MESS/h3>
+            <h4>${roomNames[currentBillBooking.room] || ''}</h4>
         </div>
         <div class="bill-guest-details">
             <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
