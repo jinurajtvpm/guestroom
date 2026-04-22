@@ -4323,17 +4323,14 @@ function renderBillPreview() {
     const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
     const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
     previewDiv.innerHTML = `
-        <div class="bill-header">
-            <h3>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h3>
-            <h4>${roomNames[currentBillBooking.room] || ''}</h4>
-        </div>
+        
         <div class="bill-guest-details">
             <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
             <div><strong>Check-in:</strong> ${checkin}</div>
             <div><strong>Check-out:</strong> ${checkout}</div>
         </div>
         ${itemsHtml}
-        <div class="upi-text">Please pay to UPI ID: <strong>87876766@oksbi</strong></div>
+       
     `;
 }
 
