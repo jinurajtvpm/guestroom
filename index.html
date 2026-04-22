@@ -3699,6 +3699,8 @@
 We are so happy you chose us for your stay. We can't wait to make your stay comfortable and relaxing! Your booking is *confirmed*👍
 Please find the details below👇
 
+*Transit Facility Booking Details*
+
 *1. TF Name* : ${roomName}
 
 *2. Guest* : ${booking.guest}
@@ -3743,7 +3745,7 @@ Mess Secy`;
             
             return `*Transit Facility Booking Update :-*
 
-Room : ${booking.room} (${roomName})
+Room : ${roomName}
 
 Guest Name : ${booking.guest}
 
@@ -4322,7 +4324,7 @@ function renderBillPreview() {
     const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
     previewDiv.innerHTML = `
         <div class="bill-header">
-            <h3>TRANSIT FACILITY, OFFRS' MESS/h3>
+            <h3>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h3>
             <h4>${roomNames[currentBillBooking.room] || ''}</h4>
         </div>
         <div class="bill-guest-details">
@@ -4417,15 +4419,18 @@ async function printBillAndSave() {
             </head>
             <body>
                 <div class="header">
-                    <h2>OFFICERS MESS TF</h2>
-                    <h3>${currentBillBooking.room} (${roomNames[currentBillBooking.room] || ''})</h3>
+                    <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
+                    <h3>${roomNames[currentBillBooking.room] || ''}</h3>
                 </div>
                 <div>
                     <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
                     <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
+                    </br>
+                    <p style="
+                   margin-top: 20px; text-align: center;"><strong>Bill Summary :</strong> </p>
                 </div>
                 ${itemsTable}
-                <div class="upi">Please pay to UPI ID: <strong>87876766@oksbi</strong></div>
+                <div class="upi">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
                 <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
             </body>
             </html>
