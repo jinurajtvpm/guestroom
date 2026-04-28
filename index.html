@@ -1281,22 +1281,22 @@
             }
         }
         .bill-btn { color: #8e44ad; }
-        .bill-item-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
-        .bill-item-select { flex: 2; min-width: 180px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        .bill-amount-input { flex: 1; min-width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-        .bill-add-btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-        .bill-items-list { margin: 20px 0; max-height: 300px; overflow-y: auto; }
-        .bill-item-display { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #eee; background: #f9f9f9; margin: 5px 0; border-radius: 6px; }
-        .bill-item-name { font-weight: 600; }
-        .bill-total { font-size: 20px; font-weight: bold; text-align: right; padding: 15px; background: #f0f0f0; border-radius: 8px; margin-top: 15px; }
-        .bill-print-btn { background: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; }
-        .bill-preview { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-top: 20px; }
-        .bill-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
-        .bill-guest-details { background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 15px 0; display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
-        .bill-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
-        .bill-table th, .bill-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        .bill-table th { background: #f2f2f2; }
-        .upi-text { text-align: center; font-weight: bold; background: #e8f5e9; padding: 10px; border-radius: 8px; margin: 15px 0; }
+.bill-item-row { display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap; }
+.bill-item-select { flex: 2; min-width: 180px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+.bill-amount-input { flex: 1; min-width: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
+.bill-add-btn { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+.bill-items-list { margin: 20px 0; max-height: 300px; overflow-y: auto; }
+.bill-item-display { display: flex; justify-content: space-between; padding: 8px 12px; border-bottom: 1px solid #eee; background: #f9f9f9; margin: 5px 0; border-radius: 6px; }
+.bill-item-name { font-weight: 600; }
+.bill-total { font-size: 20px; font-weight: bold; text-align: right; padding: 15px; background: #f0f0f0; border-radius: 8px; margin-top: 15px; }
+.bill-print-btn { background: #3498db; color: white; border: none; padding: 12px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 15px; }
+.bill-preview { background: white; padding: 20px; border-radius: 10px; border: 1px solid #ddd; margin-top: 20px; }
+.bill-header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px; }
+.bill-guest-details { background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 15px 0; display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+.bill-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+.bill-table th, .bill-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+.bill-table th { background: #f2f2f2; }
+.upi-text { text-align: center; font-weight: bold; background: #e8f5e9; padding: 10px; border-radius: 8px; margin: 15px 0; }
     </style>
 </head>
 <body>
@@ -1613,8 +1613,8 @@
                         <i class="fas fa-trash"></i>
                     </button>
                     <button class="icon-btn bill-btn" id="booking-bill-btn" title="Generate Bill">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                    </button>
+    <i class="fas fa-file-invoice-dollar"></i>
+</button>
                 </div>
             </div>
             <div id="booking-details-content">
@@ -1836,49 +1836,47 @@
             </form>
         </div>
     </div>
-    
-    <!-- Bill Generation Modal -->
-    <div id="bill-modal" class="modal">
-        <div class="modal-content" style="max-width:950px">
-            <div class="modal-header">
-                <h2 class="modal-title">Generate Bill / Invoice</h2>
-                <button id="bill-modal-close" style="background:#e74c3c;border:none;padding:8px 12px;border-radius:6px;color:white;cursor:pointer">✕</button>
-            </div>
-            <div id="bill-interface">
-                <div style="background:#f0f7ff;padding:15px;border-radius:8px;margin-bottom:20px">
-                    <h3>Add Bill Items</h3>
-                    <div class="bill-item-row">
-                        <select id="bill-item-select" class="bill-item-select">
-                            <option value="">-- Select Item --</option>
-                            <option value="BBF">BBF</option>
-                            <option value="Offrs Contribution">Offrs Contribution</option>
-                            <option value="Transit Facility Charges">Transit Facility Charges</option>
-                            <option value="Messing">Messing</option>
-                            <option value="Extra Messing">Extra Messing</option>
-                            <option value="Wine/Beer">Wine/Beer</option>
-                            <option value="Soft/Soda/Cig">Soft/Soda/Cig</option>
-                            <option value="Electricity">Electricity</option>
-                            <option value="Subscription">Subscription</option>
-                            <option value="Entertainment">Entertainment</option>
-                            <option value="Paper & Periodicals">Paper & Periodicals</option>
-                            <option value="Mess Deposit">Mess Deposit</option>
-                            <option value="Property">Property</option>
-                            <option value="Tea Bar">Tea Bar</option>
-                        </select>
-                        <input type="number" id="bill-amount-input" class="bill-amount-input" placeholder="Amount ₹" step="0.01">
-                        <button id="bill-add-item-btn" class="bill-add-btn"><i class="fas fa-plus"></i> Add Item</button>
-                    </div>
+<!-- Bill Generation Modal -->
+<div id="bill-modal" class="modal">
+    <div class="modal-content" style="max-width:950px">
+        <div class="modal-header">
+            <h2 class="modal-title">Generate Bill / Invoice</h2>
+            <button id="bill-modal-close" style="background:#e74c3c;border:none;padding:8px 12px;border-radius:6px;color:white;cursor:pointer">✕</button>
+        </div>
+        <div id="bill-interface">
+            <div style="background:#f0f7ff;padding:15px;border-radius:8px;margin-bottom:20px">
+                <h3>Add Bill Items</h3>
+                <div class="bill-item-row">
+                    <select id="bill-item-select" class="bill-item-select">
+                        <option value="">-- Select Item --</option>
+                        <option value="BBF">BBF</option>
+                        <option value="Offrs Contribution">Offrs Contribution</option>
+                        <option value="Transit Facility Charges">Transit Facility Charges</option>
+                        <option value="Messing">Messing</option>
+                        <option value="Extra Messing">Extra Messing</option>
+                        <option value="Wine/Beer">Wine/Beer</option>
+                        <option value="Soft/Soda/Cig">Soft/Soda/Cig</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Subscription">Subscription</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Paper & Periodicals">Paper & Periodicals</option>
+                        <option value="Mess Deposit">Mess Deposit</option>
+                        <option value="Property">Property</option>
+                        <option value="Tea Bar">Tea Bar</option>
+                    </select>
+                    <input type="number" id="bill-amount-input" class="bill-amount-input" placeholder="Amount ₹" step="0.01">
+                    <button id="bill-add-item-btn" class="bill-add-btn"><i class="fas fa-plus"></i> Add Item</button>
                 </div>
-                <div id="bill-items-list" class="bill-items-list">
-                    <h4>Bill Items</h4>
-                    <div id="bill-items-container"></div>
-                </div>
-                <div id="bill-preview" class="bill-preview"></div>
-                <button id="print-bill-btn" class="bill-print-btn"><i class="fas fa-print"></i> Print Bill & Save</button>
             </div>
+            <div id="bill-items-list" class="bill-items-list">
+                <h4>Bill Items</h4>
+                <div id="bill-items-container"></div>
+            </div>
+            <div id="bill-preview" class="bill-preview"></div>
+            <button id="print-bill-btn" class="bill-print-btn"><i class="fas fa-print"></i> Print Bill & Save</button>
         </div>
     </div>
-
+</div>
     <script>
         // Firebase Configuration
         const firebaseConfig = {
@@ -1919,8 +1917,8 @@
             "GR - 2": "Laitlum",
             "GR - 3": "Mawsmai",
             "GR - 4": "Sohra",
-            "GR - 5": "Dawki",
-            "GR - 6": "Nohkalikai"
+            "GR - 5": "Shella",
+            "GR - 6": "Arwah"
         };
 
         // DOM elements
@@ -2031,182 +2029,11 @@
         const numberRequirement = document.getElementById('number-requirement');
         const symbolRequirement = document.getElementById('symbol-requirement');
 
-        // ========== BILL SYSTEM WITH BILL NUMBER AND DATE ==========
-        let currentBillBooking = null;
-        let billItems = [];
-        let currentBillNumber = null;
-        let currentBillDate = null;
-
-        // Generate unique 12-digit bill number: 11 + YYMMDD + 4-digit sequence
-        async function generateBillNumber() {
-            const now = new Date();
-            const year = now.getFullYear().toString().slice(-2);
-            const month = (now.getMonth() + 1).toString().padStart(2, '0');
-            const day = now.getDate().toString().padStart(2, '0');
-            const datePrefix = year + month + day;
-            const prefix = '11' + datePrefix;
-            
-            const billsSnapshot = await db.collection('bills')
-                .where('billNumberPrefix', '==', prefix)
-                .get();
-            
-            let sequence = billsSnapshot.size + 1;
-            const sequenceNum = sequence.toString().padStart(4, '0');
-            return prefix + sequenceNum;
-        }
-
-        // Get current IST date and time
-        function getCurrentISTDateTime() {
-            const now = new Date();
-            const istOffset = 5.5 * 60 * 60 * 1000;
-            const istDate = new Date(now.getTime() + istOffset);
-            const day = istDate.getUTCDate().toString().padStart(2, '0');
-            const month = (istDate.getUTCMonth() + 1).toString().padStart(2, '0');
-            const year = istDate.getUTCFullYear();
-            const hours = istDate.getUTCHours().toString().padStart(2, '0');
-            const minutes = istDate.getUTCMinutes().toString().padStart(2, '0');
-            const seconds = istDate.getUTCSeconds().toString().padStart(2, '0');
-            return {
-                date: `${day}/${month}/${year}`,
-                time: `${hours}:${minutes}:${seconds} IST`,
-                full: `${day}/${month}/${year} ${hours}:${minutes}:${seconds} IST`
-            };
-        }
-
-        function resetBillState() {
-            currentBillBooking = null;
-            billItems = [];
-            currentBillNumber = null;
-            currentBillDate = null;
-            const container = document.getElementById('bill-items-container');
-            if (container) container.innerHTML = '';
-            const preview = document.getElementById('bill-preview');
-            if (preview) preview.innerHTML = '';
-            const select = document.getElementById('bill-item-select');
-            if (select) select.value = '';
-            const amount = document.getElementById('bill-amount-input');
-            if (amount) amount.value = '';
-        }
-
-        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m) { if(m === '&') return '&amp;'; if(m === '<') return '&lt;'; if(m === '>') return '&gt;'; return m; }); }
-
-        function renderBillPreview() {
-            if(!currentBillBooking) return;
-            const previewDiv = document.getElementById('bill-preview');
-            if(!previewDiv) return;
-            let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
-            let total = 0;
-            billItems.forEach(item => { itemsHtml += `<tr><td style="padding: 8px;">${escapeHtml(item.name)}</td><td style="padding: 8px;">₹${parseFloat(item.amount).toFixed(2)}</td></tr>`; total += parseFloat(item.amount); });
-            itemsHtml += `</tbody> </table><div class="bill-total" style="text-align: right; font-weight: bold; margin-top: 10px;">Total Amount: ₹${total.toFixed(2)}</div>`;
-            const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
-            const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
-            previewDiv.innerHTML = `
-                <div class="bill-header" style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
-                    <h3>OFFICERS MESS TF</h3>
-                    <h4>${escapeHtml(currentBillBooking.room)} (${escapeHtml(roomNames[currentBillBooking.room] || '')})</h4>
-                    <p><strong>Bill No:</strong> ${currentBillNumber || 'Generating...'}</p>
-                    <p><strong>Bill Date:</strong> ${currentBillDate || getCurrentISTDateTime().full}</p>
-                </div>
-                <div class="bill-guest-details" style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin: 15px 0; display: grid; grid-template-columns: repeat(2,1fr); gap: 10px;">
-                    <div><strong>Guest Name:</strong> ${escapeHtml(currentBillBooking.guest)}</div>
-                    <div><strong>Check-in:</strong> ${checkin}</div>
-                    <div><strong>Check-out:</strong> ${checkout}</div>
-                </div>
-                ${itemsHtml}
-                <div class="upi-text" style="text-align: center; font-weight: bold; background: #e8f5e9; padding: 10px; border-radius: 8px; margin: 15px 0;">
-                    Please pay to UPI ID: <strong>87876766@oksbi</strong>
-                </div>
-            `;
-        }
-
-        function addBillItem() {
-            const select = document.getElementById('bill-item-select');
-            const amountInput = document.getElementById('bill-amount-input');
-            const itemName = select.value;
-            const amount = parseFloat(amountInput.value);
-            if(!itemName || isNaN(amount) || amount <= 0) { alert("Select item and enter valid amount"); return; }
-            billItems.push({name: itemName, amount: amount});
-            updateBillItemsList();
-            select.value = "";
-            amountInput.value = "";
-            renderBillPreview();
-        }
-
-        function updateBillItemsList() {
-            const container = document.getElementById('bill-items-container');
-            if(!container) return;
-            container.innerHTML = '';
-            billItems.forEach((item, idx) => {
-                const div = document.createElement('div');
-                div.className = 'bill-item-display';
-                div.innerHTML = `<span class="bill-item-name">${escapeHtml(item.name)}</span><span>₹${item.amount.toFixed(2)}</span><button class="icon-btn delete-btn" data-idx="${idx}" style="margin-left:10px;color:#e74c3c;"><i class="fas fa-trash"></i></button>`;
-                container.appendChild(div);
-            });
-            document.querySelectorAll('.delete-btn[data-idx]').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const idx = parseInt(btn.dataset.idx);
-                    billItems.splice(idx, 1);
-                    updateBillItemsList();
-                    renderBillPreview();
-                });
-            });
-        }
-
-        async function printBillAndSave() {
-            if(!currentBillBooking) { alert('No booking selected'); return; }
-            if(billItems.length === 0) { alert('Please add at least one bill item'); return; }
-            showLoading();
-            try {
-                const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
-                const billNumber = currentBillNumber || await generateBillNumber();
-                const billDateTime = currentBillDate || getCurrentISTDateTime().full;
-                
-                await db.collection('bills').doc(currentBillBooking.id).set({
-                    bookingId: currentBillBooking.id,
-                    items: billItems,
-                    total: total,
-                    billNumber: billNumber,
-                    billDateTime: billDateTime,
-                    billNumberPrefix: billNumber.substring(0, 10),
-                    generatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    generatedBy: currentUser?.email || 'admin'
-                }, { merge: true });
-                
-                const printWindow = window.open('', '_blank');
-                const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
-                const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
-                let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
-                billItems.forEach(i => { itemsTable += `<tr><td>${escapeHtml(i.name)}</td><td>₹${i.amount.toFixed(2)}</td></tr>`; });
-                itemsTable += `</tbody></table><h3 style="text-align:right">Total: ₹${total.toFixed(2)}</h3>`;
-                
-                printWindow.document.write(`<!DOCTYPE html><html><head><title>Bill - ${escapeHtml(currentBillBooking.guest)}</title><style>body{font-family:sans-serif;padding:20px} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:8px} .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px} .header{text-align:center} .bill-meta{display:flex;justify-content:space-between;margin:10px 0}</style></head><body><div class="header"><h2>OFFICERS MESS TF</h2><h3>${escapeHtml(currentBillBooking.room)} (${escapeHtml(roomNames[currentBillBooking.room] || '')})</h3></div><div class="bill-meta"><p><strong>Bill No:</strong> ${billNumber}</p><p><strong>Bill Date:</strong> ${billDateTime}</p></div><div><p><strong>Guest:</strong> ${escapeHtml(currentBillBooking.guest)}</p><p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p></div>${itemsTable}<div class="upi">Please pay to UPI ID: <strong>87876766@oksbi</strong></div><p style="text-align:center;margin-top:30px">Thank you for your stay!</p></body></html>`);
-                printWindow.document.close();
-                printWindow.print();
-                alert('Bill saved successfully!');
-                document.getElementById('bill-modal').classList.remove('active');
-                resetBillState();
-            } catch(e) { alert('Error: '+e.message); }
-            finally { hideLoading(); }
-        }
-
-        async function openBillModal(booking) {
-            resetBillState();
-            currentBillBooking = booking;
-            currentBillNumber = await generateBillNumber();
-            currentBillDate = getCurrentISTDateTime().full;
-            updateBillItemsList();
-            renderBillPreview();
-            document.getElementById('bill-modal').classList.add('active');
-        }
-
-        document.getElementById('bill-add-item-btn')?.addEventListener('click', addBillItem);
-        document.getElementById('print-bill-btn')?.addEventListener('click', printBillAndSave);
-        document.getElementById('bill-modal-close')?.addEventListener('click', () => { document.getElementById('bill-modal').classList.remove('active'); resetBillState(); });
-        window.openBillModal = openBillModal;
-
         // ========== AUTHENTICATION MANAGEMENT ==========
 
+        // Initialize authentication state
         function initAuth() {
+            // Show loading state while checking authentication
             showAuthLoading();
             
             auth.onAuthStateChanged(async (user) => {
@@ -2216,10 +2043,13 @@
                     
                     console.log('User logged in:', user.email);
                     
+                    // Check if user is approved and get role
                     await checkUserRole(user.uid);
                     
+                    // Update UI based on authentication
                     updateAuthUI();
                     
+                    // Load app data if user is approved
                     if (isAdmin || await isUserApproved(user.uid)) {
                         await loadSettings();
                         setupRealtimeListener();
@@ -2229,12 +2059,14 @@
                     hideAuthLoading();
                     
                 } else {
+                    // User is signed out
                     console.log('User signed out');
                     currentUser = null;
                     isLoggedIn = false;
                     isAdmin = false;
                     updateAuthUI();
                     
+                    // Stop real-time listeners
                     if (unsubscribeBookings) {
                         unsubscribeBookings();
                     }
@@ -2250,6 +2082,7 @@
             });
         }
 
+        // Check if user is approved
         async function isUserApproved(uid) {
             try {
                 const userDoc = await db.collection('users').doc(uid).get();
@@ -2264,6 +2097,7 @@
             }
         }
 
+        // Check user role from Firestore
         async function checkUserRole(uid) {
             try {
                 const userDoc = await db.collection('users').doc(uid).get();
@@ -2272,6 +2106,7 @@
                     isAdmin = userData.role === 'admin';
                     return isAdmin;
                 } else {
+                    // User document doesn't exist (shouldn't happen)
                     console.error('User document not found for:', uid);
                     return false;
                 }
@@ -2282,12 +2117,14 @@
             }
         }
 
+        // NEW: Validate password strength
         function validatePassword(password) {
             const minLength = password.length >= 8;
             const hasUppercase = /[A-Z]/.test(password);
             const hasNumber = /[0-9]/.test(password);
             const hasSymbol = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
             
+            // Update UI
             lengthRequirement.className = minLength ? 'password-valid' : 'password-invalid';
             uppercaseRequirement.className = hasUppercase ? 'password-valid' : 'password-invalid';
             numberRequirement.className = hasNumber ? 'password-valid' : 'password-invalid';
@@ -2296,6 +2133,7 @@
             return minLength && hasUppercase && hasNumber && hasSymbol;
         }
 
+        // Register new user
         async function registerUser(email, password, name) {
             try {
                 showLoading();
@@ -2306,31 +2144,35 @@
                 
                 console.log('User created, updating profile');
                 
+                // Update user profile
                 await user.updateProfile({
                     displayName: name
                 });
                 
+                // Create user document in Firestore with pending status
                 await db.collection('users').doc(user.uid).set({
                     email: user.email,
                     name: name,
                     role: 'user',
-                    status: 'pending',
+                    status: 'pending', // pending, approved, rejected
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
                 
                 console.log('User document created with pending status');
                 
+                // Logout the user immediately after registration
                 await auth.signOut();
                 
                 hideLoading();
                 return { 
                     success: true, 
-                    message: 'Registration successful! Your account is pending admin approval.' 
+                    message: 'Registration successful! Your account is pending admin approval. You will be notified once approved.' 
                 };
             } catch (error) {
                 hideLoading();
                 console.error('Error registering user:', error);
                 
+                // If there's an error, try to delete the created user
                 if (auth.currentUser) {
                     try {
                         await auth.currentUser.delete();
@@ -2343,19 +2185,21 @@
             }
         }
 
+        // Login user
         async function loginUser(email, password) {
             try {
                 showLoading();
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 const user = userCredential.user;
                 
+                // Check if user is approved
                 const approved = await isUserApproved(user.uid);
                 if (!approved) {
                     await auth.signOut();
                     hideLoading();
                     return { 
                         success: false, 
-                        message: 'Your account is pending admin approval.' 
+                        message: 'Your account is pending admin approval. Please wait for approval before logging in.' 
                     };
                 }
                 
@@ -2368,6 +2212,7 @@
             }
         }
 
+        // Logout user
         async function logoutUser() {
             try {
                 showLoading();
@@ -2379,28 +2224,46 @@
             }
         }
 
+        // Get user-friendly error messages
         function getAuthErrorMessage(error) {
             switch (error.code) {
-                case 'auth/email-already-in-use': return 'This email is already registered.';
-                case 'auth/invalid-email': return 'Invalid email address.';
-                case 'auth/user-not-found': return 'No account found with this email.';
-                case 'auth/wrong-password': return 'Incorrect password.';
-                default: return error.message;
+                case 'auth/email-already-in-use':
+                    return 'This email is already registered.';
+                case 'auth/invalid-email':
+                    return 'Invalid email address.';
+                case 'auth/operation-not-allowed':
+                    return 'Email/password accounts are not enabled.';
+                case 'auth/weak-password':
+                    return 'Password is too weak.';
+                case 'auth/user-disabled':
+                    return 'This account has been disabled.';
+                case 'auth/user-not-found':
+                    return 'No account found with this email.';
+                case 'auth/wrong-password':
+                    return 'Incorrect password.';
+                case 'auth/too-many-requests':
+                    return 'Too many attempts. Please try again later.';
+                default:
+                    return error.message;
             }
         }
 
+        // Update UI based on authentication state
         function updateAuthUI() {
             if (isLoggedIn && currentUser) {
+                // User is logged in
                 authRequiredMessage.classList.add('hidden');
                 appContent.classList.remove('hidden');
                 cancelledBookingsSection.classList.remove('hidden');
                 monthSelector.classList.remove('hidden');
                 header.classList.remove('hidden');
                 
+                // Update auth buttons
                 loginBtn.classList.add('hidden');
                 registerBtn.classList.add('hidden');
                 logoutBtn.classList.remove('hidden');
                 
+                // Show admin features if user is admin
                 if (isAdmin) {
                     adminFormSection.classList.remove('hidden');
                     adminEntriesSection.classList.remove('hidden');
@@ -2415,6 +2278,7 @@
                 }
                 
             } else {
+                // User is not logged in
                 authRequiredMessage.classList.remove('hidden');
                 appContent.classList.add('hidden');
                 adminFormSection.classList.add('hidden');
@@ -2423,6 +2287,7 @@
                 monthSelector.classList.add('hidden');
                 header.classList.add('hidden');
                 
+                // Update auth buttons
                 loginBtn.classList.remove('hidden');
                 registerBtn.classList.remove('hidden');
                 logoutBtn.classList.add('hidden');
@@ -2431,6 +2296,7 @@
             }
         }
 
+        // NEW: Show/hide authentication loading state
         function showAuthLoading() {
             authLoading.classList.remove('hidden');
             authContent.classList.add('hidden');
@@ -2443,6 +2309,7 @@
 
         // ========== USER MANAGEMENT (ADMIN ONLY) ==========
 
+        // Setup users listener for admin
         function setupUsersListener() {
             if (!isAdmin) return;
             
@@ -2452,6 +2319,7 @@
                 unsubscribeUsers();
             }
 
+            // Show loading initially
             userManagementLoading.classList.remove('hidden');
             userManagementBody.innerHTML = '';
             allUsersBody.innerHTML = '';
@@ -2473,6 +2341,7 @@
                     
                     updateUserManagementTables();
                     
+                    // Hide loading after data is loaded
                     userManagementLoading.classList.add('hidden');
                 }, error => {
                     console.error('Error in users listener:', error);
@@ -2481,11 +2350,13 @@
                 });
         }
 
+        // Update user management tables
         function updateUserManagementTables() {
             if (!isAdmin) return;
             
             console.log('Updating user management tables');
             
+            // Update pending users table
             userManagementBody.innerHTML = '';
             
             if (pendingUsers.length === 0) {
@@ -2502,19 +2373,23 @@
                 pendingUsers.forEach(user => {
                     const row = document.createElement('tr');
                     
+                    // Name
                     const nameCell = document.createElement('td');
                     nameCell.textContent = user.name || 'N/A';
                     row.appendChild(nameCell);
                     
+                    // Email
                     const emailCell = document.createElement('td');
                     emailCell.textContent = user.email || 'N/A';
                     row.appendChild(emailCell);
                     
+                    // Registered Date
                     const dateCell = document.createElement('td');
                     dateCell.textContent = user.createdAt ? 
                         user.createdAt.toDate().toLocaleDateString() : 'N/A';
                     row.appendChild(dateCell);
                     
+                    // Actions
                     const actionsCell = document.createElement('td');
                     const approveBtn = document.createElement('button');
                     approveBtn.textContent = 'Approve';
@@ -2534,6 +2409,7 @@
                 });
             }
             
+            // Update all users table
             allUsersBody.innerHTML = '';
             
             if (allUsers.length === 0) {
@@ -2550,32 +2426,39 @@
                 allUsers.forEach(user => {
                     const row = document.createElement('tr');
                     
+                    // Name
                     const nameCell = document.createElement('td');
                     nameCell.textContent = user.name || 'N/A';
                     row.appendChild(nameCell);
                     
+                    // Email
                     const emailCell = document.createElement('td');
                     emailCell.textContent = user.email || 'N/A';
                     row.appendChild(emailCell);
                     
+                    // Role
                     const roleCell = document.createElement('td');
                     roleCell.textContent = user.role || 'N/A';
                     row.appendChild(roleCell);
                     
+                    // Status
                     const statusCell = document.createElement('td');
                     statusCell.textContent = user.status || 'N/A';
                     row.appendChild(statusCell);
                     
+                    // Actions
                     const actionsCell = document.createElement('td');
                     const actionButtons = document.createElement('div');
                     actionButtons.className = 'action-buttons';
                     
+                    // Edit button
                     const editBtn = document.createElement('button');
                     editBtn.className = 'icon-btn edit-btn';
                     editBtn.title = 'Edit User';
                     editBtn.innerHTML = '<i class="fas fa-edit"></i>';
                     editBtn.addEventListener('click', () => editUser(user));
                     
+                    // Delete button (don't show for current user)
                     if (user.id !== currentUser.uid) {
                         const deleteBtn = document.createElement('button');
                         deleteBtn.className = 'icon-btn delete-btn';
@@ -2595,6 +2478,7 @@
             }
         }
 
+        // Approve user
         async function approveUser(userId) {
             try {
                 showLoading();
@@ -2610,9 +2494,10 @@
             }
         }
 
+        // Reject user
         async function rejectUser(userId) {
             try {
-                if (confirm('Are you sure you want to reject this user?')) {
+                if (confirm('Are you sure you want to reject this user? This action cannot be undone.')) {
                     showLoading();
                     await db.collection('users').doc(userId).update({
                         status: 'rejected'
@@ -2627,6 +2512,7 @@
             }
         }
 
+        // Edit user
         function editUser(user) {
             editingUserId = user.id;
             editUserName.value = user.name || '';
@@ -2636,6 +2522,7 @@
             editUserModal.classList.add('active');
         }
 
+        // Update user
         async function updateUser(userId, userData) {
             try {
                 showLoading();
@@ -2650,11 +2537,18 @@
             }
         }
 
+        // Delete user
         async function deleteUser(userId) {
             try {
-                if (confirm('Are you sure you want to delete this user?')) {
+                if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
                     showLoading();
+                    
+                    // Delete user from Firestore
                     await db.collection('users').doc(userId).delete();
+                    
+                    // Note: We cannot delete the user from Firebase Auth via client-side code
+                    // This would require a Cloud Function or admin SDK
+                    
                     hideLoading();
                     alert('User deleted successfully from the database!');
                 }
@@ -2667,6 +2561,7 @@
 
         // ========== SETTINGS MANAGEMENT ==========
         
+        // Load settings from Firebase
         async function loadSettings() {
             try {
                 const doc = await db.collection('settings').doc('admin').get();
@@ -2675,6 +2570,7 @@
                     console.log('Settings loaded:', appSettings);
                     return appSettings;
                 } else {
+                    // Create default settings if they don't exist
                     appSettings = {
                         password: 'Admin@11',
                         grNcoNumber: '9149513860',
@@ -2688,6 +2584,7 @@
                 }
             } catch (error) {
                 console.error('Error loading settings:', error);
+                // Return default settings if there's an error
                 appSettings = {
                     password: 'Admin@11',
                     grNcoNumber: '9149513860',
@@ -2699,6 +2596,7 @@
             }
         }
 
+        // Update settings in Firebase
         async function updateSettings(updatedSettings) {
             try {
                 await db.collection('settings').doc('admin').set(updatedSettings);
@@ -2711,6 +2609,7 @@
             }
         }
 
+        // Setup real-time settings listener
         function setupSettingsListener() {
             if (unsubscribeSettings) {
                 unsubscribeSettings();
@@ -2728,6 +2627,7 @@
                 });
         }
 
+        // Update admin settings display
         function updateAdminSettingsDisplay() {
             if (appSettings) {
                 grNcoNumberInput.value = appSettings.grNcoNumber || '';
@@ -2739,11 +2639,36 @@
 
         // ========== BOOKINGS MANAGEMENT ==========
 
+        // Load bookings from Firebase
+        async function loadBookings() {
+            try {
+                showCalendarLoading();
+                const snapshot = await db.collection('bookings').orderBy('checkin').get();
+                bookings = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                filteredBookings = [...bookings];
+                console.log('Bookings loaded:', bookings.length);
+                renderBookings();
+                updateEntriesTable();
+                populateYearFilter();
+                updateCancelledBookingsTable();
+                hideCalendarLoading();
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+                hideCalendarLoading();
+                alert('Error loading bookings. Please refresh the page.');
+            }
+        }
+
+        // Setup real-time bookings listener
         function setupRealtimeListener() {
             if (unsubscribeBookings) {
                 unsubscribeBookings();
             }
 
+            // Show loading when setting up the listener
             showCalendarLoading();
 
             unsubscribeBookings = db.collection('bookings')
@@ -2760,13 +2685,16 @@
                     populateYearFilter();
                     updateCancelledBookingsTable();
                     
+                    // Hide loading after real-time data is processed
                     hideCalendarLoading();
                 }, error => {
                     console.error('Error in realtime listener:', error);
+                    // Hide loading even if there's an error
                     hideCalendarLoading();
                 });
         }
 
+        // Add booking to Firebase
         async function addBooking(booking) {
             try {
                 showLoading();
@@ -2791,6 +2719,7 @@
             }
         }
 
+        // Add multiple bookings to Firebase
         async function addMultipleBookings(bookingsData) {
             try {
                 showLoading();
@@ -2822,6 +2751,7 @@
             }
         }
 
+        // Update booking in Firebase
         async function updateBooking(id, booking) {
             try {
                 showLoading();
@@ -2836,6 +2766,7 @@
             }
         }
 
+        // Delete booking from Firebase
         async function deleteBooking(id) {
             try {
                 showLoading();
@@ -2850,16 +2781,21 @@
             }
         }
 
+        // NEW: Delete bookings by date range
         async function deleteBookingsByDateRange(startDate, endDate) {
             try {
                 showLoading();
                 
+                // Convert dates to proper format
                 const start = new Date(startDate);
                 const end = new Date(endDate);
                 
+                // Get all bookings that overlap with the date range
                 const bookingsToDelete = bookings.filter(booking => {
                     const checkin = new Date(booking.checkin);
                     const checkout = new Date(booking.checkout);
+                    
+                    // Check if booking overlaps with the selected date range
                     return (checkin <= end && checkout >= start);
                 });
                 
@@ -2869,15 +2805,18 @@
                     return false;
                 }
                 
-                if (!confirm(`Are you sure you want to delete ${bookingsToDelete.length} booking(s)?`)) {
+                // Confirm deletion
+                if (!confirm(`Are you sure you want to delete ${bookingsToDelete.length} booking(s) from ${formatDateFull(startDate)} to ${formatDateFull(endDate)}?`)) {
                     hideLoading();
                     return false;
                 }
                 
-                for(let booking of bookingsToDelete) {
-                    await db.collection('bookings').doc(booking.id).delete();
-                }
+                // Delete each booking
+                const deletePromises = bookingsToDelete.map(booking => 
+                    db.collection('bookings').doc(booking.id).delete()
+                );
                 
+                await Promise.all(deletePromises);
                 hideLoading();
                 alert(`Successfully deleted ${bookingsToDelete.length} booking(s).`);
                 return true;
@@ -2891,6 +2830,7 @@
 
         // ========== UI FUNCTIONS ==========
 
+        // Show/hide loading indicator
         function showLoading() {
             loadingIndicator.classList.remove('hidden');
         }
@@ -2899,6 +2839,7 @@
             loadingIndicator.classList.add('hidden');
         }
 
+        // NEW: Show/hide calendar loading overlay
         function showCalendarLoading() {
             calendarLoading.style.display = 'flex';
         }
@@ -2907,6 +2848,7 @@
             calendarLoading.style.display = 'none';
         }
 
+        // Initialize the calendar table
         function initializeTable() {
             tableBody.innerHTML = '';
             
@@ -2915,11 +2857,13 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const row = document.createElement('tr');
                 
+                // Date cell
                 const dateCell = document.createElement('td');
                 dateCell.textContent = day;
                 dateCell.className = 'date-cell';
                 row.appendChild(dateCell);
                 
+                // Room cells
                 for (let roomNum = 1; roomNum <= 6; roomNum++) {
                     const roomCell = document.createElement('td');
                     roomCell.className = 'empty-cell';
@@ -2943,15 +2887,18 @@
             highlightSpecialDates();
         }
 
+        // Update page title with current month and year
         function updatePageTitle() {
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
                               "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             pageTitle.textContent = `T/F Booking Status - ${monthNames[currentMonth]} ${currentYear}`;
             monthDisplay.textContent = `${monthNames[currentMonth]} ${currentYear}`;
             
+            // NEW: Update cancelled bookings title
             cancelledBookingsTitle.textContent = `Cancelled Bookings - ${monthNames[currentMonth]} ${currentYear}`;
         }
 
+        // Highlight current date and Sundays
         function highlightSpecialDates() {
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const today = new Date();
@@ -2959,40 +2906,45 @@
             const currentMonthIndex = today.getMonth();
             const currentYearFull = today.getFullYear();
             
+            // Get all date cells
             const dateCells = document.querySelectorAll('.date-cell');
             
             dateCells.forEach((dateCell, index) => {
                 const day = index + 1;
                 
+                // Remove any existing highlighting
                 dateCell.classList.remove('current-date', 'sunday-date');
                 
+                // Check if this is the current date
                 if (day === currentDate && currentMonth === currentMonthIndex && currentYear === currentYearFull) {
                     dateCell.classList.add('current-date');
                 }
                 
+                // Check if this is a Sunday
                 const date = new Date(currentYear, currentMonth, day);
-                if (date.getDay() === 0) {
+                if (date.getDay() === 0) { // 0 = Sunday
                     dateCell.classList.add('sunday-date');
                 }
             });
         }
 
+        // Render bookings on the calendar
         function renderBookings() {
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             
+            // Clear all cells
             for (let day = 1; day <= daysInMonth; day++) {
                 for (let roomNum = 1; roomNum <= 6; roomNum++) {
                     const cell = document.getElementById(`day-${day}-room-${roomNum}`);
-                    if (cell) {
-                        cell.innerHTML = '';
-                        cell.className = 'empty-cell';
-                        cell.rowSpan = 1;
-                        cell.style.display = '';
-                        cell.style.backgroundColor = '';
-                    }
+                    cell.innerHTML = '';
+                    cell.className = 'empty-cell';
+                    cell.rowSpan = 1;
+                    cell.style.display = '';
+                    cell.style.backgroundColor = '';
                 }
             }
 
+            // Process each room separately
             for (let roomNum = 1; roomNum <= 6; roomNum++) {
                 const roomBookings = bookings.filter(b => {
                     const bRoom = parseInt(b.room.split(' - ')[1]);
@@ -3036,257 +2988,175 @@
                     checkinDay = Math.max(1, checkinDay);
                     checkoutDay = Math.min(daysInMonth, checkoutDay);
                     
+                    const sharedDays = [];
                     for (let day = checkinDay; day <= checkoutDay; day++) {
-                        const cell = document.getElementById(`day-${day}-room-${roomNum}`);
-                        if(cell) {
-                            cell.innerHTML = '';
-                            cell.className = 'booking';
-                            if(booking.status === 'yet-to-confirm') cell.classList.add('booking-yet-to-confirm');
-                            const bookingDiv = document.createElement('div');
-                            bookingDiv.className = 'booking';
-                            const nameDiv = document.createElement('div');
-                            nameDiv.className = 'booking-details';
-                            nameDiv.textContent = booking.guest.length > 15 ? booking.guest.substring(0, 13) + '...' : booking.guest;
-                            const datesDiv = document.createElement('div');
-                            datesDiv.className = 'booking-dates';
-                            datesDiv.textContent = `${formatDate(booking.checkin)} - ${formatDate(booking.checkout)}`;
-                            bookingDiv.appendChild(nameDiv);
-                            bookingDiv.appendChild(datesDiv);
-                            cell.appendChild(bookingDiv);
+                        const otherBookingsOnDay = roomBookings.filter(other => {
+                            if (other === booking) return false;
+                            
+                            const otherCheckin = new Date(other.checkin);
+                            const otherCheckout = new Date(other.checkout);
+                            
+                            let otherCheckinDay = otherCheckin.getDate();
+                            let otherCheckoutDay = otherCheckout.getDate();
+                            
+                            if (otherCheckin.getMonth() < currentMonth || otherCheckin.getFullYear() < currentYear) {
+                                otherCheckinDay = 1;
+                            }
+                            
+                            if (otherCheckout.getMonth() > currentMonth || otherCheckout.getFullYear() > currentYear) {
+                                otherCheckoutDay = daysInMonth;
+                            }
+                            
+                            otherCheckinDay = Math.max(1, otherCheckinDay);
+                            otherCheckoutDay = Math.min(daysInMonth, otherCheckoutDay);
+                            
+                            return day >= otherCheckinDay && day <= otherCheckoutDay;
+                        });
+                        
+                        if (otherBookingsOnDay.length > 0) {
+                            sharedDays.push(day);
                         }
                     }
-                });
-            }
-        }
 
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
-        }
-
-        function formatDateFull(dateStr) {
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-        }
-
-        function getMonthName(monthIndex) {
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            return monthNames[monthIndex];
-        }
-
-        function setDefaultDates() {
-            const today = new Date().toISOString().split('T')[0];
-            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-            
-            document.getElementById('checkin-date').value = today;
-            document.getElementById('checkout-date').value = tomorrow;
-            document.getElementById('status').value = 'confirm';
-        }
-
-        function hasConflict(roomNum, checkin, checkout, excludeId = null) {
-            return bookings.some(booking => {
-                if (excludeId && booking.id === excludeId) return false;
-                
-                const bRoom = parseInt(booking.room.split(' - ')[1]);
-                const bIn = new Date(booking.checkin);
-                const bOut = new Date(booking.checkout);
-                
-                if (bRoom !== roomNum) return false;
-                if (booking.status === 'cancelled') return false;
-                
-                return (checkin >= bIn && checkin < bOut) ||
-                       (checkout > bIn && checkout <= bOut) ||
-                       (checkin <= bIn && checkout >= bOut);
-            });
-        }
-
-        function editBooking(id, booking) {
-            document.getElementById('edit-guest-room').value = booking.room;
-            document.getElementById('edit-checkin-date').value = booking.checkin;
-            document.getElementById('edit-checkout-date').value = booking.checkout;
-            document.getElementById('edit-guest-name').value = booking.guest;
-            document.getElementById('edit-contact-number').value = booking.contactNumber || '';
-            document.getElementById('edit-booked-by').value = booking.bookedBy;
-            document.getElementById('edit-status').value = booking.status;
-            document.getElementById('edit-remarks').value = booking.remarks || '';
-            
-            editForm.dataset.editingId = id;
-            editModal.classList.add('active');
-        }
-
-        async function deleteBookingFromFirebase(id) {
-            if (confirm('Are you sure you want to delete this booking?')) {
-                const success = await deleteBooking(id);
-                if (success) {
-                    alert('Booking deleted successfully!');
-                    bookingModal.classList.remove('active');
-                }
-            }
-        }
-
-        function generateConfirmationMessage(booking) {
-            const checkinDate = formatDateFull(booking.checkin);
-            const checkoutDate = formatDateFull(booking.checkout);
-            
-            const grNcoInfo = appSettings.grNcoName ? 
-                `${appSettings.grNcoNumber} (${appSettings.grNcoName})` : 
-                appSettings.grNcoNumber;
-                
-            const messHavInfo = appSettings.messHavName ? 
-                `${appSettings.messHavNumber} (${appSettings.messHavName})` : 
-                appSettings.messHavNumber;
-            
-            const roomName = roomNames[booking.room];
-            
-            return `*Welcome to OFFRS Mess* ✨
-
-We are so happy you chose us for your stay. Your booking is *confirmed*👍
-
-*1. TF Name* : ${roomName}
-*2. Guest* : ${booking.guest}
-*3. TF NCO Number* : ${grNcoInfo}
-*4. Check-in Date* : ${checkinDate}
-*5. Check-out Date* : ${checkoutDate}
-*6. Mess Hav Number* : ${messHavInfo}
-
-Wish you a comfortable stay!
-Mess Secy`;
-        }
-
-        function generateWhatsAppMessage(booking) {
-            const checkinDate = formatDateFull(booking.checkin);
-            const checkoutDate = formatDateFull(booking.checkout);
-            const roomName = roomNames[booking.room];
-            
-            let statusText = booking.status;
-            if (booking.status === 'confirm') {
-                statusText = '*CONFIRM*';
-            } else if (booking.status === 'pending') {
-                statusText = '*PENDING*';
-            } else if (booking.status === 'yet-to-confirm') {
-                statusText = '*YET TO CONFIRM*';
-            } else if (booking.status === 'cancelled') {
-                statusText = '*CANCELLED*';
-            }
-            
-            return `*Transit Facility Booking Update*
-
-Room : ${booking.room} (${roomName})
-Guest Name : ${booking.guest}
-Check-in : ${checkinDate}
-Check-out : ${checkoutDate}
-Booked by : ${booking.bookedBy}
-Status : ${statusText}
-Remarks: ${booking.remarks || 'None'}`;
-        }
-
-        function shareViaWhatsApp(messageType) {
-            if (currentSplitCellBookings.length === 1) {
-                const booking = currentSplitCellBookings[0];
-                let message;
-                
-                if (messageType === 'details') {
-                    message = generateWhatsAppMessage(booking);
-                } else if (messageType === 'confirmation') {
-                    message = generateConfirmationMessage(booking);
-                }
-                
-                const encodedMessage = encodeURIComponent(message);
-                window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
-            } else {
-                alert("Please select a booking first.");
-            }
-        }
-
-        function showConfirmationModal() {
-            if (currentSplitCellBookings.length === 1) {
-                const booking = currentSplitCellBookings[0];
-                const message = generateConfirmationMessage(booking);
-                confirmationMessageContent.value = message;
-                confirmationModal.classList.add('active');
-            } else {
-                alert("Please select a booking first.");
-            }
-        }
-
-        function copyConfirmationMessage() {
-            const message = confirmationMessageContent.value;
-            navigator.clipboard.writeText(message).then(() => {
-                alert("Confirmation message copied to clipboard!");
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                alert("Failed to copy message.");
-            });
-        }
-
-        function updateEntriesTable() {
-            entriesBody.innerHTML = '';
-            
-            filteredBookings.sort((a, b) => new Date(b.checkin) - new Date(a.checkin))
-                   .forEach((booking) => {
-                const row = document.createElement('tr');
-                
-                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status', 'remarks'].forEach(field => {
-                    const cell = document.createElement('td');
-                    if (field === 'checkin' || field === 'checkout') {
-                        cell.textContent = formatDateFull(booking[field]);
-                    } else if (field === 'remarks') {
-                        cell.textContent = booking[field] || 'None';
+                    if (sharedDays.length === 0) {
+                        renderMergedBooking(roomNum, booking, checkinDay, checkoutDay);
                     } else {
-                        cell.textContent = booking[field];
+                        renderBookingWithSharedDays(roomNum, booking, checkinDay, checkoutDay, sharedDays);
                     }
-                    row.appendChild(cell);
                 });
-                
-                entriesBody.appendChild(row);
-            });
+            }
         }
 
-        function populateYearFilter() {
-            const yearSelect = filterYear;
+        // Render a normal merged booking
+        function renderMergedBooking(roomNum, booking, checkin, checkout) {
+            const duration = checkout - checkin + 1;
+            const startCell = document.getElementById(`day-${checkin}-room-${roomNum}`);
             
-            while (yearSelect.options.length > 1) {
-                yearSelect.remove(1);
-            }
+            startCell.rowSpan = duration;
             
-            const years = new Set();
-            bookings.forEach(booking => {
-                years.add(new Date(booking.checkin).getFullYear());
-                years.add(new Date(booking.checkout).getFullYear());
-            });
+            const bookingDiv = document.createElement('div');
+            bookingDiv.className = booking.status === 'yet-to-confirm' ? 'booking booking-yet-to-confirm' : 'booking';
             
-            const sortedYears = Array.from(years).sort((a, b) => b - a);
-            sortedYears.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                yearSelect.appendChild(option);
-            });
-        }
-
-        function filterBookingsByMonthYear(month, year) {
-            if (month === 'all' && year === 'all') {
-                return [...bookings];
-            }
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'booking-details';
+            nameDiv.textContent = booking.guest.length > 15 ? booking.guest.substring(0, 13) + '...' : booking.guest;
             
-            return bookings.filter(booking => {
-                const checkinDate = new Date(booking.checkin);
-                
-                if (month !== 'all' && year !== 'all') {
-                    return checkinDate.getMonth() === parseInt(month) && checkinDate.getFullYear() === parseInt(year);
-                } else if (month !== 'all') {
-                    return checkinDate.getMonth() === parseInt(month);
-                } else if (year !== 'all') {
-                    return checkinDate.getFullYear() === parseInt(year);
+            const datesDiv = document.createElement('div');
+            datesDiv.className = 'booking-dates';
+            datesDiv.textContent = `${formatDate(booking.checkin)} - ${formatDate(booking.checkout)}`;
+            
+            bookingDiv.appendChild(nameDiv);
+            bookingDiv.appendChild(datesDiv);
+            startCell.appendChild(bookingDiv);
+            
+            for (let day = checkin; day <= checkout; day++) {
+                const cell = document.getElementById(`day-${day}-room-${roomNum}`);
+                if (day === checkin) {
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+                } else {
+                    cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+                    cell.style.display = 'none';
                 }
-                return false;
-            });
+            }
         }
 
+        // Render booking that shares days with other bookings
+        function renderBookingWithSharedDays(roomNum, booking, checkin, checkout, sharedDays) {
+            let currentStart = checkin;
+            
+            for (let day = checkin; day <= checkout; day++) {
+                if (sharedDays.includes(day) || day === checkout) {
+                    const isShared = sharedDays.includes(day);
+                    const isLastDay = day === checkout;
+                    
+                    if (isShared) {
+                        if (currentStart <= day - 1) {
+                            renderMergedBooking(roomNum, booking, currentStart, day - 1);
+                        }
+                        
+                        renderSharedDay(roomNum, booking, day);
+                        currentStart = day + 1;
+                    } else if (isLastDay && currentStart <= day) {
+                        renderMergedBooking(roomNum, booking, currentStart, day);
+                    }
+                }
+            }
+        }
+
+        // Render a day that is shared between multiple bookings
+        function renderSharedDay(roomNum, booking, day) {
+            const cell = document.getElementById(`day-${day}-room-${roomNum}`);
+            
+            const roomBookings = bookings.filter(b => {
+                const bRoom = parseInt(b.room.split(' - ')[1]);
+                return bRoom === roomNum && (b.status === 'confirm' || b.status === 'yet-to-confirm');
+            });
+            
+            const bookingsOnDay = roomBookings.filter(b => {
+                const checkinDate = new Date(b.checkin);
+                const checkoutDate = new Date(b.checkout);
+                
+                let checkinDay = checkinDate.getDate();
+                let checkoutDay = checkoutDate.getDate();
+                
+                if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+                    checkinDay = 1;
+                }
+                
+                if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                    checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+                }
+                
+                return day >= checkinDay && day <= checkoutDay;
+            });
+            
+            const checkoutDate = new Date(booking.checkout);
+            const checkinDate = new Date(booking.checkin);
+            
+            let checkoutDay = checkoutDate.getDate();
+            let checkinDay = checkinDate.getDate();
+            
+            if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
+            }
+            
+            if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
+                checkinDay = 1;
+            }
+            
+            const isEnding = checkoutDay === day;
+            const isStarting = checkinDay === day;
+            
+            if (bookingsOnDay.length === 1) {
+                cell.style.backgroundColor = booking.status === 'yet-to-confirm' ? '#ffb3b3' : '#ff6b6b';
+            } else {
+                if (isEnding) {
+                    const topDiv = document.createElement('div');
+                    topDiv.className = booking.status === 'yet-to-confirm' ? 'booking-top booking-yet-to-confirm' : 'booking-top';
+                    cell.appendChild(topDiv);
+                }
+                
+                if (isStarting) {
+                    const bottomDiv = document.createElement('div');
+                    bottomDiv.className = booking.status === 'yet-to-confirm' ? 'booking-bottom booking-yet-to-confirm' : 'booking-bottom';
+                    cell.appendChild(bottomDiv);
+                }
+                
+                const hasTop = cell.querySelector('.booking-top');
+                const hasBottom = cell.querySelector('.booking-bottom');
+                if (hasTop && hasBottom) {
+                    const divider = document.createElement('div');
+                    divider.className = 'split-divider';
+                    cell.appendChild(divider);
+                }
+            }
+        }
+
+        // NEW: Update cancelled bookings table
         function updateCancelledBookingsTable() {
             cancelledBookingsBody.innerHTML = '';
             
+            // Filter cancelled bookings for the current month
             const cancelledBookings = bookings.filter(booking => {
                 if (booking.status !== 'cancelled') return false;
                 
@@ -3319,6 +3189,7 @@ Remarks: ${booking.remarks || 'None'}`;
                 return;
             }
             
+            // Sort by check-in date (newest first)
             cancelledBookings.sort((a, b) => new Date(b.checkin) - new Date(a.checkin))
                    .forEach(booking => {
                 const row = document.createElement('tr');
@@ -3339,32 +3210,47 @@ Remarks: ${booking.remarks || 'None'}`;
             });
         }
 
-        // FIXED: showBookingDetails with proper bill button attachment
+        // Show booking details in modal
         function showBookingDetails(day, roomNum) {
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const roomBookings = bookings.filter(booking => {
                 const bookingRoomNum = parseInt(booking.room.split(' - ')[1]);
                 if (bookingRoomNum !== roomNum) return false;
                 
-                let checkinDay = new Date(booking.checkin).getDate();
-                let checkoutDay = new Date(booking.checkout).getDate();
+                const checkinDate = new Date(booking.checkin);
+                const checkoutDate = new Date(booking.checkout);
                 
-                if (new Date(booking.checkin).getMonth() < currentMonth || new Date(booking.checkin).getFullYear() < currentYear) {
+                const bookingStartMonth = checkinDate.getMonth();
+                const bookingStartYear = checkinDate.getFullYear();
+                const bookingEndMonth = checkoutDate.getMonth();
+                const bookingEndYear = checkoutDate.getFullYear();
+                
+                const bookingStart = new Date(bookingStartYear, bookingStartMonth, 1);
+                const bookingEnd = new Date(bookingEndYear, bookingEndMonth + 1, 0);
+                const currentMonthStart = new Date(currentYear, currentMonth, 1);
+                const currentMonthEnd = new Date(currentYear, currentMonth + 1, 0);
+                
+                if (!(bookingStart <= currentMonthEnd && bookingEnd >= currentMonthStart)) {
+                    return false;
+                }
+                
+                let checkinDay = checkinDate.getDate();
+                let checkoutDay = checkoutDate.getDate();
+                
+                if (checkinDate.getMonth() < currentMonth || checkinDate.getFullYear() < currentYear) {
                     checkinDay = 1;
                 }
                 
-                if (new Date(booking.checkout).getMonth() > currentMonth || new Date(booking.checkout).getFullYear() > currentYear) {
-                    checkoutDay = daysInMonth;
+                if (checkoutDate.getMonth() > currentMonth || checkoutDate.getFullYear() > currentYear) {
+                    checkoutDay = new Date(currentYear, currentMonth + 1, 0).getDate();
                 }
                 
                 checkinDay = Math.max(1, checkinDay);
-                checkoutDay = Math.min(daysInMonth, checkoutDay);
+                checkoutDay = Math.min(new Date(currentYear, currentMonth + 1, 0).getDate(), checkoutDay);
                 
                 return day >= checkinDay && day <= checkoutDay;
             });
             
             currentSplitCellBookings = roomBookings;
-            const billBtn = document.getElementById('booking-bill-btn');
             
             if (roomBookings.length === 0) {
                 bookingDetailsContent.innerHTML = `
@@ -3383,26 +3269,25 @@ Remarks: ${booking.remarks || 'None'}`;
                 `;
                 bookingModalActions.classList.add('hidden');
                 currentBookingId = null;
-                if(billBtn) billBtn.onclick = null;
             } else if (roomBookings.length === 1) {
                 const booking = roomBookings[0];
                 currentBookingId = booking.id;
                 
-                // Attach bill button handler
-                if(billBtn) {
-                    billBtn.onclick = () => { 
-                        openBillModal(booking); 
-                        bookingModal.classList.remove('active'); 
-                    };
-                }
-                
+                const billBtn = document.getElementById('booking-bill-btn');
+    if (billBtn) {
+        billBtn.onclick = () => { 
+            openBillModal(booking); 
+            bookingModal.classList.remove('active'); 
+        };
+    }
+                // NEW: Include contact number in booking details for admin with confirmation button
                 let contactHTML = '';
                 if (isAdmin && booking.contactNumber) {
                     contactHTML = `
                         <div class="booking-details-group">
                             <div class="booking-details-label">Contact Number</div>
                             <div class="contact-info">
-                                <span class="contact-number">${escapeHtml(booking.contactNumber)}</span>
+                                <span class="contact-number">${booking.contactNumber}</span>
                                 <div class="contact-actions">
                                     <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
                                         <i class="fas fa-phone"></i>
@@ -3410,7 +3295,7 @@ Remarks: ${booking.remarks || 'None'}`;
                                     <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
                                         <i class="fab fa-whatsapp"></i>
                                     </button>
-                                    <button class="icon-btn confirm-btn" onclick="sendConfirmationViaWhatsApp('${booking.id}')" title="Send Confirmation">
+                                    <button class="icon-btn confirm-btn" onclick="sendConfirmationViaWhatsApp('${booking.id}')" title="Send Confirmation via WhatsApp">
                                         <i class="fas fa-envelope"></i>
                                     </button>
                                 </div>
@@ -3422,11 +3307,11 @@ Remarks: ${booking.remarks || 'None'}`;
                 const bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
-                        <div class="booking-details-value">${escapeHtml(booking.room)} (${escapeHtml(roomNames[booking.room])})</div>
+                        <div class="booking-details-value">${booking.room} (${roomNames[booking.room]})</div>
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Guest Name</div>
-                        <div class="booking-details-value">${escapeHtml(booking.guest)}</div>
+                        <div class="booking-details-value">${booking.guest}</div>
                     </div>
                     ${contactHTML}
                     <div class="booking-details-group">
@@ -3444,15 +3329,15 @@ Remarks: ${booking.remarks || 'None'}`;
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Booked By</div>
-                        <div class="booking-details-value">${escapeHtml(booking.bookedBy)}</div>
+                        <div class="booking-details-value">${booking.bookedBy}</div>
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Status</div>
-                        <div class="booking-details-value">${escapeHtml(booking.status)}</div>
+                        <div class="booking-details-value">${booking.status}</div>
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Remarks</div>
-                        <div class="booking-details-value">${escapeHtml(booking.remarks || 'None')}</div>
+                        <div class="booking-details-value">${booking.remarks || 'None'}</div>
                     </div>
                 `;
                 
@@ -3464,22 +3349,11 @@ Remarks: ${booking.remarks || 'None'}`;
                     bookingModalActions.classList.add('hidden');
                 }
             } else {
-                // Multiple bookings - store the bookings and attach bill button handler that shows selection prompt
-                if(billBtn) { 
-                    billBtn.onclick = () => { 
-                        if(currentSplitCellBookings.length === 1) {
-                            openBillModal(currentSplitCellBookings[0]); 
-                            bookingModal.classList.remove('active');
-                        } else {
-                            alert('Please select a specific booking from the list below first, then click the bill button again.');
-                        }
-                    }; 
-                }
-                
+                // Multiple bookings in the same cell
                 let bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
-                        <div class="booking-details-value">GR - ${roomNum} (${escapeHtml(roomNames[`GR - ${roomNum}`])})</div>
+                        <div class="booking-details-value">GR - ${roomNum} (${roomNames[`GR - ${roomNum}`]})</div>
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Date</div>
@@ -3487,7 +3361,7 @@ Remarks: ${booking.remarks || 'None'}`;
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Multiple Bookings</div>
-                        <div class="booking-details-value">Select one to view details:</div>
+                        <div class="booking-details-value">This day has multiple bookings. Select one to view details:</div>
                     </div>
                 `;
                 
@@ -3496,10 +3370,10 @@ Remarks: ${booking.remarks || 'None'}`;
                         <div class="booking-details-group" style="cursor: pointer; border: 1px solid #ddd; margin-bottom: 10px;" onclick="selectBookingFromMultiple(${index})">
                             <div class="booking-details-label">Booking ${index + 1}</div>
                             <div class="booking-details-value">
-                                <strong>Guest:</strong> ${escapeHtml(booking.guest)}<br>
+                                <strong>Guest:</strong> ${booking.guest}<br>
                                 <strong>Check-in:</strong> ${formatDateFull(booking.checkin)}<br>
                                 <strong>Check-out:</strong> ${formatDateFull(booking.checkout)}<br>
-                                <strong>Status:</strong> ${escapeHtml(booking.status)}
+                                <strong>Status:</strong> ${booking.status}
                             </div>
                         </div>
                     `;
@@ -3507,6 +3381,7 @@ Remarks: ${booking.remarks || 'None'}`;
                 
                 bookingDetailsContent.innerHTML = bookingDetailsHTML;
                 
+                // Show action buttons for admin even with multiple bookings
                 if (isAdmin) {
                     bookingModalActions.classList.remove('hidden');
                 } else {
@@ -3519,28 +3394,20 @@ Remarks: ${booking.remarks || 'None'}`;
             bookingModal.classList.add('active');
         }
 
-        // FIXED: selectBookingFromMultiple with bill button handler
+        // NEW: Function to select a booking from multiple bookings in a cell
         function selectBookingFromMultiple(index) {
             if (index >= 0 && index < currentSplitCellBookings.length) {
                 const booking = currentSplitCellBookings[index];
                 currentBookingId = booking.id;
                 
-                // IMPORTANT FIX: Attach bill button handler for the selected booking
-                const billBtn = document.getElementById('booking-bill-btn');
-                if(billBtn) { 
-                    billBtn.onclick = () => { 
-                        openBillModal(booking); 
-                        bookingModal.classList.remove('active'); 
-                    }; 
-                }
-                
+                // NEW: Include contact number in booking details for admin with confirmation button
                 let contactHTML = '';
                 if (isAdmin && booking.contactNumber) {
                     contactHTML = `
                         <div class="booking-details-group">
                             <div class="booking-details-label">Contact Number</div>
                             <div class="contact-info">
-                                <span class="contact-number">${escapeHtml(booking.contactNumber)}</span>
+                                <span class="contact-number">${booking.contactNumber}</span>
                                 <div class="contact-actions">
                                     <button class="icon-btn call-btn" onclick="callNumber('${booking.contactNumber}')" title="Call">
                                         <i class="fas fa-phone"></i>
@@ -3548,7 +3415,7 @@ Remarks: ${booking.remarks || 'None'}`;
                                     <button class="icon-btn contact-whatsapp-btn" onclick="openWhatsApp('${booking.contactNumber}')" title="Open WhatsApp">
                                         <i class="fab fa-whatsapp"></i>
                                     </button>
-                                    <button class="icon-btn confirm-btn" onclick="sendConfirmationViaWhatsApp('${booking.id}')" title="Send Confirmation">
+                                    <button class="icon-btn confirm-btn" onclick="sendConfirmationViaWhatsApp('${booking.id}')" title="Send Confirmation via WhatsApp">
                                         <i class="fas fa-envelope"></i>
                                     </button>
                                 </div>
@@ -3560,11 +3427,11 @@ Remarks: ${booking.remarks || 'None'}`;
                 const bookingDetailsHTML = `
                     <div class="booking-details-group">
                         <div class="booking-details-label">Room</div>
-                        <div class="booking-details-value">${escapeHtml(booking.room)} (${escapeHtml(roomNames[booking.room])})</div>
+                        <div class="booking-details-value">${booking.room} (${roomNames[booking.room]})</div>
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Guest Name</div>
-                        <div class="booking-details-value">${escapeHtml(booking.guest)}</div>
+                        <div class="booking-details-value">${booking.guest}</div>
                     </div>
                     ${contactHTML}
                     <div class="booking-details-group">
@@ -3582,15 +3449,15 @@ Remarks: ${booking.remarks || 'None'}`;
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Booked By</div>
-                        <div class="booking-details-value">${escapeHtml(booking.bookedBy)}</div>
+                        <div class="booking-details-value">${booking.bookedBy}</div>
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Status</div>
-                        <div class="booking-details-value">${escapeHtml(booking.status)}</div>
+                        <div class="booking-details-value">${booking.status}</div>
                     </div>
                     <div class="booking-details-group">
                         <div class="booking-details-label">Remarks</div>
-                        <div class="booking-details-value">${escapeHtml(booking.remarks || 'None')}</div>
+                        <div class="booking-details-value">${booking.remarks || 'None'}</div>
                     </div>
                 `;
                 
@@ -3602,46 +3469,423 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         }
 
+        // NEW: Function to call a phone number
         function callNumber(phoneNumber) {
             window.open(`tel:${phoneNumber}`, '_self');
         }
 
+        // NEW: Function to open WhatsApp chat
         function openWhatsApp(phoneNumber) {
+            // Remove any non-digit characters from phone number
             const cleanNumber = phoneNumber.replace(/\D/g, '');
             window.open(`https://wa.me/${cleanNumber}`, '_blank');
         }
 
+        // NEW: Function to send confirmation message via WhatsApp directly
         function sendConfirmationViaWhatsApp(bookingId) {
             const booking = bookings.find(b => b.id === bookingId);
             if (booking && booking.contactNumber) {
                 const message = generateConfirmationMessage(booking);
                 const encodedMessage = encodeURIComponent(message);
                 const cleanNumber = booking.contactNumber.replace(/\D/g, '');
-                window.open(`https://wa.me/${cleanNumber}?text=${encodedMessage}`, '_blank');
+                const whatsappUrl = `https://wa.me/${cleanNumber}?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
             } else {
                 alert("No contact number available for this booking.");
             }
         }
 
+        // Update entries table with filtered data
+        function updateEntriesTable() {
+            entriesBody.innerHTML = '';
+            
+            filteredBookings.sort((a, b) => new Date(b.checkin) - new Date(a.checkin))
+                   .forEach((booking, index) => {
+                const row = document.createElement('tr');
+                
+                ['room', 'checkin', 'checkout', 'guest', 'bookedBy', 'status', 'remarks'].forEach(field => {
+                    const cell = document.createElement('td');
+                    if (field === 'checkin' || field === 'checkout') {
+                        cell.textContent = formatDateFull(booking[field]);
+                    } else if (field === 'remarks') {
+                        cell.textContent = booking[field] || 'None';
+                    } else {
+                        cell.textContent = booking[field];
+                    }
+                    row.appendChild(cell);
+                });
+                
+                entriesBody.appendChild(row);
+            });
+        }
+
+        // Populate year filter with available years from bookings
+        function populateYearFilter() {
+            const yearSelect = document.getElementById('filter-year');
+            
+            while (yearSelect.options.length > 1) {
+                yearSelect.remove(1);
+            }
+            
+            const years = new Set();
+            bookings.forEach(booking => {
+                const checkinYear = new Date(booking.checkin).getFullYear();
+                const checkoutYear = new Date(booking.checkout).getFullYear();
+                years.add(checkinYear);
+                years.add(checkoutYear);
+            });
+            
+            const sortedYears = Array.from(years).sort((a, b) => b - a);
+            sortedYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+        }
+
+        // Filter bookings by month and year
+        function filterBookingsByMonthYear(month, year) {
+            if (month === 'all' && year === 'all') {
+                return [...bookings];
+            }
+            
+            return bookings.filter(booking => {
+                const checkinDate = new Date(booking.checkin);
+                const checkoutDate = new Date(booking.checkout);
+                
+                const checkinMonth = checkinDate.getMonth();
+                const checkinYear = checkinDate.getFullYear();
+                const checkoutMonth = checkoutDate.getMonth();
+                const checkoutYear = checkoutDate.getFullYear();
+                
+                if (month !== 'all' && year !== 'all') {
+                    const selectedMonth = parseInt(month);
+                    const selectedYear = parseInt(year);
+                    
+                    if (checkinMonth === selectedMonth && checkinYear === selectedYear) return true;
+                    if (checkoutMonth === selectedMonth && checkoutYear === selectedYear) return true;
+                    
+                    const selectedDateStart = new Date(selectedYear, selectedMonth, 1);
+                    const selectedDateEnd = new Date(selectedYear, selectedMonth + 1, 0);
+                    
+                    return (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart);
+                } else if (month !== 'all') {
+                    const selectedMonth = parseInt(month);
+                    
+                    if (checkinMonth === selectedMonth) return true;
+                    if (checkoutMonth === selectedMonth) return true;
+                    
+                    for (let y = checkinYear; y <= checkoutYear; y++) {
+                        const selectedDateStart = new Date(y, selectedMonth, 1);
+                        const selectedDateEnd = new Date(y, selectedMonth + 1, 0);
+                        
+                        if (checkinDate <= selectedDateEnd && checkoutDate >= selectedDateStart) {
+                            return true;
+                        }
+                    }
+                    
+                    return false;
+                } else if (year !== 'all') {
+                    const selectedYear = parseInt(year);
+                    
+                    if (checkinYear === selectedYear) return true;
+                    if (checkoutYear === selectedYear) return true;
+                    
+                    return (checkinDate.getFullYear() <= selectedYear && checkoutDate.getFullYear() >= selectedYear);
+                }
+                
+                return false;
+            });
+        }
+
+        // ========== UTILITY FUNCTIONS ==========
+
+        // Format date helpers
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+        }
+
+        function formatDateFull(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        // Get month name
+        function getMonthName(monthIndex) {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return monthNames[monthIndex];
+        }
+
+        // Set default dates
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            
+            document.getElementById('checkin-date').value = today;
+            document.getElementById('checkout-date').value = tomorrow;
+            document.getElementById('status').value = 'confirm';
+        }
+
+        // Check for conflicts
+        function hasConflict(roomNum, checkin, checkout, excludeId = null) {
+            return bookings.some(booking => {
+                if (excludeId && booking.id === excludeId) return false;
+                
+                const bRoom = parseInt(booking.room.split(' - ')[1]);
+                const bIn = new Date(booking.checkin);
+                const bOut = new Date(booking.checkout);
+                
+                if (bRoom !== roomNum) return false;
+                if (booking.status === 'cancelled') return false;
+                
+                if (checkin.getTime() === checkout.getTime()) {
+                    return (checkin >= bIn && checkin < bOut) ||
+                           (checkout > bIn && checkout <= bOut) ||
+                           (checkin <= bIn && checkout >= bOut);
+                } else {
+                    return (checkin >= bIn && checkin < bOut) ||
+                           (checkout > bIn && checkout <= bOut) ||
+                           (checkin <= bIn && checkout >= bOut);
+                }
+            });
+        }
+
+        // Edit booking in popup modal
+        function editBooking(id, booking) {
+            document.getElementById('edit-guest-room').value = booking.room;
+            document.getElementById('edit-checkin-date').value = booking.checkin;
+            document.getElementById('edit-checkout-date').value = booking.checkout;
+            document.getElementById('edit-guest-name').value = booking.guest;
+            document.getElementById('edit-contact-number').value = booking.contactNumber || '';
+            document.getElementById('edit-booked-by').value = booking.bookedBy;
+            document.getElementById('edit-status').value = booking.status;
+            document.getElementById('edit-remarks').value = booking.remarks || '';
+            
+            editForm.dataset.editingId = id;
+            editModal.classList.add('active');
+        }
+
+        // Delete booking from Firebase
+        async function deleteBookingFromFirebase(id) {
+            if (confirm('Are you sure you want to delete this booking?')) {
+                const success = await deleteBooking(id);
+                if (success) {
+                    alert('Booking deleted successfully!');
+                    bookingModal.classList.remove('active');
+                }
+            }
+        }
+
+        // Generate confirmation message
+        function generateConfirmationMessage(booking) {
+            const checkinDate = formatDateFull(booking.checkin);
+            const checkoutDate = formatDateFull(booking.checkout);
+            
+            const grNcoInfo = appSettings.grNcoName ? 
+                `${appSettings.grNcoNumber} (${appSettings.grNcoName})` : 
+                appSettings.grNcoNumber;
+                
+            const messHavInfo = appSettings.messHavName ? 
+                `${appSettings.messHavNumber} (${appSettings.messHavName})` : 
+                appSettings.messHavNumber;
+            
+            const roomName = roomNames[booking.room];
+            
+            return `*Welcome to ✨ 𝑶𝑵𝑬 𝑨𝑵𝑫 𝑶𝑵𝑳𝒀 𝑶𝑵𝑬 Offrs' Mess* ✨
+
+We are so happy you chose us for your stay. We can't wait to make your stay comfortable and relaxing! Your booking is *confirmed*👍
+Please find the details below👇
+
+*Transit Facility Booking Details*
+
+*1. TF Name* : ${roomName}
+
+*2. Guest* : ${booking.guest}
+
+*3. TF NCO Number* : ${grNcoInfo}
+
+*4. Check-in Date* : ${checkinDate}
+
+*5. Check-out Date* : ${checkoutDate}
+
+*6. Property directions* : https://maps.app.goo.gl/wY3zbaTjBDWsRrgi9?g_st=aw
+
+*7. Menu* : https://tinyurl.com/messmenu11
+
+*8. Mess Hav Number* : ${messHavInfo}
+
+*9. Cancellation* : If any changes in plans, pl update us on priority.
+
+*10. Pets* : NOT Allowed
+
+Wish you a comfortable stay!
+Mess Secy`;
+        }
+
+        // Generate WhatsApp update message
+        function generateWhatsAppMessage(booking) {
+            const checkinDate = formatDateFull(booking.checkin);
+            const checkoutDate = formatDateFull(booking.checkout);
+            const roomName = roomNames[booking.room];
+            
+            // Format status with bold
+            let statusText = booking.status;
+            if (booking.status === 'confirm') {
+                statusText = '*CONFIRM*';
+            } else if (booking.status === 'pending') {
+                statusText = '*PENDING*';
+            } else if (booking.status === 'yet-to-confirm') {
+                statusText = '*YET TO CONFIRM*';
+            } else if (booking.status === 'cancelled') {
+                statusText = '*CANCELLED*';
+            }
+            
+            return `*Transit Facility Booking Update :-*
+
+Room : ${roomName}
+
+Guest Name : ${booking.guest}
+
+Check-in : ${checkinDate}
+
+Check-out : ${checkoutDate}
+
+Booked by : ${booking.bookedBy}
+
+Status : ${statusText}
+
+Remarks: ${booking.remarks || 'None'}`;
+        }
+
+        // Share booking via WhatsApp
+        function shareViaWhatsApp(messageType) {
+            if (currentSplitCellBookings.length === 1) {
+                const booking = currentSplitCellBookings[0];
+                let message;
+                
+                if (messageType === 'details') {
+                    message = generateWhatsAppMessage(booking);
+                } else if (messageType === 'confirmation') {
+                    message = generateConfirmationMessage(booking);
+                }
+                
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+                window.open(whatsappUrl, '_blank');
+            } else if (currentSplitCellBookings.length > 1) {
+                let promptMessage = "Multiple bookings found on this day. Please select which booking to share:\n\n";
+                
+                currentSplitCellBookings.forEach((booking, index) => {
+                    promptMessage += `${index + 1}. ${booking.guest} (${formatDateFull(booking.checkin)} to ${formatDateFull(booking.checkout)})\n`;
+                });
+                
+                promptMessage += "\nEnter the number of the booking:";
+                
+                const bookingNumber = prompt(promptMessage);
+                if (bookingNumber && !isNaN(bookingNumber) && bookingNumber >= 1 && bookingNumber <= currentSplitCellBookings.length) {
+                    const selectedBooking = currentSplitCellBookings[parseInt(bookingNumber) - 1];
+                    let message;
+                    
+                    if (messageType === 'details') {
+                        message = generateWhatsAppMessage(selectedBooking);
+                    } else if (messageType === 'confirmation') {
+                        message = generateConfirmationMessage(selectedBooking);
+                    }
+                    
+                    const encodedMessage = encodeURIComponent(message);
+                    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+                    window.open(whatsappUrl, '_blank');
+                }
+            } else {
+                alert("No booking found to share.");
+            }
+        }
+
+        // Show confirmation message modal
+        function showConfirmationModal() {
+            if (currentSplitCellBookings.length === 1) {
+                const booking = currentSplitCellBookings[0];
+                const message = generateConfirmationMessage(booking);
+                confirmationMessageContent.value = message;
+                confirmationModal.classList.add('active');
+            } else if (currentSplitCellBookings.length > 1) {
+                let message = "Multiple bookings found on this day. Please select which booking to generate confirmation for:\n\n";
+                
+                currentSplitCellBookings.forEach((booking, index) => {
+                    message += `${index + 1}. ${booking.guest} (${formatDateFull(booking.checkin)} to ${formatDateFull(booking.checkout)})\n`;
+                });
+                
+                message += "\nEnter the number of the booking:";
+                
+                const bookingNumber = prompt(message);
+                if (bookingNumber && !isNaN(bookingNumber) && bookingNumber >= 1 && bookingNumber <= currentSplitCellBookings.length) {
+                    const selectedBooking = currentSplitCellBookings[parseInt(bookingNumber) - 1];
+                    const confirmationMessage = generateConfirmationMessage(selectedBooking);
+                    confirmationMessageContent.value = confirmationMessage;
+                    confirmationModal.classList.add('active');
+                }
+            } else {
+                alert("No booking found to generate confirmation for.");
+            }
+        }
+
+        // Copy confirmation message to clipboard
+        function copyConfirmationMessage() {
+            const message = confirmationMessageContent.value;
+            navigator.clipboard.writeText(message).then(() => {
+                alert("Confirmation message copied to clipboard!");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert("Failed to copy message. Please select and copy manually.");
+            });
+        }
+
         // ========== EVENT LISTENERS ==========
 
-        function showAuthModal() { authModal.classList.add('active'); }
-        function hideAuthModal() { authModal.classList.remove('active'); }
+        // Authentication modal functionality
+        function showAuthModal() {
+            authModal.classList.add('active');
+        }
+
+        function hideAuthModal() {
+            authModal.classList.remove('active');
+            loginEmail.value = '';
+            loginPassword.value = '';
+            registerName.value = '';
+            registerEmail.value = '';
+            registerPassword.value = '';
+            registerConfirmPassword.value = '';
+            loginError.textContent = '';
+            registerError.textContent = '';
+            registerSuccess.textContent = '';
+        }
 
         function switchAuthTab(tabName) {
+            // Update tabs
             authTabs.forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.tab === tabName);
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
             });
+            
+            // Update forms
             loginForm.classList.toggle('active', tabName === 'login');
             registerForm.classList.toggle('active', tabName === 'register');
         }
 
+        // Auth tab switching
         authTabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 switchAuthTab(tab.dataset.tab);
             });
         });
 
+        // Login functionality
         loginBtn.addEventListener('click', showAuthModal);
         authLoginBtn.addEventListener('click', showAuthModal);
 
@@ -3662,6 +3906,7 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // Register functionality
         registerBtn.addEventListener('click', () => {
             showAuthModal();
             switchAuthTab('register');
@@ -3696,6 +3941,7 @@ Remarks: ${booking.remarks || 'None'}`;
             if (result.success) {
                 registerError.textContent = '';
                 registerSuccess.textContent = result.message;
+                // Clear form
                 registerName.value = '';
                 registerEmail.value = '';
                 registerPassword.value = '';
@@ -3706,12 +3952,15 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // Password validation on input
         registerPassword.addEventListener('input', function() {
             validatePassword(this.value);
         });
 
+        // Logout functionality
         logoutBtn.addEventListener('click', logoutUser);
 
+        // Admin settings functionality
         adminSettingsBtn.addEventListener('click', async function() {
             try {
                 await loadSettings();
@@ -3750,10 +3999,12 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // User management functionality
         userManagementBtn.addEventListener('click', function() {
             userManagementModal.classList.add('active');
         });
 
+        // Edit user form submission
         editUserForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -3770,11 +4021,14 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // Print icon button handler
         printIconBtn.addEventListener('click', function() {
             window.print();
         });
 
+        // Delete range button handler
         deleteRangeBtn.addEventListener('click', function() {
+            // Set default dates for deletion range (current month)
             const today = new Date();
             const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
             const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -3786,6 +4040,7 @@ Remarks: ${booking.remarks || 'None'}`;
             deleteRangeModal.classList.add('active');
         });
 
+        // Confirm delete range button handler
         confirmDeleteRangeBtn.addEventListener('click', async function() {
             const startDate = deleteStartDate.value;
             const endDate = deleteEndDate.value;
@@ -3812,10 +4067,12 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // WhatsApp button handler - shares booking details
         bookingWhatsappBtn.addEventListener('click', function() {
             shareViaWhatsApp('details');
         });
 
+        // Edit and Delete button handlers for booking modal
         bookingEditBtn.addEventListener('click', function() {
             if (currentBookingId) {
                 const booking = bookings.find(b => b.id === currentBookingId);
@@ -3832,8 +4089,10 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // Copy confirmation message button handler
         copyConfirmationBtn.addEventListener('click', copyConfirmationMessage);
 
+        // Form submission
         bookingForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -3859,6 +4118,7 @@ Remarks: ${booking.remarks || 'None'}`;
             const checkinDate = new Date(checkin);
             const checkoutDate = new Date(checkout);
             
+            // Check for conflicts for each selected room
             const roomsWithConflicts = [];
             roomCheckboxes.forEach(checkbox => {
                 const roomNum = parseInt(checkbox.value.split(' - ')[1]);
@@ -3872,6 +4132,7 @@ Remarks: ${booking.remarks || 'None'}`;
                 return;
             }
             
+            // Create booking data for each selected room
             const bookingsData = Array.from(roomCheckboxes).map(checkbox => ({
                 room: checkbox.value,
                 checkin,
@@ -3891,13 +4152,19 @@ Remarks: ${booking.remarks || 'None'}`;
             }
             
             if (success) {
-                alert(`${bookingsData.length} booking(s) added successfully!`);
+                if (bookingsData.length === 1) {
+                    alert('Booking added successfully!');
+                } else {
+                    alert(`${bookingsData.length} bookings added successfully!`);
+                }
                 bookingForm.reset();
                 setDefaultDates();
+                // Uncheck all room checkboxes
                 roomCheckboxes.forEach(checkbox => checkbox.checked = false);
             }
         });
 
+        // Edit form submission
         editForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -3936,6 +4203,7 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         });
 
+        // Month navigation
         prevMonthBtn.addEventListener('click', function() {
             currentMonth--;
             if (currentMonth < 0) {
@@ -3954,6 +4222,7 @@ Remarks: ${booking.remarks || 'None'}`;
             initializeTable();
         });
 
+        // Filter functionality
         applyFilter.addEventListener('click', function() {
             const selectedMonth = filterMonth.value;
             const selectedYear = filterYear.value;
@@ -3969,15 +4238,31 @@ Remarks: ${booking.remarks || 'None'}`;
             updateEntriesTable();
         });
 
+        // Modal close buttons
         authModalClose.addEventListener('click', hideAuthModal);
-        bookingModalClose.addEventListener('click', function() { bookingModal.classList.remove('active'); });
-        editModalClose.addEventListener('click', function() { editModal.classList.remove('active'); });
-        confirmationModalClose.addEventListener('click', function() { confirmationModal.classList.remove('active'); });
-        adminSettingsClose.addEventListener('click', function() { adminSettingsModal.classList.remove('active'); });
-        deleteRangeClose.addEventListener('click', function() { deleteRangeModal.classList.remove('active'); });
-        userManagementClose.addEventListener('click', function() { userManagementModal.classList.remove('active'); });
-        editUserClose.addEventListener('click', function() { editUserModal.classList.remove('active'); });
+        bookingModalClose.addEventListener('click', function() {
+            bookingModal.classList.remove('active');
+        });
+        editModalClose.addEventListener('click', function() {
+            editModal.classList.remove('active');
+        });
+        confirmationModalClose.addEventListener('click', function() {
+            confirmationModal.classList.remove('active');
+        });
+        adminSettingsClose.addEventListener('click', function() {
+            adminSettingsModal.classList.remove('active');
+        });
+        deleteRangeClose.addEventListener('click', function() {
+            deleteRangeModal.classList.remove('active');
+        });
+        userManagementClose.addEventListener('click', function() {
+            userManagementModal.classList.remove('active');
+        });
+        editUserClose.addEventListener('click', function() {
+            editUserModal.classList.remove('active');
+        });
 
+        // Close modal when clicking outside
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) {
@@ -3986,18 +4271,198 @@ Remarks: ${booking.remarks || 'None'}`;
             });
         });
 
+        // ========== INITIALIZATION ==========
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', async function() {
             try {
+                // Initialize authentication
                 initAuth();
+                
+                // Initialize the calendar
                 initializeTable();
                 setDefaultDates();
+                
                 console.log('Application initialized successfully');
             } catch (error) {
                 console.error('Error during initialization:', error);
                 alert('Error initializing application. Please refresh the page.');
             }
         });
+        // ========== BILL SYSTEM (ADDITIONAL FEATURE) ==========
+let currentBillBooking = null;
+let billItems = [];
+
+// Function to load existing bill from database
+async function loadExistingBill(bookingId) {
+    try {
+        const billDoc = await db.collection('bills').doc(bookingId).get();
+        if (billDoc.exists) {
+            const billData = billDoc.data();
+            if (billData.items && billData.items.length) {
+                billItems = billData.items;
+                updateBillItemsList();
+                renderBillPreview();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading bill:', error);
+    }
+}
+
+function renderBillPreview() {
+    if(!currentBillBooking) return;
+    const previewDiv = document.getElementById('bill-preview');
+    let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+    let total = 0;
+    billItems.forEach(item => {
+        itemsHtml += `<tr><td>${item.name}</td><td>₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
+        total += parseFloat(item.amount);
+    });
+    itemsHtml += `</tbody><table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
+    const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+    const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+    previewDiv.innerHTML = `
+        
+        <div class="bill-guest-details">
+            <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
+            <div><strong>Check-in:</strong> ${checkin}</div>
+            <div><strong>Check-out:</strong> ${checkout}</div>
+        </div>
+        ${itemsHtml}
+       
+    `;
+}
+
+function addBillItem() {
+    const select = document.getElementById('bill-item-select');
+    const amountInput = document.getElementById('bill-amount-input');
+    const itemName = select.value;
+    const amount = parseFloat(amountInput.value);
+    if(!itemName || isNaN(amount) || amount <= 0){
+        alert("Select item and enter valid amount");
+        return;
+    }
+    billItems.push({name: itemName, amount: amount});
+    updateBillItemsList();
+    select.value = "";
+    amountInput.value = "";
+    renderBillPreview();
+}
+
+function updateBillItemsList() {
+    const container = document.getElementById('bill-items-container');
+    container.innerHTML = '';
+    billItems.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'bill-item-display';
+        div.innerHTML = `
+            <span class="bill-item-name">${item.name}</span>
+            <span>₹${item.amount.toFixed(2)}</span>
+            <button class="icon-btn delete-btn" data-idx="${idx}" style="margin-left:10px"><i class="fas fa-trash"></i></button>
+        `;
+        container.appendChild(div);
+    });
+    document.querySelectorAll('.delete-btn[data-idx]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const idx = parseInt(btn.dataset.idx);
+            billItems.splice(idx, 1);
+            updateBillItemsList();
+            renderBillPreview();
+        });
+    });
+}
+
+async function saveBillToDatabase(bookingId, items, total) {
+    if(!bookingId) return;
+    const billData = {
+        bookingId: bookingId,
+        items: items,
+        total: total,
+        generatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        generatedBy: currentUser?.email || 'unknown'
+    };
+    await db.collection('bills').doc(bookingId).set(billData, { merge: true });
+}
+
+async function printBillAndSave() {
+    if(!currentBillBooking) return;
+    showLoading();
+    try {
+        const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
+        await saveBillToDatabase(currentBillBooking.id, billItems, total);
+        
+        const printWindow = window.open('', '_blank');
+        const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+        const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+        let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+        billItems.forEach(i => {
+            itemsTable += `<tr><td>${i.name}</td><td>₹${i.amount.toFixed(2)}</td></tr>`;
+        });
+        itemsTable += `</tbody></table><h3>Total: ₹${total.toFixed(2)}</h3>`;
+        
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Bill - ${currentBillBooking.guest}</title>
+                <style>
+                    body{font-family:sans-serif;padding:20px}
+                    .header{text-align:center}
+                    table{border-collapse:collapse;width:100%}
+                    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+                    th{background:#f2f2f2}
+                    .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
+                    <h3>${roomNames[currentBillBooking.room] || ''}</h3>
+                </div>
+                <div>
+                    <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
+                    <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
+                    </br>
+                    <p style="
+                   margin-top: 20px; text-align: center;"><strong>Bill Summary :</strong> </p>
+                </div>
+                ${itemsTable}
+                <div class="upi">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
+                <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        alert('Bill saved successfully and sent to printer!');
+        document.getElementById('bill-modal').classList.remove('active');
+    } catch (error) {
+        console.error('Error in bill save/print:', error);
+        alert('Error saving bill. Please try again.');
+    } finally {
+        hideLoading();
+    }
+}
+
+function openBillModal(booking) {
+    currentBillBooking = booking;
+    billItems = [];
+    updateBillItemsList();
+    renderBillPreview();
+    loadExistingBill(booking.id).then(() => {
+        document.getElementById('bill-modal').classList.add('active');
+    });
+}
+
+// Attach event listeners for bill modal
+document.getElementById('bill-add-item-btn')?.addEventListener('click', addBillItem);
+document.getElementById('print-bill-btn')?.addEventListener('click', printBillAndSave);
+document.getElementById('bill-modal-close')?.addEventListener('click', () => {
+    document.getElementById('bill-modal').classList.remove('active');
+});
+
+// Make openBillModal globally available for the bill button
+window.openBillModal = openBillModal;
     </script>
 </body>
 </html>
