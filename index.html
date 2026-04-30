@@ -4307,9 +4307,10 @@ Remarks: ${booking.remarks || 'None'}`;
 
         // Function to generate a new unique bill number (12 digits)
         // Format: 11 (fixed) + yymmdd + XXXX (sequential per day)
-        function generateQRCode(data) {
+      function generateQRCode(data) {
+    // Using qrserver.com which is stable and free
     const encodedData = encodeURIComponent(data);
-    return `https://chart.googleapis.com/chart?chs=160x160&cht=qr&chl=${encodedData}&choe=UTF-8`;
+    return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedData}`;
 }
 
 // Add this function - creates the text that will appear when QR code is scanned
