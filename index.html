@@ -1297,6 +1297,7 @@
 .bill-table th, .bill-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
 .bill-table th { background: #f2f2f2; }
 .upi-text { text-align: center; font-weight: bold; background: #e8f5e9; padding: 10px; border-radius: 8px; margin: 15px 0; }
+.bill-number-display { background: #f0f0f0; padding: 8px; border-radius: 6px; text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 15px; color: #2c3e50; }
     </style>
 </head>
 <body>
@@ -4298,184 +4299,294 @@ Remarks: ${booking.remarks || 'None'}`;
                 alert('Error initializing application. Please refresh the page.');
             }
         });
-        // ========== BILL SYSTEM (ADDITIONAL FEATURE) ==========
-let currentBillBooking = null;
-let billItems = [];
+        // ========== BILL SYSTEM WITH BILL NUMBER AND BILL DATE ==========
+        let currentBillBooking = null;
+        let billItems = [];
+        let currentBillNumber = null;
+        let currentBillDate = null;
 
-// Function to load existing bill from database
-async function loadExistingBill(bookingId) {
-    try {
-        const billDoc = await db.collection('bills').doc(bookingId).get();
-        if (billDoc.exists) {
-            const billData = billDoc.data();
-            if (billData.items && billData.items.length) {
-                billItems = billData.items;
+        // Function to generate a new unique bill number (12 digits)
+        // Format: 11 (fixed) + yymmdd + XXXX (sequential per day)
+        async function generateBillNumber() {
+            const now = new Date();
+            const year = now.getFullYear().toString().slice(-2); // yy
+            const month = (now.getMonth() + 1).toString().padStart(2, '0'); // mm
+            const day = now.getDate().toString().padStart(2, '0'); // dd
+            const dateSuffix = year + month + day; // yymmdd
+            
+            // Reference to the counter document for this date
+            const counterRef = db.collection('billCounters').doc(dateSuffix);
+            
+            try {
+                // Run in a transaction to ensure unique number
+                const result = await db.runTransaction(async (transaction) => {
+                    const counterDoc = await transaction.get(counterRef);
+                    let nextNumber = 1;
+                    
+                    if (counterDoc.exists) {
+                        nextNumber = counterDoc.data().lastNumber + 1;
+                    }
+                    
+                    // Update the counter
+                    transaction.set(counterRef, { lastNumber: nextNumber, date: dateSuffix }, { merge: true });
+                    
+                    // Format the sequential part (4 digits)
+                    const sequentialPart = nextNumber.toString().padStart(4, '0');
+                    const billNumber = `11${dateSuffix}${sequentialPart}`; // 2 + 6 + 4 = 12 digits
+                    
+                    return billNumber;
+                });
+                
+                return result;
+            } catch (error) {
+                console.error('Error generating bill number:', error);
+                // Fallback: generate a number based on timestamp (not guaranteed unique but works as fallback)
+                const fallback = `11${dateSuffix}${Date.now().toString().slice(-4)}`;
+                return fallback;
+            }
+        }
+
+        // Function to get current IST date and time
+        function getCurrentISTDateTime() {
+            const now = new Date();
+            // Convert to IST (UTC+5:30)
+            const istOffset = 5.5 * 60 * 60 * 1000;
+            const istDate = new Date(now.getTime() + istOffset);
+            
+            const day = istDate.getUTCDate().toString().padStart(2, '0');
+            const month = (istDate.getUTCMonth() + 1).toString().padStart(2, '0');
+            const year = istDate.getUTCFullYear();
+            const hours = istDate.getUTCHours().toString().padStart(2, '0');
+            const minutes = istDate.getUTCMinutes().toString().padStart(2, '0');
+            const seconds = istDate.getUTCSeconds().toString().padStart(2, '0');
+            
+            const dateStr = `${day}/${month}/${year}`;
+            const timeStr = `${hours}:${minutes}:${seconds}`;
+            
+            return { date: dateStr, time: timeStr, full: `${dateStr} ${timeStr} IST` };
+        }
+
+        // Function to load existing bill from database
+        async function loadExistingBill(bookingId) {
+            try {
+                const billDoc = await db.collection('bills').doc(bookingId).get();
+                if (billDoc.exists) {
+                    const billData = billDoc.data();
+                    if (billData.items && billData.items.length) {
+                        billItems = billData.items;
+                        currentBillNumber = billData.billNumber || null;
+                        currentBillDate = billData.billDate || null;
+                        updateBillItemsList();
+                        renderBillPreview();
+                    } else {
+                        billItems = [];
+                        currentBillNumber = null;
+                        currentBillDate = null;
+                        updateBillItemsList();
+                        renderBillPreview();
+                    }
+                } else {
+                    billItems = [];
+                    currentBillNumber = null;
+                    currentBillDate = null;
+                    updateBillItemsList();
+                    renderBillPreview();
+                }
+            } catch (error) {
+                console.error('Error loading bill:', error);
+                billItems = [];
+                currentBillNumber = null;
+                currentBillDate = null;
                 updateBillItemsList();
                 renderBillPreview();
             }
         }
-    } catch (error) {
-        console.error('Error loading bill:', error);
-    }
-}
 
-function renderBillPreview() {
-    if(!currentBillBooking) return;
-    const previewDiv = document.getElementById('bill-preview');
-    let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
-    let total = 0;
-    billItems.forEach(item => {
-        itemsHtml += `<tr><td>${item.name}</td><td>₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
-        total += parseFloat(item.amount);
-    });
-    itemsHtml += `</tbody></table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
-    const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
-    const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
-    previewDiv.innerHTML = `
-        
-        <div class="bill-guest-details">
-            <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
-            <div><strong>Check-in:</strong> ${checkin}</div>
-            <div><strong>Check-out:</strong> ${checkout}</div>
-        </div>
-        ${itemsHtml}
-       
-    `;
-}
+        function renderBillPreview() {
+            if(!currentBillBooking) return;
+            const previewDiv = document.getElementById('bill-preview');
+            
+            // Generate or display bill number and date
+            const istDateTime = getCurrentISTDateTime();
+            const displayBillNumber = currentBillNumber || 'Will be generated on save';
+            const displayBillDate = currentBillDate || istDateTime.full;
+            
+            let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+            let total = 0;
+            billItems.forEach(item => {
+                itemsHtml += `<tr><td>${item.name}</td><td>₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
+                total += parseFloat(item.amount);
+            });
+            itemsHtml += `</tbody>能有<div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
+            const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+            const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+            
+            previewDiv.innerHTML = `
+                <div class="bill-number-display">
+                    <strong>Bill No:</strong> ${displayBillNumber} &nbsp;|&nbsp; 
+                    <strong>Bill Date:</strong> ${displayBillDate}
+                </div>
+                <div class="bill-guest-details">
+                    <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
+                    <div><strong>Check-in:</strong> ${checkin}</div>
+                    <div><strong>Check-out:</strong> ${checkout}</div>
+                </div>
+                ${itemsHtml}
+                <div class="upi-text">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
+            `;
+        }
 
-function addBillItem() {
-    const select = document.getElementById('bill-item-select');
-    const amountInput = document.getElementById('bill-amount-input');
-    const itemName = select.value;
-    const amount = parseFloat(amountInput.value);
-    if(!itemName || isNaN(amount) || amount <= 0){
-        alert("Select item and enter valid amount");
-        return;
-    }
-    billItems.push({name: itemName, amount: amount});
-    updateBillItemsList();
-    select.value = "";
-    amountInput.value = "";
-    renderBillPreview();
-}
+        function addBillItem() {
+            const select = document.getElementById('bill-item-select');
+            const amountInput = document.getElementById('bill-amount-input');
+            const itemName = select.value;
+            const amount = parseFloat(amountInput.value);
+            if(!itemName || isNaN(amount) || amount <= 0){
+                alert("Select item and enter valid amount");
+                return;
+            }
+            billItems.push({name: itemName, amount: amount});
+            updateBillItemsList();
+            select.value = "";
+            amountInput.value = "";
+            renderBillPreview();
+        }
 
-function updateBillItemsList() {
-    const container = document.getElementById('bill-items-container');
-    container.innerHTML = '';
-    billItems.forEach((item, idx) => {
-        const div = document.createElement('div');
-        div.className = 'bill-item-display';
-        div.innerHTML = `
-            <span class="bill-item-name">${item.name}</span>
-            <span>₹${item.amount.toFixed(2)}</span>
-            <button class="icon-btn delete-btn" data-idx="${idx}" style="margin-left:10px"><i class="fas fa-trash"></i></button>
-        `;
-        container.appendChild(div);
-    });
-    document.querySelectorAll('.delete-btn[data-idx]').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const idx = parseInt(btn.dataset.idx);
-            billItems.splice(idx, 1);
+        function updateBillItemsList() {
+            const container = document.getElementById('bill-items-container');
+            container.innerHTML = '';
+            billItems.forEach((item, idx) => {
+                const div = document.createElement('div');
+                div.className = 'bill-item-display';
+                div.innerHTML = `
+                    <span class="bill-item-name">${item.name}</span>
+                    <span>₹${item.amount.toFixed(2)}</span>
+                    <button class="icon-btn delete-btn" data-idx="${idx}" style="margin-left:10px"><i class="fas fa-trash"></i></button>
+                `;
+                container.appendChild(div);
+            });
+            document.querySelectorAll('.delete-btn[data-idx]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const idx = parseInt(btn.dataset.idx);
+                    billItems.splice(idx, 1);
+                    updateBillItemsList();
+                    renderBillPreview();
+                });
+            });
+        }
+
+        async function saveBillToDatabase(bookingId, items, total, billNumber, billDate) {
+            if(!bookingId) return;
+            const billData = {
+                bookingId: bookingId,
+                items: items,
+                total: total,
+                billNumber: billNumber,
+                billDate: billDate,
+                generatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                generatedBy: currentUser?.email || 'unknown'
+            };
+            await db.collection('bills').doc(bookingId).set(billData, { merge: true });
+        }
+
+        async function printBillAndSave() {
+            if(!currentBillBooking) return;
+            showLoading();
+            try {
+                const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
+                
+                // Generate new bill number if this is a new bill or if it doesn't have one yet
+                let billNumber = currentBillNumber;
+                let billDate = currentBillDate;
+                const istDateTime = getCurrentISTDateTime();
+                
+                if (!billNumber) {
+                    billNumber = await generateBillNumber();
+                    billDate = istDateTime.full;
+                    currentBillNumber = billNumber;
+                    currentBillDate = billDate;
+                }
+                
+                await saveBillToDatabase(currentBillBooking.id, billItems, total, billNumber, billDate);
+                
+                const printWindow = window.open('', '_blank');
+                const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+                const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+                let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+                billItems.forEach(i => {
+                    itemsTable += `<tr><td>${i.name}</td><td>₹${i.amount.toFixed(2)}</td></tr>`;
+                });
+                itemsTable += `</tbody></table><h3>Total: ₹${total.toFixed(2)}</h3>`;
+                
+                printWindow.document.write(`
+                    <html>
+                    <head>
+                        <title>Bill - ${currentBillBooking.guest}</title>
+                        <style>
+                            body{font-family:sans-serif;padding:20px}
+                            .header{text-align:center}
+                            table{border-collapse:collapse;width:100%}
+                            th,td{border:1px solid #ddd;padding:8px;text-align:left}
+                            th{background:#f2f2f2}
+                            .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
+                            .bill-number{text-align:center;margin-bottom:15px;font-size:16px}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">
+                            <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
+                            <h3>${roomNames[currentBillBooking.room] || ''}</h3>
+                        </div>
+                        <div class="bill-number">
+                            <strong>Bill No:</strong> ${billNumber} &nbsp;|&nbsp; 
+                            <strong>Bill Date:</strong> ${billDate}
+                        </div>
+                        <div>
+                            <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
+                            <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
+                        </div>
+                        ${itemsTable}
+                        <div class="upi">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
+                        <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.print();
+                alert('Bill saved successfully and sent to printer!');
+                document.getElementById('bill-modal').classList.remove('active');
+            } catch (error) {
+                console.error('Error in bill save/print:', error);
+                alert('Error saving bill. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function openBillModal(booking) {
+            // Reset everything for the new booking
+            currentBillBooking = booking;
+            billItems = [];
+            currentBillNumber = null;
+            currentBillDate = null;
             updateBillItemsList();
             renderBillPreview();
+            // Load existing bill data for the booking
+            loadExistingBill(booking.id).then(() => {
+                renderBillPreview();
+                document.getElementById('bill-modal').classList.add('active');
+            });
+        }
+
+        // Attach event listeners for bill modal
+        document.getElementById('bill-add-item-btn')?.addEventListener('click', addBillItem);
+        document.getElementById('print-bill-btn')?.addEventListener('click', printBillAndSave);
+        document.getElementById('bill-modal-close')?.addEventListener('click', () => {
+            document.getElementById('bill-modal').classList.remove('active');
         });
-    });
-}
 
-async function saveBillToDatabase(bookingId, items, total) {
-    if(!bookingId) return;
-    const billData = {
-        bookingId: bookingId,
-        items: items,
-        total: total,
-        generatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        generatedBy: currentUser?.email || 'unknown'
-    };
-    await db.collection('bills').doc(bookingId).set(billData, { merge: true });
-}
-
-async function printBillAndSave() {
-    if(!currentBillBooking) return;
-    showLoading();
-    try {
-        const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
-        await saveBillToDatabase(currentBillBooking.id, billItems, total);
-        
-        const printWindow = window.open('', '_blank');
-        const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
-        const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
-        let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
-        billItems.forEach(i => {
-            itemsTable += `<tr><td>${i.name}</td><td>₹${i.amount.toFixed(2)}</td></tr>`;
-        });
-        itemsTable += `</tbody></table><h3>Total: ₹${total.toFixed(2)}</h3>`;
-        
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>Bill - ${currentBillBooking.guest}</title>
-                <style>
-                    body{font-family:sans-serif;padding:20px}
-                    .header{text-align:center}
-                    table{border-collapse:collapse;width:100%}
-                    th,td{border:1px solid #ddd;padding:8px;text-align:left}
-                    th{background:#f2f2f2}
-                    .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
-                    <h3>${roomNames[currentBillBooking.room] || ''}</h3>
-                </div>
-                <div>
-                    <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
-                    <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
-                    </br>
-                    <p style="
-                   margin-top: 20px; text-align: center;"><strong>Bill Summary :</strong> </p>
-                </div>
-                ${itemsTable}
-                <div class="upi">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
-                <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-        printWindow.print();
-        alert('Bill saved successfully and sent to printer!');
-        document.getElementById('bill-modal').classList.remove('active');
-    } catch (error) {
-        console.error('Error in bill save/print:', error);
-        alert('Error saving bill. Please try again.');
-    } finally {
-        hideLoading();
-    }
-}
-
-function openBillModal(booking) {
-    // FIX 1: Reset global variables completely to avoid showing previous guest details
-    currentBillBooking = booking;
-    billItems = [];
-    updateBillItemsList();
-    renderBillPreview();
-    // Load existing bill data for the NEW booking only after resetting everything
-    loadExistingBill(booking.id).then(() => {
-        // Ensure the preview reflects the loaded data (or empty if none)
-        renderBillPreview();
-        document.getElementById('bill-modal').classList.add('active');
-    });
-}
-
-// Attach event listeners for bill modal
-document.getElementById('bill-add-item-btn')?.addEventListener('click', addBillItem);
-document.getElementById('print-bill-btn')?.addEventListener('click', printBillAndSave);
-document.getElementById('bill-modal-close')?.addEventListener('click', () => {
-    document.getElementById('bill-modal').classList.remove('active');
-});
-
-// Make openBillModal globally available for the bill button
-window.openBillModal = openBillModal;
+        // Make openBillModal globally available for the bill button
+        window.openBillModal = openBillModal;
     </script>
 </body>
 </html>
