@@ -4420,12 +4420,13 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
     let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th style="text-align:right">Amount (₹)</th></tr></thead><tbody>';
     let total = 0;
     billItems.forEach(item => {
-        itemsHtml += `</table><td style="padding:8px;">${item.name}</td><td style="padding:8px; text-align:right;">₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
+        itemsHtml += `<tr><td style="padding:8px;">${item.name}</td><td style="padding:8px; text-align:right;">₹${parseFloat(item.amount).toFixed(2)}</td</tr>`;
         total += parseFloat(item.amount);
     });
-    itemsHtml += `</tbody><td><div class="bill-total" style="text-align:right; font-weight:bold; padding:10px;">Total Amount: ₹${total.toFixed(2)}</div>`;
+    itemsHtml += `</tbody></table><div class="bill-total" style="text-align:right; font-weight:bold; padding:10px;">Total Amount: ₹${total.toFixed(2)}</div>`;
     const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
     const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+    const roomName = roomNames[currentBillBooking.room] || currentBillBooking.room;
     
     const displayBillNumber = currentBillNumber || 'Will be generated on save';
     const displayBillDate = currentBillDate || getCurrentISTDateTime().full;
@@ -4441,6 +4442,7 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
         </div>
         <div class="bill-guest-details" style="background:#f8f9fa; padding:12px; border-radius:8px; margin:15px 0; text-align:left;">
             <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
+            <div><strong>Room:</strong> ${roomName}</div>
             <div><strong>Check-in:</strong> ${checkin}</div>
             <div><strong>Check-out:</strong> ${checkout}</div>
         </div>
@@ -4451,7 +4453,7 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; padding-top:10px; border-top:1px solid #ddd;">
             <div style="text-align:left;">
                 <img src="${qrImageUrl}" alt="QR Code" style="width:80px; height:80px; border:1px solid #ddd; border-radius:5px;">
-                <div style="font-size:9px; color:#666; margin-top:3px;">Scan for Bill details</div>
+                <div style="font-size:9px; color:#666; margin-top:3px;">Scan for details</div>
             </div>
             <div style="font-size:11px; color:#888; text-align:right;">
                 Thank you for your stay!
@@ -4459,7 +4461,6 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
         </div>
     `;
 }
-
         function addBillItem() {
             const select = document.getElementById('bill-item-select');
             const amountInput = document.getElementById('bill-amount-input');
@@ -4513,7 +4514,7 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
             await db.collection('bills').doc(bookingId).set(billData, { merge: true });
         }
 
-       async function printBillAndSave() {
+     async function printBillAndSave() {
     if(!currentBillBooking) return;
     showLoading();
     try {
@@ -4539,10 +4540,11 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
         const printWindow = window.open('', '_blank');
         const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
         const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+        const roomName = roomNames[currentBillBooking.room] || currentBillBooking.room;
         
         let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th style="text-align:right">Amount (₹)</th></tr></thead><tbody>';
         billItems.forEach(i => {
-            itemsTable += `<tr><td style="padding:5px;">${i.name}</td><td style="padding:5px; text-align:right;">₹${i.amount.toFixed(2)}</td></tr>`;
+            itemsTable += `<tr><td style="padding:5px;">${i.name}</td><td style="padding:5px; text-align:right;">₹${i.amount.toFixed(2)}</td</tr>`;
         });
         itemsTable += `</tbody><tfoot><tr><th style="text-align:right">Total:</th><th style="text-align:right">₹${total.toFixed(2)}</th></tr></tfoot></table>`;
         
@@ -4554,7 +4556,6 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
                     body{font-family:sans-serif;padding:20px; font-size:12px;}
                     .header{text-align:center;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px;}
                     .header h2{margin:0; font-size:18px;}
-                    .header h3{margin:5px 0 0; color:#555; font-size:14px;}
                     .bill-info{text-align:right;margin-bottom:20px;padding:8px;background:#f8f9fa;border-radius:5px;}
                     .bill-info strong{font-weight:bold;}
                     .guest-details{background:#f8f9fa;padding:10px;margin:15px 0;border-radius:5px;text-align:left;}
@@ -4568,13 +4569,12 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
                     .qr-code img{width:80px;height:80px;border:1px solid #ddd;border-radius:5px;}
                     .qr-code div{font-size:8px;color:#666;margin-top:3px;}
                     .thankyou{font-size:11px;color:#666;text-align:right;}
-                    @media print{body{padding:10px;}}
+                    @media print{body{padding:10px;}
                 </style>
             </head>
             <body>
                 <div class="header">
-                    <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
-                    <h3>${roomNames[currentBillBooking.room] || ''}</h3>
+                    <h2>TRANSIT FACILITY, ONE AND ONLY ONE OFFRS' MESS</h2>
                 </div>
                 
                 <div class="bill-info">
@@ -4584,6 +4584,7 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
                 
                 <div class="guest-details">
                     <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
+                    <div><strong>Room:</strong> ${roomName}</div>
                     <div><strong>Check-in:</strong> ${checkin}</div>
                     <div><strong>Check-out:</strong> ${checkout}</div>
                 </div>
@@ -4618,8 +4619,7 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
     } finally {
         hideLoading();
     }
-}
-        function openBillModal(booking) {
+}    function openBillModal(booking) {
             // Reset everything for the new booking
             currentBillBooking = booking;
             billItems = [];
