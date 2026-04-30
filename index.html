@@ -4317,7 +4317,7 @@ Remarks: ${booking.remarks || 'None'}`;
 function getQRContent(booking, billNumber, billDateTime, totalAmount) {
     const checkin = new Date(booking.checkin).toLocaleDateString('en-GB');
     const checkout = new Date(booking.checkout).toLocaleDateString('en-GB');
-    return `GUEST: ${booking.guest}\nCHECK-IN: ${checkin}\nCHECK-OUT: ${checkout}\nBILL NO: ${billNumber}\nBILL DATE: ${billDateTime}\nTOTAL AMOUNT: ₹${totalAmount.toFixed(2)}`;
+    return `CHECK-IN: ${checkin}\nCHECK-OUT: ${checkout}\nBILL NO: ${billNumber}\nBILL DATE: ${billDateTime}\nTOTAL AMOUNT: ₹${totalAmount.toFixed(2)}`;
 }
         async function generateBillNumber() {
             const now = new Date();
@@ -4414,16 +4414,16 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
             }
         }
 
-     function renderBillPreview() {
+   function renderBillPreview() {
     if(!currentBillBooking) return;
     const previewDiv = document.getElementById('bill-preview');
-    let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+    let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th style="text-align:right">Amount (₹)</th></tr></thead><tbody>';
     let total = 0;
     billItems.forEach(item => {
-        itemsHtml += `<tr><td style="padding:8px;">${item.name}</td><td style="padding:8px; text-align:right;">₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
+        itemsHtml += `</table><td style="padding:8px;">${item.name}</td><td style="padding:8px; text-align:right;">₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
         total += parseFloat(item.amount);
     });
-    itemsHtml += `</tbody></table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
+    itemsHtml += `</tbody><td><div class="bill-total" style="text-align:right; font-weight:bold; padding:10px;">Total Amount: ₹${total.toFixed(2)}</div>`;
     const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
     const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
     
@@ -4435,21 +4435,23 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
     const qrImageUrl = generateQRCode(qrContent);
     
     previewDiv.innerHTML = `
-        <div class="bill-number-display" style="background:#f0f0f0; padding:8px; border-radius:6px; margin-bottom:15px; text-align:center;">
+        <div style="text-align:right; background:#f0f0f0; padding:8px; border-radius:6px; margin-bottom:15px;">
             <strong>Bill No:</strong> ${displayBillNumber}<br>
             <strong>Bill Date:</strong> ${displayBillDate}
         </div>
-        <div class="bill-guest-details">
+        <div class="bill-guest-details" style="background:#f8f9fa; padding:12px; border-radius:8px; margin:15px 0; text-align:left;">
             <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
             <div><strong>Check-in:</strong> ${checkin}</div>
             <div><strong>Check-out:</strong> ${checkout}</div>
         </div>
         ${itemsHtml}
-        <div class="upi-text">Please pay to UPI ID: <strong>10190016358@sbi (PMC Officers Mess Fund Account)</strong></div>
+        <div class="upi-text" style="text-align:center; font-weight:bold; background:#e8f5e9; padding:10px; border-radius:8px; margin:15px 0;">
+            Please pay to UPI ID: <strong>10190016358@sbi (PMC Officers Mess Fund Account)</strong>
+        </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px; padding-top:10px; border-top:1px solid #ddd;">
             <div style="text-align:left;">
                 <img src="${qrImageUrl}" alt="QR Code" style="width:80px; height:80px; border:1px solid #ddd; border-radius:5px;">
-                <div style="font-size:9px; color:#666; margin-top:3px;">Scan for details</div>
+                <div style="font-size:9px; color:#666; margin-top:3px;">Scan for Bill details</div>
             </div>
             <div style="font-size:11px; color:#888; text-align:right;">
                 Thank you for your stay!
@@ -4549,17 +4551,23 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
             <head>
                 <title>Bill - ${currentBillBooking.guest}</title>
                 <style>
-                    body{font-family:sans-serif;padding:20px}
+                    body{font-family:sans-serif;padding:20px; font-size:12px;}
                     .header{text-align:center;margin-bottom:20px;border-bottom:2px solid #333;padding-bottom:10px;}
-                    .bill-number{text-align:center;margin-bottom:15px;font-size:14px;background:#f0f0f0;padding:8px;border-radius:6px;}
+                    .header h2{margin:0; font-size:18px;}
+                    .header h3{margin:5px 0 0; color:#555; font-size:14px;}
+                    .bill-info{text-align:right;margin-bottom:20px;padding:8px;background:#f8f9fa;border-radius:5px;}
+                    .bill-info strong{font-weight:bold;}
+                    .guest-details{background:#f8f9fa;padding:10px;margin:15px 0;border-radius:5px;text-align:left;}
+                    .guest-details div{margin:3px 0;}
                     table{border-collapse:collapse;width:100%;margin:15px 0;}
                     th,td{border:1px solid #ddd;padding:8px;text-align:left;}
                     th{background:#f2f2f2;}
-                    .upi{text-align:center;background:#e8f5e9;padding:10px;margin:15px 0;border-radius:5px;}
+                    .upi{text-align:center;background:#e8f5e9;padding:10px;margin:15px 0;border-radius:5px;font-weight:bold;}
                     .footer{display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:10px;border-top:1px solid #ddd;}
+                    .qr-code{text-align:left;}
                     .qr-code img{width:80px;height:80px;border:1px solid #ddd;border-radius:5px;}
+                    .qr-code div{font-size:8px;color:#666;margin-top:3px;}
                     .thankyou{font-size:11px;color:#666;text-align:right;}
-                    .guest-details{background:#f8f9fa;padding:10px;margin:15px 0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;border-radius:5px;}
                     @media print{body{padding:10px;}}
                 </style>
             </head>
@@ -4568,25 +4576,30 @@ function getQRContent(booking, billNumber, billDateTime, totalAmount) {
                     <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
                     <h3>${roomNames[currentBillBooking.room] || ''}</h3>
                 </div>
-                <div class="bill-number">
+                
+                <div class="bill-info">
                     <strong>Bill No:</strong> ${billNumber}<br>
                     <strong>Bill Date:</strong> ${billDate}
                 </div>
+                
                 <div class="guest-details">
                     <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
                     <div><strong>Check-in:</strong> ${checkin}</div>
                     <div><strong>Check-out:</strong> ${checkout}</div>
                 </div>
+                
                 <h4>Bill Summary:</h4>
                 ${itemsTable}
+                
                 <div class="upi">
                     Please pay to UPI ID: <strong>10190016358@sbi</strong><br>
                     (PMC Officers Mess Fund Account)
                 </div>
+                
                 <div class="footer">
                     <div class="qr-code">
                         <img src="${qrImageUrl}" alt="QR Code">
-                        <div style="font-size:8px; text-align:center; margin-top:3px;">Scan for details</div>
+                        <div>Scan for details</div>
                     </div>
                     <div class="thankyou">
                         Thank you for your stay!
