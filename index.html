@@ -4307,6 +4307,17 @@ Remarks: ${booking.remarks || 'None'}`;
 
         // Function to generate a new unique bill number (12 digits)
         // Format: 11 (fixed) + yymmdd + XXXX (sequential per day)
+        function generateQRCode(data) {
+    const encodedData = encodeURIComponent(data);
+    return `https://chart.googleapis.com/chart?chs=160x160&cht=qr&chl=${encodedData}&choe=UTF-8`;
+}
+
+// Add this function - creates the text that will appear when QR code is scanned
+function getQRContent(booking, billNumber, billDateTime) {
+    const checkin = new Date(booking.checkin).toLocaleDateString('en-GB');
+    const checkout = new Date(booking.checkout).toLocaleDateString('en-GB');
+    return `GUEST: ${booking.guest}\nCHECK-IN: ${checkin}\nCHECK-OUT: ${checkout}\nBILL NO: ${billNumber}\nBILL DATE: ${billDateTime}`;
+}
         async function generateBillNumber() {
             const now = new Date();
             const year = now.getFullYear().toString().slice(-2); // yy
@@ -4402,39 +4413,47 @@ Remarks: ${booking.remarks || 'None'}`;
             }
         }
 
-        function renderBillPreview() {
-            if(!currentBillBooking) return;
-            const previewDiv = document.getElementById('bill-preview');
-            
-            // Generate or display bill number and date
-            const istDateTime = getCurrentISTDateTime();
-            const displayBillNumber = currentBillNumber || 'Will be generated on save';
-            const displayBillDate = currentBillDate || istDateTime.full;
-            
-            let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
-            let total = 0;
-            billItems.forEach(item => {
-                itemsHtml += `<tr><td>${item.name}</td><td>₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
-                total += parseFloat(item.amount);
-            });
-            itemsHtml += `</tbody>能有<div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
-            const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
-            const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
-            
-            previewDiv.innerHTML = `
-                <div class="bill-number-display">
-                    <strong>Bill No:</strong> ${displayBillNumber} &nbsp;|&nbsp; 
-                    <strong>Bill Date:</strong> ${displayBillDate}
-                </div>
-                <div class="bill-guest-details">
-                    <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
-                    <div><strong>Check-in:</strong> ${checkin}</div>
-                    <div><strong>Check-out:</strong> ${checkout}</div>
-                </div>
-                ${itemsHtml}
-                <div class="upi-text">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
-            `;
-        }
+      function renderBillPreview() {
+    if(!currentBillBooking) return;
+    const previewDiv = document.getElementById('bill-preview');
+    let itemsHtml = '<table class="bill-table"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
+    let total = 0;
+    billItems.forEach(item => {
+        itemsHtml += `<tr><td style="padding:8px;">${item.name}</td><td style="padding:8px; text-align:right;">₹${parseFloat(item.amount).toFixed(2)}</td></tr>`;
+        total += parseFloat(item.amount);
+    });
+    itemsHtml += `</tbody><table><div class="bill-total">Total Amount: ₹${total.toFixed(2)}</div>`;
+    const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+    const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+    
+    // Get bill number and date (preserve your existing logic)
+    const displayBillNumber = currentBillNumber || 'Will be generated on save';
+    const displayBillDate = currentBillDate || getCurrentISTDateTime().full;
+    
+    // Generate QR code
+    const qrContent = getQRContent(currentBillBooking, displayBillNumber, displayBillDate);
+    const qrImageUrl = generateQRCode(qrContent);
+    
+    previewDiv.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:15px; flex-wrap:wrap;">
+            <div class="bill-number-display" style="background:#f0f0f0; padding:8px; border-radius:6px; flex:2;">
+                <strong>Bill No:</strong> ${displayBillNumber}<br>
+                <strong>Bill Date:</strong> ${displayBillDate}
+            </div>
+            <div style="text-align:right;">
+                <img src="${qrImageUrl}" alt="QR Code" style="width:75px; height:75px; border:1px solid #ddd; border-radius:5px;">
+                <div style="font-size:9px; color:#666;">Scan for details</div>
+            </div>
+        </div>
+        <div class="bill-guest-details">
+            <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
+            <div><strong>Check-in:</strong> ${checkin}</div>
+            <div><strong>Check-out:</strong> ${checkout}</div>
+        </div>
+        ${itemsHtml}
+        <div class="upi-text">Please pay to UPI ID: <strong>10190016358@sbi (PMC Officers Mess Fund Account)</strong></div>
+    `;
+}
 
         function addBillItem() {
             const select = document.getElementById('bill-item-select');
@@ -4489,79 +4508,92 @@ Remarks: ${booking.remarks || 'None'}`;
             await db.collection('bills').doc(bookingId).set(billData, { merge: true });
         }
 
-        async function printBillAndSave() {
-            if(!currentBillBooking) return;
-            showLoading();
-            try {
-                const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
-                
-                // Generate new bill number if this is a new bill or if it doesn't have one yet
-                let billNumber = currentBillNumber;
-                let billDate = currentBillDate;
-                const istDateTime = getCurrentISTDateTime();
-                
-                if (!billNumber) {
-                    billNumber = await generateBillNumber();
-                    billDate = istDateTime.full;
-                    currentBillNumber = billNumber;
-                    currentBillDate = billDate;
-                }
-                
-                await saveBillToDatabase(currentBillBooking.id, billItems, total, billNumber, billDate);
-                
-                const printWindow = window.open('', '_blank');
-                const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
-                const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
-                let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th>Amount (₹)</th></tr></thead><tbody>';
-                billItems.forEach(i => {
-                    itemsTable += `<tr><td>${i.name}</td><td>₹${i.amount.toFixed(2)}</td></tr>`;
-                });
-                itemsTable += `</tbody></table><h3>Total: ₹${total.toFixed(2)}</h3>`;
-                
-                printWindow.document.write(`
-                    <html>
-                    <head>
-                        <title>Bill - ${currentBillBooking.guest}</title>
-                        <style>
-                            body{font-family:sans-serif;padding:20px}
-                            .header{text-align:center}
-                            table{border-collapse:collapse;width:100%}
-                            th,td{border:1px solid #ddd;padding:8px;text-align:left}
-                            th{background:#f2f2f2}
-                            .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
-                            .bill-number{text-align:center;margin-bottom:15px;font-size:16px}
-                        </style>
-                    </head>
-                    <body>
-                        <div class="header">
-                            <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
-                            <h3>${roomNames[currentBillBooking.room] || ''}</h3>
-                        </div>
-                        <div class="bill-number">
-                            <strong>Bill No:</strong> ${billNumber} &nbsp;|&nbsp; 
-                            <strong>Bill Date:</strong> ${billDate}
-                        </div>
-                        <div>
-                            <p><strong>Guest:</strong> ${currentBillBooking.guest}</p>
-                            <p><strong>Check-in:</strong> ${checkin} &nbsp; <strong>Check-out:</strong> ${checkout}</p>
-                        </div>
-                        ${itemsTable}
-                        <div class="upi">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
-                        <p style="margin-top:30px;text-align:center">Thank you for your stay!</p>
-                    </body>
-                    </html>
-                `);
-                printWindow.document.close();
-                printWindow.print();
-                alert('Bill saved successfully and sent to printer!');
-                document.getElementById('bill-modal').classList.remove('active');
-            } catch (error) {
-                console.error('Error in bill save/print:', error);
-                alert('Error saving bill. Please try again.');
-            } finally {
-                hideLoading();
-            }
+       async function printBillAndSave() {
+    if(!currentBillBooking) return;
+    showLoading();
+    try {
+        const total = billItems.reduce((s, i) => s + parseFloat(i.amount), 0);
+        
+        // Keep your existing bill number generation logic - DO NOT CHANGE
+        let billNumber = currentBillNumber;
+        let billDate = currentBillDate;
+        const istDateTime = getCurrentISTDateTime();
+        
+        if (!billNumber) {
+            billNumber = await generateBillNumber();  // Your existing function
+            billDate = istDateTime.full;
+            currentBillNumber = billNumber;
+            currentBillDate = billDate;
         }
+        
+        // Generate QR code for the bill
+        const qrContent = getQRContent(currentBillBooking, billNumber, billDate);
+        const qrImageUrl = generateQRCode(qrContent);
+        
+        await saveBillToDatabase(currentBillBooking.id, billItems, total, billNumber, billDate);
+        
+        const printWindow = window.open('', '_blank');
+        const checkin = new Date(currentBillBooking.checkin).toLocaleDateString('en-GB');
+        const checkout = new Date(currentBillBooking.checkout).toLocaleDateString('en-GB');
+        
+        let itemsTable = '<table border="1" cellpadding="5" style="width:100%;border-collapse:collapse"><thead><tr><th>Item</th><th style="text-align:right">Amount (₹)</th></tr></thead><tbody>';
+        billItems.forEach(i => {
+            itemsTable += `<tr><td style="padding:5px;">${i.name}</td><td style="padding:5px; text-align:right;">₹${i.amount.toFixed(2)}</td></tr>`;
+        });
+        itemsTable += `</tbody><tfoot><tr><th style="text-align:right">Total:</th><th style="text-align:right">₹${total.toFixed(2)}</th></tr></tfoot></table>`;
+        
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Bill - ${currentBillBooking.guest}</title>
+                <style>
+                    body{font-family:sans-serif;padding:20px}
+                    .header{text-align:center}
+                    table{border-collapse:collapse;width:100%}
+                    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+                    th{background:#f2f2f2}
+                    .upi{text-align:center;background:#e8f5e9;padding:10px;margin-top:20px}
+                    .bill-number{text-align:center;margin-bottom:15px;font-size:14px}
+                    .qr-code{text-align:right;margin-bottom:10px}
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h2>TRANSIT FACILITY, OFFRS' MESS, 11 WEU</h2>
+                    <h3>${roomNames[currentBillBooking.room] || ''}</h3>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="bill-number">
+                        <strong>Bill No:</strong> ${billNumber}<br>
+                        <strong>Bill Date:</strong> ${billDate}
+                    </div>
+                    <div class="qr-code">
+                        <img src="${qrImageUrl}" alt="QR Code" style="width:70px; height:70px;">
+                    </div>
+                </div>
+                <div style="background:#f8f9fa;padding:10px;margin:15px 0;display:grid;grid-template-columns:repeat(2,1fr);gap:8px;">
+                    <div><strong>Guest Name:</strong> ${currentBillBooking.guest}</div>
+                    <div><strong>Check-in:</strong> ${checkin}</div>
+                    <div><strong>Check-out:</strong> ${checkout}</div>
+                </div>
+                <h4>Bill Summary:</h4>
+                ${itemsTable}
+                <div class="upi">Please pay to UPI ID: <strong>10190016358@sbi  (PMC Officers Mess Fund Account)</strong></div>
+                <p style="margin-top:30px;text-align:center">Thank you for your stay! | Scan QR code for bill details</p>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        alert('Bill saved successfully and sent to printer!');
+        document.getElementById('bill-modal').classList.remove('active');
+    } catch (error) {
+        console.error('Error in bill save/print:', error);
+        alert('Error saving bill. Please try again.');
+    } finally {
+        hideLoading();
+    }
+}
 
         function openBillModal(booking) {
             // Reset everything for the new booking
